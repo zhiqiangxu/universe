@@ -39,12 +39,21 @@ function at_exit($callable) {
 function _on_exit() {
 	global $AT_EXIT_JOBS;
 }
+
+function backtrace($flag = null) {
+	static $backtrace = false;
+	if ($flag !== null) $backtrace = $flag;
+
+	return $backtrace;
+}
 /*
  * 报错并退出
  */
 function error_exit($message) {
-	print_r(debug_backtrace());
-	echo "\n";
+	if (backtrace()) {
+		print_r(debug_backtrace());
+		echo "\n";
+	}
 	echo $message . "\n\n";
 	exit;
 }
