@@ -180,7 +180,7 @@ function compile($sources, $cflags = '', $ldflags = '', $out = null) {
 
 	$ld = $hascpp ? CXX_COMPILER : C_COMPILER;
 	if (!$out) $out = tempnam(LD_PATH, '');
-	$cmd = "$ld $ldflags " . implode(' ', array_map(function($o) { return escapeshellarg($o); }, $objects)) . " -o " . escapeshellarg($out);
+	$cmd = "$ld -Wl,--no-as-needed $ldflags " . implode(' ', array_map(function($o) { return escapeshellarg($o); }, $objects)) . " -o " . escapeshellarg($out);
 	shell_exec_no_output($cmd);
 
 	return $out;
