@@ -62,6 +62,13 @@ function myassert($exp, $message) {
 	if (!$exp) error_exit($message);
 }
 
+function in_array_glob($needle, $array) {
+	foreach ($array as $pattern) {
+		if (fnmatch($pattern, $needle)) return true;
+	}
+
+	return false;
+}
 /*
  * 返回所有选项，调用端需要指定所有需要的选项
  */
@@ -81,9 +88,9 @@ function get_options($value_opts = [], $novalue_opts = []) {
 		$arg = $args[$i];
 		if (mb_substr($arg, 0, 1) == '-') {
 			$arg = mb_substr($arg, 1);
-			if (in_array($arg, $value_opts)) {
+			if (in_array_glob($arg, $value_opts)) {
 				$OPTIONS[$arg] = $args[++$i];
-			} else if (in_array($arg, $novalue_opts)) {
+			} else if (in_array_glob($arg, $novalue_opts)) {
 				$OPTIONS[$arg] = 1;
 			} else {
 				error_exit("undefined option:\t$arg");
