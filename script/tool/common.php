@@ -6,13 +6,21 @@
 function shell_exec_realtime_output($cmd) {
 	echo "executing:\t$cmd\n\n";
 	echo str_repeat("#", 20) . "\n";
-	system("script -qc " . escapeshellarg($cmd) . " /dev/null");
+	system(term_cmd($cmd));
 	echo str_repeat("#", 20) . "\n\n";
 }
 
 function shell_exec_no_output($cmd) {
+	$cmd = term_cmd($cmd);
 	exec($cmd, $_, $return);
 	myassert($return == 0, "fail compiling:\t$cmd");
+}
+
+/*
+ * 交互式运行命令
+ */
+function term_cmd($cmd) {
+	return 'script -qc ' . escapeshellarg($cmd) . ' /dev/null';
 }
 
 function trimlr($s) {
