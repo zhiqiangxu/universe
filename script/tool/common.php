@@ -6,21 +6,33 @@
 function shell_exec_realtime_output($cmd) {
 	echo "executing:\t$cmd\n\n";
 	echo str_repeat("#", 20) . "\n";
-	system(term_cmd($cmd));
+	system(term_cmd($cmd), $ret);
 	echo str_repeat("#", 20) . "\n\n";
+
+	myassert($ret == 0, "fail cmd:\t$cmd\n");
 }
 
 function shell_exec_no_output($cmd) {
-	$cmd = term_cmd($cmd);
+	$cmd = bash_cmd($cmd);
 	exec($cmd, $_, $return);
-	myassert($return == 0, "fail compiling:\t$cmd");
+
+	myassert($return == 0, "fail compiling:\t$cmd\n" . implode("\n", $_));
 }
 
 /*
  * 交互式运行命令
  */
 function term_cmd($cmd) {
-	return 'script -qc ' . escapeshellarg($cmd) . ' /dev/null';
+	return 'script -qec ' . escapeshellarg($cmd) . ' /dev/null';
+}
+
+function bash_cmd($cmd) {
+	/**
+	  -i 读 .bashrc 且 expand_aliases
+	  -l 读 .bash_profile
+	  /dev/null 防止读取stdin导致TTIN signal
+	**/
+	return 'bash -lic ' . escapeshellarg($cmd . ' < /dev/null');
 }
 
 function trimlr($s) {

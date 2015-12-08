@@ -3,6 +3,7 @@
 #include <stack>
 #include <set>
 #include <array>
+#include <queue>
 #include <iostream>
 #include <algorithm>
 
@@ -68,12 +69,26 @@ void test_array()
 	for (const auto &element : ia) cout << element << endl;
 }
 
+void test_queue()
+{
+	queue<string> q;
+	q.push("q1");
+	q.push("q2");
+	while (!q.empty())
+	{
+		auto e = q.front();
+		cout << e << endl;
+		q.pop();
+	}
+}
+
 int main()
 {
 	//test_map();
 	//test_vector();
 	//test_stack();
 	//test_set();
-	test_array();
+	//test_array();
+	test_queue();
 	return 0;
 }
