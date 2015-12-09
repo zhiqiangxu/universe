@@ -13,8 +13,8 @@ function shell_exec_realtime_output($cmd) {
 }
 
 function shell_exec_no_output($cmd) {
-	$cmd = bash_cmd($cmd);
-	exec($cmd, $_, $return);
+	$bash_cmd = bash_cmd($cmd);
+	exec($bash_cmd, $_, $return);
 
 	myassert($return == 0, "fail compiling:\t$cmd\n" . implode("\n", $_));
 }

@@ -13,7 +13,7 @@ function blackwhite(&$img, $min_gray, $max_gray)
     {
         for ($x=0; $x<$width; ++$x)
         {
-            $color=@imageColorAt($img, $x, $y);
+            $color=imageColorAt($img, $x, $y);
             $rgb=imageColorsForIndex($img, $color);
             $grey=(255-($rgb['red']*0.30+$rgb['green']*0.59+$rgb['blue']*0.11))/255;
             //排除深黑的干扰像素$grey>=0.90, 排除接近白色的背景像素$grey<=0.3
@@ -42,10 +42,10 @@ function reduce_noise(&$img, $font_width, $font_height, $min_weight)
     {
         for ($x=0; $x<$width; ++$x)
         {
-            $color=@imageColorAt($img, $x, $y);
+            $color=imageColorAt($img, $x, $y);
             if ($color==16777215)    //白色
             {
-                $weight=near_weight($img, $font_width, $font_height, $x, $y);
+                $weight=near_weight($img, $width, $height, $font_width, $font_height, $x, $y);
                 if (TESS_DEBUG)
                 {
                     echo base_convert($weight, 10, 36);
@@ -72,20 +72,26 @@ function reduce_noise(&$img, $font_width, $font_height, $min_weight)
 }
 
 //tesseract预处理: 附近权重
-function near_weight($img, $font_width, $font_height, $x, $y)
+function near_weight($img, $img_width, $img_height, $font_width, $font_height, $x, $y)
 {
     $cnt=0;
-    for ($h=-$font_height; $h<=$font_height; ++$h)
+    $min_x = max(0, $x-$font_width);
+    $min_y = max(0, $y-$font_height);
+    $max_x = min($img_width - 1, $x+$font_width);
+    $max_y = min($img_height - 1, $y+$font_height);
+
+    for ($w = $min_x; $w <= $max_x; ++$w)
     {
-        for ($w=-$font_width; $w<=$font_width; ++$w)
+        for ($h = $min_y; $h <= $max_y; ++$h)
         {
-            if (@imageColorAt($img, $x+$w, $y+$h)==16777215)
+            if (imageColorAt($img, $w, $h)==16777215)
             {
                 ++$cnt;
             }
         }
     }
-    return $cnt-1;
+
+    return $cnt;
 }
 
 
@@ -95,16 +101,17 @@ $image_files = glob_files($remaining_args);
 
 foreach ($image_files as $image_file)
 {
-	echo $image_file . "\n";
+    echo $image_file . "\n";
     $img = imageCreateFromJpeg($image_file);
-	myassert($img, 'imageCreateFromJpeg failed');
-	echo "blackwhite start\n";
-	blackwhite($img, 0.5, 1.0);
-	echo "reduce_noise start\n";
-	reduce_noise($img, 5, 5, 8);
+    myassert($img, 'imageCreateFromJpeg failed');
+    echo "blackwhite start\n";
+    blackwhite($img, 0.51, 1.0);
+    imagejpeg($img, $image_file . "_bw.jpg", 100);
+    echo "reduce_noise start\n";
+    reduce_noise($img, 4, 4, 8);
     $file_img = $image_file . '.new.jpg';
     imagejpeg($img, $file_img, 100);
-	$cmd = "tesseract -psm 7 $file_img stdout";
-	shell_exec_realtime_output($cmd);
-	//unlink($file_img);
+    $cmd = "tesseract -psm 7 $file_img stdout";
+    shell_exec_realtime_output($cmd);
+    //unlink($file_img);
 }
