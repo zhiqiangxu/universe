@@ -109,7 +109,13 @@ function get_options($value_opts = [], $novalue_opts = []) {
 		if (mb_substr($arg, 0, 1) == '-') {
 			$arg = mb_substr($arg, 1);
 			if (in_array_glob($arg, $value_opts)) {
-				$OPTIONS[$arg] = $args[++$i];
+				if (isset($OPTIONS[$arg])) {
+					$values = is_array($OPTIONS[$arg]) ? $OPTIONS[$arg] : [$OPTIONS[$arg]];
+					$values[] = $args[++$i];
+					$OPTIONS[$arg] = $values;
+				} else {
+					$OPTIONS[$arg] = $args[++$i];
+				}
 			} else if (in_array_glob($arg, $novalue_opts)) {
 				$OPTIONS[$arg] = 1;
 			} else {
@@ -160,6 +166,15 @@ function file_extension($file) {
 	return null;
 }
 
+function arraylize($thing) {
+	return is_array($thing) ? $thing : [$thing];
+}
+
+function shell_expand_string($shell_string) {
+	$cmd = "echo -n $shell_string";
+	return shell_exec($cmd);
+}
+
 const C_COMPILER = 'gcc';
 const CXX_COMPILER = 'g++';
 const COMPILER_MAP = ['c' => C_COMPILER, 'c++' => CXX_COMPILER, 'cpp' => CXX_COMPILER];
@@ -186,6 +201,9 @@ function get_buildpath($file) {
 }
 
 function compile($sources, $cflags = '', $ldflags = '', $out = null) {
+	if (is_array($cflags)) $cflags = implode(' ', $cflags);
+	if (is_array($ldflags)) $ldflags = implode(' ', $ldflags);
+
 	$objects = [];
 	$hascpp = false;
 	foreach ($sources as $source) {
