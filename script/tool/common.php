@@ -190,6 +190,11 @@ function is_source_file($file) {
 	return array_key_exists($ext, COMPILER_MAP);
 }
 
+function is_archive_file($file) {
+	$ext = file_extension($file);
+	return $ext == 'a';
+}
+
 const  BUILD_PATH = '/tmp/build/';
 const  LD_PATH = '/tmp/build/ld/';
 if (!file_exists(LD_PATH)) mkdir(LD_PATH, 0777, true);
@@ -207,6 +212,12 @@ function compile($sources, $cflags = '', $ldflags = '', $out = null) {
 	$objects = [];
 	$hascpp = false;
 	foreach ($sources as $source) {
+		
+		if (is_archive_file($source)) {
+			$objects[] = $source;
+			continue;
+		}
+
 		$compiler = get_compiler($source);
 		if ($compiler == CXX_COMPILER) $hascpp = true;
 		$build_path = get_buildpath($source);
