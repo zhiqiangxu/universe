@@ -247,3 +247,18 @@ function compile_pre_so($source, $cflags = '', $ldflags = '', $out = null) {
 
 	return $out;
 }
+
+/***load common***/
+call_user_func(function (){
+    $mydir = dir(__DIR__."/common");
+    $pattern = '/\.php$/';
+
+    while($file = $mydir->read()){
+        if(preg_match($pattern, $file, $matches)){
+            require __DIR__."/common/{$file}";
+        }
+    }
+
+	$mydir->close();
+});
+
