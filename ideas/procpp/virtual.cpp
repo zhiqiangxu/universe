@@ -25,7 +25,7 @@ class C : public B
 {
 public:
 
-	/* 显式继承 */
+	/* 下面的test方法导致父类的同名方法被隐藏，需要显式继承 */
 	using B::test;
 	void test(int i)
 	{
