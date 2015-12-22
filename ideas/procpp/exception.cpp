@@ -15,7 +15,7 @@ throw(invalid_argument, runtime_error)
 	throw 5;
 }
 
-int main()
+void throw_list()
 {
 	vector<int> myInts;
 	const string fileName = "IntegerFile.txt";
@@ -24,5 +24,10 @@ int main()
 	} catch (int x) {
 	cerr << "Caught int " << x << endl;
 	}
+}
+
+int main()
+{
+	throw_list();
 	return 0;
 }
