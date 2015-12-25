@@ -1,0 +1,5 @@
+<?php
+return [
+		'cflags' => '-g -O0 -std=c++1y',
+		'ldflags'=> '-lpthread'
+		];
