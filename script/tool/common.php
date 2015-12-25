@@ -185,6 +185,14 @@ function get_compiler($source) {
 	return COMPILER_MAP[$ext];
 }
 
+function array_value($array, $key, $default) {
+	if (!is_array($array)) return $default;
+
+	if (!isset($array[$key])) return $default;
+
+	return $array[$key];
+}
+
 function is_source_file($file) {
 	$ext = file_extension($file);
 	return array_key_exists($ext, COMPILER_MAP);
@@ -205,8 +213,17 @@ function get_buildpath($file) {
 	return BUILD_PATH . $path;
 }
 
-function compile($sources, $cflags = '', $ldflags = '', $out = null) {
-	if (is_array($cflags)) $cflags = implode(' ', $cflags);
+function _alternate_compiler($compiler, $alternate_compiler) {
+	return array_value($alternate_compiler, $compiler, $compiler);
+}
+
+function compile($sources, $compile_opts) {
+	$cflags = array_value($compile_opts, 'cflags', []);
+	$ldflags = array_value($compile_opts, 'ldflags', '');
+	$out = array_value($compile_opts, 'out', null);
+	$alternate_compiler = array_value($compile_opts, 'alternate_compiler', []);
+	$suffix = $compile_opts['suffix'];
+
 	if (is_array($ldflags)) $ldflags = implode(' ', $ldflags);
 
 	$objects = [];
@@ -222,13 +239,15 @@ function compile($sources, $cflags = '', $ldflags = '', $out = null) {
 		if ($compiler == CXX_COMPILER) $hascpp = true;
 		$build_path = get_buildpath($source);
 		$object = $build_path . '.o';
-		$cmd = "$compiler $cflags -Wall -c $source -o $object";
+		$cflags_for_source = isset($cflags[$compiler]) ? implode(' ', $cflags[$compiler]) : '';
+		$cmd = _alternate_compiler($compiler, $alternate_compiler) . " $cflags_for_source -Wall -c $source -o $object";
 		shell_exec_no_output($cmd);
 		$objects[] = $object;
 	}
 
-	$ld = $hascpp ? CXX_COMPILER : C_COMPILER;
+	$ld = _alternate_compiler($hascpp ? CXX_COMPILER : C_COMPILER, $alternate_compiler);
 	if (!$out) $out = tempnam(LD_PATH, '');
+	if ($suffix) $out .= $suffix;
 	$cmd = "$ld -Wl,--no-as-needed $ldflags " . implode(' ', array_map(function($o) { return escapeshellarg($o); }, $objects)) . " -o " . escapeshellarg($out);
 	shell_exec_no_output($cmd);
 
