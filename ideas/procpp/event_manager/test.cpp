@@ -10,7 +10,6 @@ string _read_fd(int fd)
 
 	while (true) {
 		auto size = read(fd, buf, sizeof(buf));
-		cout << "size:" << size;
 		if (size == -1) {
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
 				return message;
@@ -32,10 +31,12 @@ string _read_fd(int fd)
 int main()
 {
 	EventManager m;
-	if (m.watch(fileno(stdin), EventType::READ, [] (int fd) {
-		cout << "callback start: " << fd << endl;
-		cout << _read_fd(fd) << endl;
-		cout << "callback end" << endl;
+	if (m.watch(STDIN_FILENO, EventManager::EventCB{
+		{
+			EventType::READ, [] (int fd) {
+				cout << _read_fd(fd);
+			}
+		}
 	})) {
 		cout << "watch ok" << endl;
 	} else {

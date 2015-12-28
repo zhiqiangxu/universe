@@ -40,6 +40,7 @@ public:
 
 private:
 	bool _epoll_update(int fd, int epoll_op);
+	void _set_nonblock(int fd);
 	map<int, EventCB> _fds;
 	int _epoll_fd;
 };
