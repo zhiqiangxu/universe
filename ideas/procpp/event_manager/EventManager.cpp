@@ -92,7 +92,7 @@ void EventManager::start()
 				if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::READ) != _fds[fd].end()) {
 					auto f = _fds[fd][EventType::READ];
 					if (f.want_message()) {
-						f(fd, read_fd(fd));
+						f(fd, _proto.read(fd));
 					} else {
 						f(fd);
 					}
@@ -168,30 +168,3 @@ void EventManager::_set_nonblock(int fd)
 	fcntl(fd, F_SETFL, new_flags);
 }
 
-string EventManager::read_fd(int fd)
-{
-	string message("");
-	char buf[1024];
-
-	while (true) {
-		auto size = read(fd, buf, sizeof(buf));
-		if (size == -1) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				return message;
-			} else {
-				//error handle
-			}
-			continue;
-		} else if (size == 0) {
-			//eof
-			break;
-		}
-
-		// TODO 避免拷贝
-		string sbuf("");
-		sbuf.assign(buf, size);
-		message += sbuf;
-	}
-
-	return message;
-}
