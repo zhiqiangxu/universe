@@ -18,7 +18,19 @@ enum class EventType
 class IEventManager
 {
 public:
-	using CB = function<void(int)>;
+	using CB = class U {
+		public:
+			using NR = function<void(int)>;
+			using R = function<void(int, string)>;
+			NR _nr;
+			R _r;
+			U() {}
+			U(NR nr) : _nr(nr) {}
+			U(R r) : _r(r) {}
+			void operator()(int fd) { _nr(fd); }
+			void operator()(int fd, string message) { _r(fd, message); }
+			bool want_message() { return _r ? true : false; }
+	};
 	using EventCB = map<EventType, CB>;
 
 	virtual bool watch(int fd, EventType event, CB callback) = 0;
@@ -41,6 +53,7 @@ public:
 private:
 	bool _epoll_update(int fd, int epoll_op);
 	void _set_nonblock(int fd);
+	string _read_fd(int fd);
 	map<int, EventCB> _fds;
 	int _epoll_fd;
 };

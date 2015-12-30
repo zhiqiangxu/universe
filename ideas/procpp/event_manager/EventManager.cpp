@@ -91,7 +91,11 @@ void EventManager::start()
 			if (flags & EPOLLIN) {
 				if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::READ) != _fds[fd].end()) {
 					auto f = _fds[fd][EventType::READ];
-					f(fd);
+					if (f.want_message()) {
+						f(fd, _read_fd(fd));
+					} else {
+						f(fd);
+					}
 				} else {
 					//error handle
 				}
@@ -162,4 +166,32 @@ void EventManager::_set_nonblock(int fd)
 	auto old_flags = fcntl(fd, F_GETFL);
 	auto new_flags = old_flags | O_NONBLOCK;
 	fcntl(fd, F_SETFL, new_flags);
+}
+
+string EventManager::_read_fd(int fd)
+{
+	string message("");
+	char buf[1024];
+
+	while (true) {
+		auto size = read(fd, buf, sizeof(buf));
+		if (size == -1) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				return message;
+			} else {
+				//error handle
+			}
+			continue;
+		} else if (size == 0) {
+			//eof
+			break;
+		}
+
+		// TODO 避免拷贝
+		string sbuf("");
+		sbuf.assign(buf, size);
+		message += sbuf;
+	}
+
+	return message;
 }

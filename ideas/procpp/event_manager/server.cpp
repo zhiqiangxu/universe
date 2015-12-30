@@ -32,6 +32,7 @@ int server_socket_ip4(uint16_t port)
 
 	if (listen(s, 100) < 0) error_exit("listen");
 
+	cout << "listening port " << port << endl;
 	return s;
 }
 
@@ -70,24 +71,24 @@ int main()
 	auto s = server_socket_ip4(8081);
 	m.watch(s, EventManager::EventCB{
 		{
-			EventType::READ, [s, &m] (int fd) {
+			EventType::READ, EventManager::CB([s, &m] (int fd) {
 				auto client = accept(s, nullptr, nullptr);
 				if (client == -1) error_exit("accept");
 
 				m.watch(client, EventManager::EventCB{
 					{
-						EventType::READ, [] (int fd) {
+						EventType::READ, EventManager::CB([] (int fd) {
 							cout << "read" << endl;
 							cout << _read_fd(fd);
-						},
+						}),
 					},
 					{
-						EventType::CLOSE, [] (int fd) {
+						EventType::CLOSE, EventManager::CB([] (int fd) {
 							cout << "closed" << endl;
-						}
+						})
 					}
 				});
-			}
+			})
 		}
 	});
 	
