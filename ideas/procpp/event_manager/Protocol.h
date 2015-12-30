@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "Server.h"
 
 using namespace std;
 
@@ -7,19 +8,25 @@ using namespace std;
 class IProtocol
 {
 public:
-	virtual string read(int fd) = 0;
-	virtual string read(int fd, size_t size) = 0;
-	virtual string read(string& message, size_t size) = 0;
-	virtual string readUtil(int fd, string separator) = 0;
-	virtual string readUtil(string& message, string separator, int scanned/*调用方维护*/) = 0;
+	virtual void setServer(Server& server) = 0;
+	virtual Server& getServer() = 0;
+	virtual void handle(int fd) = 0;
 };
 
 class Protocol : public IProtocol
 {
 public:
-	virtual string read(int fd) override;//fd为ET
-	virtual string read(int fd, size_t size) override;
-	virtual string read(string& message, size_t size) override;
-	virtual string readUtil(int fd, string separator) override;
-	virtual string readUtil(string& message, string separator, int scanned = 0) override;
+	static string read(int fd);//fd为ET
+	static string read(int fd, size_t size);
+	static string read(string& message, size_t size);
+	static string readUtil(int fd, string separator);
+	static string readUtil(string& message, string separator, int scanned = 0);
+
+	virtual void setServer(Server& server) override { _server = server; };
+	virtual Server& getServer() override { return _server; };
+	/*未实现handle，是抽象类*/
+
+	Protocol(Server& server) : _server(server) {}
+protected:
+	Server& _server;
 };

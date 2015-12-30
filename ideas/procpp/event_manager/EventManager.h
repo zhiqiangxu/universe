@@ -4,7 +4,7 @@
 #include <tuple>
 #include <map>
 #include <string>
-#include "Protocol.h"
+
 
 using namespace std;
 
@@ -58,6 +58,5 @@ private:
 
 	int _epoll_fd;
 	map<int, EventCB> _fds;
-	Protocol _proto;
 };
 

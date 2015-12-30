@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <fcntl.h>
+#include "Protocol.h"
 
 EventManager::EventManager()
 {
@@ -92,7 +93,7 @@ void EventManager::start()
 				if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::READ) != _fds[fd].end()) {
 					auto f = _fds[fd][EventType::READ];
 					if (f.want_message()) {
-						f(fd, _proto.read(fd));
+						f(fd, Protocol::read(fd));
 					} else {
 						f(fd);
 					}
