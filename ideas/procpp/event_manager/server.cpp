@@ -40,34 +40,6 @@ int server_socket_ip4(uint16_t port)
 	return s;
 }
 
-string _read_fd(int fd)
-{
-	string message("");
-	char buf[1024];
-
-	while (true) {
-		auto size = read(fd, buf, sizeof(buf));
-		cout << "size=" << size << endl;
-		if (size == -1) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				return message;
-			} else {
-				//error handle
-			}
-			continue;
-		} else if (size == 0) {
-			//eof
-			break;
-		}
-
-		// TODO 避免拷贝
-		string sbuf("");
-		sbuf.assign(buf, size);
-		message += sbuf;
-	}
-
-	return message;
-}
 
 int main()
 {

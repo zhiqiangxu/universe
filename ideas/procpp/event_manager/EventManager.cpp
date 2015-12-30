@@ -92,7 +92,7 @@ void EventManager::start()
 				if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::READ) != _fds[fd].end()) {
 					auto f = _fds[fd][EventType::READ];
 					if (f.want_message()) {
-						f(fd, _read_fd(fd));
+						f(fd, read_fd(fd));
 					} else {
 						f(fd);
 					}
@@ -168,7 +168,7 @@ void EventManager::_set_nonblock(int fd)
 	fcntl(fd, F_SETFL, new_flags);
 }
 
-string EventManager::_read_fd(int fd)
+string EventManager::read_fd(int fd)
 {
 	string message("");
 	char buf[1024];

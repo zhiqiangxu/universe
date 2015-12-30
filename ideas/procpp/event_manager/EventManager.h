@@ -50,10 +50,11 @@ public:
 	virtual bool remove(int fd) override;
 	virtual void start() override;
 
+	string read_fd(int fd);
+
 private:
 	bool _epoll_update(int fd, int epoll_op);
 	void _set_nonblock(int fd);
-	string _read_fd(int fd);
 	map<int, EventCB> _fds;
 	int _epoll_fd;
 };
