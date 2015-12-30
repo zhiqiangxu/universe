@@ -81,14 +81,15 @@ int main()
 
 				m.watch(client, EventManager::EventCB{
 					{
-						EventType::READ, EventManager::CB([] (int fd) {
-							cout << "read" << endl;
-							cout << _read_fd(fd);
+						EventType::READ, EventManager::CB([] (int fd, string message) {
+							cout << "[read]" << endl;
+							cout << message;
+							write(fd, message.c_str(), message.length());
 						}),
 					},
 					{
 						EventType::CLOSE, EventManager::CB([] (int fd) {
-							cout << "closed" << endl;
+							cout << "[closed]" << endl;
 						})
 					}
 				});
