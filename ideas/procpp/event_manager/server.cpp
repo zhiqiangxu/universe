@@ -6,13 +6,14 @@
 #include <strings.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <stdio.h>
 
 
 using namespace std;
 
-void error_exit(string s)
+void error_exit(const char *s)
 {
-	cout << "error:\t" << s << endl;
+	perror(s);
 	exit(1);
 }
 
@@ -20,6 +21,9 @@ int server_socket_ip4(uint16_t port)
 {
 	auto s = socket(AF_INET, SOCK_STREAM, 0);
 	if (s == -1) error_exit("socket");
+
+	const int enable = 1;
+	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == -1) error_exit("setsockopt");
 	
 	struct sockaddr_in serveraddr;
 	bzero(&serveraddr, sizeof(serveraddr));
