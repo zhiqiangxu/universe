@@ -84,7 +84,7 @@ int main()
 						EventType::READ, EventManager::CB([] (int fd, string message) {
 							cout << "[read]" << endl;
 							cout << message;
-							write(fd, message.c_str(), message.length());
+							write(fd, message.data(), message.length());
 						}),
 					},
 					{
