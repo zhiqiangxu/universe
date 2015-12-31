@@ -4,3 +4,6 @@ test: test.cpp EventManager.cpp Protocol.cpp
 
 server: server.cpp EventManager.cpp Protocol.cpp Server.cpp Protocol/Echo.cpp
 	bash -lic 'rc $+ '
+
+client: client.cpp EventManager.cpp Protocol.cpp Client.cpp
+	bash -lic 'rc $+ '

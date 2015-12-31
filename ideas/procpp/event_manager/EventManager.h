@@ -10,8 +10,9 @@ using namespace std;
 
 enum class EventType
 {
+	CONNECT,//客户端用
 	READ,
-	WRITE,
+	WRITE,//一般不应该watch，除非write返回EAGAIN
 	ERROR,
 	CLOSE
 };

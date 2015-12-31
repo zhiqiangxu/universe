@@ -18,9 +18,9 @@ class Protocol : public IProtocol
 public:
 	static string read(int fd);//fd为ET
 	static string read(int fd, size_t size);
-	static string read(string& message, size_t size);
+	static bool read(string& message, size_t size, string& result);
 	static string readUtil(int fd, string separator);
-	static string readUtil(string& message, string separator, int scanned = 0);
+	static bool readUtil(string& message, string separator, string& result, int scanned = 0);
 
 	virtual void setServer(Server& server) override { _server = server; };
 	virtual Server& getServer() override { return _server; };

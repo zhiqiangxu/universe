@@ -2,32 +2,32 @@
 #include <algorithm>//max
 #include <unistd.h>//read
 
-string Protocol::read(string& message, size_t size)
+bool Protocol::read(string& message, size_t size, string& result)
 {
 	//TODO error handle size
 
 	if (message.length() < size) {
-		return "";
+		return false;
 	}
 
-	auto result = message.substr(0, size);
+	result = message.substr(0, size);
 	message = message.substr(size);
 
-	return result;
+	return true;
 }
 
-string Protocol::readUtil(string& message, string separator, int scanned)
+bool Protocol::readUtil(string& message, string separator, string& result, int scanned)
 {
 	auto pos = message.find(separator, max(0, static_cast<int>(scanned - separator.length())));
 	if (pos != string::npos) {
 		auto total_length = pos + separator.length();
-		auto result = message.substr(0, total_length);
+		result = message.substr(0, total_length);
 		message = message.substr(total_length);
 
-		return result;
+		return true;
 	}
 
-	return "";
+	return false;
 }
 
 string Protocol::read(int fd)
