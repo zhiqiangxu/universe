@@ -67,7 +67,7 @@ bool Server::listen4(const struct sockaddr_in *addr, EventManager::EventCB callb
 
 	if (::listen(s, 100) < 0) error_exit("listen");
 
-	_m.watch(s, callbacks);
+	watch(s, callbacks);
 
 	auto port = ntohs(addr->sin_port);
 	cout << "listening port " << port << endl;
@@ -88,7 +88,7 @@ bool Server::listen6(const struct sockaddr_in6 *addr, EventManager::EventCB call
 
 	if (::listen(s, 100) < 0) error_exit("listen");
 
-	_m.watch(s, callbacks);
+	watch(s, callbacks);
 
 	auto port = ntohs(addr->sin6_port);
 	cout << "listening port " << port << endl;
@@ -97,7 +97,4 @@ bool Server::listen6(const struct sockaddr_in6 *addr, EventManager::EventCB call
 
 }
 
-void Server::start()
-{
-	_m.start();
-}
+

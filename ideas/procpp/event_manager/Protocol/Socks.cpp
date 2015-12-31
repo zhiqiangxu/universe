@@ -13,7 +13,7 @@ void Socks::handle(int fd)
 	if (client == -1) error_exit("accept");
 
 	_state[client] = SocksState::GREETING;
-	_server._m.watch(client, EventManager::EventCB{
+	_server.watch(client, EventManager::EventCB{
 		{
 			EventType::READ, EventManager::CB([&this] (int fd, string message) {
 				this->on_message(fd, message);

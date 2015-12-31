@@ -52,12 +52,9 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 		callbacks.erase(EventType::CONNECT);
 	}
 
-	_m.watch(s, callbacks);
+	watch(s, callbacks);
 
 	return true;
 }
 
-void Client::start()
-{
-	_m.start();
-}
+

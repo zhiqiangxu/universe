@@ -14,7 +14,7 @@ void Echo::handle(int fd)
 	auto client = accept(fd, nullptr, nullptr);
 	if (client == -1) error_exit("accept");
 
-	_server._m.watch(client, EventManager::EventCB{
+	_server.watch(client, EventManager::EventCB{
 		{
 			EventType::READ, EventManager::CB([] (int fd, string message) {
 				cout << "[read]" << endl;
