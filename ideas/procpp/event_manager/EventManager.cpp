@@ -8,6 +8,17 @@
 #include <fcntl.h>
 #include "Protocol.h"
 
+static string RED(string s)
+{
+	return "\033[1;31m" + s + "\033[0m";
+}
+
+static void error_exit(const char *s)
+{
+	perror(s);
+	exit(1);
+}
+
 EventManager::EventManager()
 {
 	_epoll_fd = epoll_create(1024);
@@ -41,6 +52,9 @@ bool EventManager::watch(int fd, EventManager::EventCB& callbacks)
 
 	if (!added) {
 		_set_nonblock(fd);
+	} else {
+		//red bold
+		cout << RED("fd already added " +  to_string(fd)) << endl;
 	}
 
 	_fds[fd] = callbacks;
@@ -63,12 +77,11 @@ bool EventManager::watch(int fd, EventManager::EventCB&& callbacks)
 
 bool EventManager::remove(int fd)
 {
-	auto suc = _epoll_update(fd, EPOLL_CTL_DEL);
-	if (suc) {
-		_fds.erase(fd);
-	}
+	//TODO do it cleanly
+	_epoll_update(fd, EPOLL_CTL_DEL);
+	_fds.erase(fd);
 
-	return suc;
+	return true;
 }
 
 void EventManager::start()
@@ -77,11 +90,14 @@ void EventManager::start()
 	struct epoll_event events[kMaxEvents];
 	while (true) {
 		int timeout = -1;
+		//cout << "epoll_wait" << endl;
 		auto ret = epoll_wait(_epoll_fd, events, kMaxEvents, timeout);
+		//cout << "ret " << ret << endl;
 
 		if (ret == -1) {
 			if (errno != EINTR) {
 				//error handle
+				error_exit("epoll_wait");
 			}
 			continue;
 		}
@@ -130,6 +146,11 @@ void EventManager::start()
 
 		}
 	}
+}
+
+size_t EventManager::count()
+{
+	return _fds.size();
 }
 
 bool EventManager::_epoll_update(int fd, int epoll_op)

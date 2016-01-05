@@ -40,6 +40,7 @@ public:
 	virtual bool watch(int fd, EventCB&& callbacks) = 0;
 	virtual bool remove(int fd) = 0;
 	virtual void start() = 0;
+	virtual size_t count() = 0;
 };
 
 class EventManager : public IEventManager
@@ -51,6 +52,7 @@ public:
 	virtual bool watch(int fd, EventCB&& callbacks) override;
 	virtual bool remove(int fd) override;
 	virtual void start() override;
+	virtual size_t count() override;
 
 
 private:

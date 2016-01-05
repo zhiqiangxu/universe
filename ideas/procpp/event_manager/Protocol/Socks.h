@@ -35,6 +35,7 @@ public:
 
 private:
 	map<int, string> _buf;
+	map<int, string> _url;
 	map<int, SocksState> _state;
 	map<int, int> _c2r;
 	map<int, int> _r2c;
