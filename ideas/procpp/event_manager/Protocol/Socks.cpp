@@ -1,5 +1,6 @@
 #include "Protocol/Socks.h"
 #include "ClientServer.h"
+#include <arpa/inet.h>//ntohs
 #include <unistd.h>//close
 #include <iostream>
 using namespace std;
@@ -18,13 +19,13 @@ void Socks::handle(int fd)
 	_state[client] = SocksState::GREETING;
 	_server.watch(client, EventManager::EventCB{
 		{
-			EventType::READ, EventManager::CB([/*&this*/] (int fd, string message) {
-				//this->on_message(fd, message);
+			EventType::READ, EventManager::CB([this] (int fd, string message) {
+				on_message(fd, message);
 			}),
 		},
 		{
-			EventType::CLOSE, EventManager::CB([/*&this*/] (int fd) {
-				//this->on_close(fd);
+			EventType::CLOSE, EventManager::CB([this] (int fd) {
+				on_close(fd);
 				cout << "[closed]" << endl;
 			})
 		}
@@ -102,7 +103,7 @@ void Socks::on_message(int fd, string message)
 
 			if (need_buf(fd, message, message.length() < length)) return;
 
-			const uint16_t port = *reinterpret_cast<const uint16_t*>(message.substr(length - 2, 2).c_str());
+			const uint16_t port = ntohs(*reinterpret_cast<const uint16_t*>(message.substr(length - 2, 2).c_str()));
 			switch (message[3]) {
 				case 0x01:
 				{
@@ -111,6 +112,7 @@ void Socks::on_message(int fd, string message)
 				case 0x03:
 				{
 					auto address = message.substr(5, message[4]);
+					cout << "connect remote:" << address << ":" << port << endl;
 					if (!dynamic_cast<ClientServer&>(_server).connect(address, port, EventManager::EventCB{
 						{
 							EventType::CONNECT, EventManager::CB([fd,this] (int remote_fd) {
@@ -174,6 +176,7 @@ void Socks::on_close(int fd)
 
 void Socks::close(int fd)
 {
+	cout << "[close]" << endl;
 	::close(fd);
 	on_close(fd);
 }
