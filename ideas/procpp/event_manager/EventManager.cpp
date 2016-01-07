@@ -14,6 +14,11 @@ static string RED(string s)
 	return "\033[1;31m" + s + "\033[0m";
 }
 
+static void error_log(const char *s)
+{
+	perror(s);
+}
+
 static void error_exit(const char *s)
 {
 	perror(s);
@@ -34,6 +39,7 @@ bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 	auto ecb_iter = _fds.find(fd);
 	auto added = ecb_iter != _fds.end();
 
+	// TODO 当所有socket都通过nonblock_socket/set_nonblock时，即可干掉这行
 	if (!added) {
 		set_nonblock(fd);
 	}
@@ -213,7 +219,19 @@ void EventManager::set_nonblock(int fd)
 {
 	auto old_flags = fcntl(fd, F_GETFL);
 	auto new_flags = old_flags | O_NONBLOCK;
-	fcntl(fd, F_SETFL, new_flags);
+	if (fcntl(fd, F_SETFL, new_flags) == -1) error_exit("set_nonblock");
+}
+
+int EventManager::nonblock_socket(int domain, int type, int protocol)
+{
+	auto s = socket(domain, type, protocol);
+	if (s == -1) {
+		error_log("socket");
+		return -1;
+	}
+
+	set_nonblock(s);
+	return s;
 }
 
 void EventManager::_add_close_fd(int fd)
