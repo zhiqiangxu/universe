@@ -35,7 +35,7 @@ bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 	auto added = ecb_iter != _fds.end();
 
 	if (!added) {
-		_set_nonblock(fd);
+		set_nonblock(fd);
 	}
 
 	auto& ecb = added ? ecb_iter->second : _fds[fd];
@@ -52,7 +52,7 @@ bool EventManager::watch(int fd, EventManager::EventCB& callbacks)
 	auto added = _fds.find(fd) != _fds.end();
 
 	if (!added) {
-		_set_nonblock(fd);
+		set_nonblock(fd);
 	} else {
 		//red bold
 		cout << RED("fd already added " +  to_string(fd)) << endl;
@@ -68,7 +68,7 @@ bool EventManager::watch(int fd, EventManager::EventCB&& callbacks)
 	auto added = _fds.find(fd) != _fds.end();
 
 	if (!added) {
-		_set_nonblock(fd);
+		set_nonblock(fd);
 	}
 
 	_fds[fd] = callbacks;
@@ -209,7 +209,7 @@ bool EventManager::_epoll_update(int fd, int epoll_op)
 	return epoll_ctl(_epoll_fd, epoll_op, fd, &ev) != -1;
 }
 
-void EventManager::_set_nonblock(int fd)
+void EventManager::set_nonblock(int fd)
 {
 	auto old_flags = fcntl(fd, F_GETFL);
 	auto new_flags = old_flags | O_NONBLOCK;

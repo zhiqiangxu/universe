@@ -1,10 +1,11 @@
 #include "Protocol/Socks.h"
 #include "ClientServer.h"
 #include <arpa/inet.h>//ntohs
-#include <unistd.h>//close
+#include <unistd.h>//write
 #include <iostream>//cout
 using namespace std;
 
+//https://en.wikipedia.org/wiki/ANSI_escape_code
 static string RED(string s)
 {
 	return "\033[1;31m" + s + "\033[0m";
@@ -13,7 +14,10 @@ static string GREEN(string s)
 {
 	return "\033[1;32m" + s + "\033[0m";
 }
-
+static string YELLOW(string s)
+{
+	return "\033[1;33m" + s + "\033[0m";
+}
 static void error_exit(const char *s)
 {
 	perror(s);
@@ -142,7 +146,7 @@ void Socks::on_message(int client, string message)
 				case 0x03:
 				{
 					auto address = message.substr(5, message[4]);
-					//cout << "connect remote:\t" << address << ":" << port << endl;
+					cout << "connect remote:\t" << address << ":" << port << endl;
 					if (!dynamic_cast<ClientServer&>(_server).connect(address, port, EventManager::EventCB{
 						{
 							EventType::CONNECT, EventManager::CB([client,this] (int remote_fd) {
@@ -157,6 +161,7 @@ void Socks::on_message(int client, string message)
 						},
 						{
 							EventType::CLOSE, EventManager::CB([client, this] (int remote_fd) {
+								cout << YELLOW("remote_fd should be " + to_string(remote_fd)) << endl;
 								close(client);
 							})
 						}
@@ -222,6 +227,9 @@ void Socks::on_close(int client)
 		return;//已关闭
 	}
 	auto remote_fd = _c2r[client];
+
+	cout << YELLOW("remote_fd is " + to_string(remote_fd)) << endl;
+
 	_c2r.erase(client);
 	_r2c.erase(remote_fd);
 

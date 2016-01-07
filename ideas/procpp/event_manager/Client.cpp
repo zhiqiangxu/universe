@@ -67,3 +67,10 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 }
 
 
+void Client::connect(string address, uint16_t port, EventManager::EventCB callbacks, bool async)
+{
+}
+
+void Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async)
+{
+}

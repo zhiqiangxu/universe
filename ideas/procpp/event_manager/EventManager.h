@@ -45,6 +45,7 @@ public:
 	virtual bool close(int fd, bool force_close) = 0;
 	virtual void start() = 0;
 	virtual size_t count() = 0;
+	virtual void set_nonblock(int fd) = 0;
 };
 
 class EventManager : public IEventManager
@@ -58,11 +59,11 @@ public:
 	virtual bool close(int fd, bool force_close = false) override;
 	virtual void start() override;
 	virtual size_t count() override;
+	virtual void set_nonblock(int fd) override;
 
 
 private:
 	bool _epoll_update(int fd, int epoll_op);
-	void _set_nonblock(int fd);
 	void _add_close_fd(int fd);
 
 	int _epoll_fd;
