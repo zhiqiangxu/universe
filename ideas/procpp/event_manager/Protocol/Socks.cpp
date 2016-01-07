@@ -222,10 +222,19 @@ void Socks::on_close(int client)
 	auto address = _url.find(client) != _url.end() ? _url[client] : "";
 
 	cout << "[on_close] " << GREEN(to_string(client) + " client " + address) << endl;
-	if (_c2r.find(client) == _c2r.end()) {
+	if (_state.find(client) == _state.end()) {
+		cout << "already closed" << endl;
 		cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
 		return;//已关闭
 	}
+
+	_state.erase(client);
+	_buf.erase(client);
+	_url.erase(client);
+
+	if (_c2r.find(client) == _c2r.end()) return;
+
+
 	auto remote_fd = _c2r[client];
 
 	cout << YELLOW("remote_fd is " + to_string(remote_fd)) << endl;
@@ -233,11 +242,7 @@ void Socks::on_close(int client)
 	_c2r.erase(client);
 	_r2c.erase(remote_fd);
 
-	_state.erase(client);
-	_buf.erase(client);
-	_url.erase(client);
-
-	_server.close(remote_fd);
+	cout << (_server.close(remote_fd) ? GREEN("OK1") : RED("NG1")) << endl;;
 
 	cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
 }
@@ -245,8 +250,7 @@ void Socks::on_close(int client)
 void Socks::close(int client)
 {
 	cout << "[close] " << client << endl;
-	_server.close(client);
-	on_close(client);
+	cout << (_server.close(client) ? GREEN("OK2") : RED("NG2")) << endl;
 }
 
 bool Socks::need_buf(int fd, string& message, bool cond)
