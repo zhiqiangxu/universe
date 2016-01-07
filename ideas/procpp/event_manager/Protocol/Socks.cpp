@@ -215,19 +215,20 @@ void Socks::on_close(int client)
 {
 	auto address = _url.find(client) != _url.end() ? _url[client] : "";
 
-	cout << "[on_close] " << GREEN(to_string(client) + "  " + address) << endl;
-	if (_c2r.find(client) != _c2r.end()) {
-		auto remote_fd = _c2r[client];
-		_server.remove(remote_fd);
-		::close(remote_fd);
-		_c2r.erase(client);
-		_r2c.erase(remote_fd);
+	cout << "[on_close] " << GREEN(to_string(client) + " client " + address) << endl;
+	if (_c2r.find(client) == _c2r.end()) {
+		cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
+		return;//已关闭
 	}
+	auto remote_fd = _c2r[client];
+	_c2r.erase(client);
+	_r2c.erase(remote_fd);
 
 	_state.erase(client);
 	_buf.erase(client);
 	_url.erase(client);
-	_server.remove(client);
+
+	_server.close(remote_fd);
 
 	cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
 }
@@ -235,7 +236,7 @@ void Socks::on_close(int client)
 void Socks::close(int client)
 {
 	cout << "[close] " << client << endl;
-	::close(client);
+	_server.close(client);
 	on_close(client);
 }
 

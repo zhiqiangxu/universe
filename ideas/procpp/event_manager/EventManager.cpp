@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <iostream>
+#include <string>
 #include <fcntl.h>
 #include "Protocol.h"
 
@@ -77,11 +78,30 @@ bool EventManager::watch(int fd, EventManager::EventCB&& callbacks)
 
 bool EventManager::remove(int fd)
 {
-	//TODO do it cleanly
-	_epoll_update(fd, EPOLL_CTL_DEL);
+	if (_fds.find(fd) == _fds.end()) return false;//已移出
+
+	if (!_epoll_update(fd, EPOLL_CTL_DEL)) error_exit(string("_epoll_update " + to_string(fd)).c_str());//valid according to http://stackoverflow.com/a/584835
 	_fds.erase(fd);
 
 	return true;
+}
+
+bool EventManager::close(int fd, bool force_close)
+{
+	auto ret = true;
+
+	if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::CLOSE) != _fds[fd].end()) {
+		auto f = _fds[fd][EventType::CLOSE];
+		if ((ret &= remove(fd)) || force_close) _add_close_fd(fd);
+
+		f(fd);
+
+		return ret;
+	}
+
+	if ((ret &= remove(fd)) || force_close) _add_close_fd(fd);
+
+	return false;
 }
 
 void EventManager::start()
@@ -135,16 +155,20 @@ void EventManager::start()
 			}
 			if (flags & (EPOLLRDHUP | EPOLLHUP)) {
 				if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::CLOSE) != _fds[fd].end()) {
-					auto f = _fds[fd][EventType::CLOSE];
+					auto f/*f为拷贝*/ = _fds[fd][EventType::CLOSE];
+					if (remove(fd)) _add_close_fd(fd);
 					f(fd);
 				} else {
-					//error handle
+					if (remove(fd)) _add_close_fd(fd);
 				}
-
-				if (remove(fd)) close(fd);
 			}
 
 		}
+
+		for (auto fd : _close_fds) {
+			::close(fd);
+		}
+		_close_fds.clear();
 	}
 }
 
@@ -190,3 +214,7 @@ void EventManager::_set_nonblock(int fd)
 	fcntl(fd, F_SETFL, new_flags);
 }
 
+void EventManager::_add_close_fd(int fd)
+{
+	_close_fds.push_back(fd);
+}

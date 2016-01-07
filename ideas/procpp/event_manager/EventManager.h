@@ -39,6 +39,10 @@ public:
 	virtual bool watch(int fd, EventCB& callbacks) = 0;
 	virtual bool watch(int fd, EventCB&& callbacks) = 0;
 	virtual bool remove(int fd) = 0;
+	/***主动close
+		如fd已加入watch，则应该调用该方法关闭，否则callback无效
+	****/
+	virtual bool close(int fd, bool force_close) = 0;
 	virtual void start() = 0;
 	virtual size_t count() = 0;
 };
@@ -51,6 +55,7 @@ public:
 	virtual bool watch(int fd, EventCB& callbacks) override;
 	virtual bool watch(int fd, EventCB&& callbacks) override;
 	virtual bool remove(int fd) override;
+	virtual bool close(int fd, bool force_close = false) override;
 	virtual void start() override;
 	virtual size_t count() override;
 
@@ -58,8 +63,10 @@ public:
 private:
 	bool _epoll_update(int fd, int epoll_op);
 	void _set_nonblock(int fd);
+	void _add_close_fd(int fd);
 
 	int _epoll_fd;
+	vector<int> _close_fds;
 	map<int, EventCB> _fds;
 };
 
