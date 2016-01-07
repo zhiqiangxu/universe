@@ -80,8 +80,8 @@ bool EventManager::remove(int fd)
 {
 	if (_fds.find(fd) == _fds.end()) return false;//已移出
 
-	if (!_epoll_update(fd, EPOLL_CTL_DEL)) error_exit(string("_epoll_update " + to_string(fd)).c_str());//valid according to http://stackoverflow.com/a/584835
 	_fds.erase(fd);
+	if (!_epoll_update(fd, EPOLL_CTL_DEL)) error_exit(string("_epoll_update " + to_string(fd)).c_str());//valid according to http://stackoverflow.com/a/584835
 
 	return true;
 }
@@ -184,22 +184,24 @@ bool EventManager::_epoll_update(int fd, int epoll_op)
 
 	uint32_t events = EPOLLET;
 
-	for (const auto& r : _fds[fd]) {
-		switch (r.first) {
-			case EventType::READ:
-				events |= EPOLLIN;
-				break;
-			case EventType::WRITE:
-				events |= EPOLLOUT;
-				break;
-			case EventType::ERROR:
-				break;
-			case EventType::CLOSE:
-				events |= EPOLLRDHUP | EPOLLHUP;
-				break;
-			default:
-				//error handle
-				break;
+	if (epoll_op != EPOLL_CTL_DEL) {
+		for (const auto& r : _fds[fd]) {
+			switch (r.first) {
+				case EventType::READ:
+					events |= EPOLLIN;
+					break;
+				case EventType::WRITE:
+					events |= EPOLLOUT;
+					break;
+				case EventType::ERROR:
+					break;
+				case EventType::CLOSE:
+					events |= EPOLLRDHUP | EPOLLHUP;
+					break;
+				default:
+					//error handle
+					break;
+			}
 		}
 	}
 	ev.events = events;
