@@ -1,6 +1,7 @@
 #include "Client.h"
 #include <strings.h>//bzero
 #include <netdb.h>//getaddrinfo
+#include <unistd.h>//close
 #include <iostream>
 using namespace std;
 
@@ -9,6 +10,12 @@ static void error_exit(const char *s)
 	perror(s);
 	exit(1);
 }
+
+static string RED(string s)
+{
+	return "\033[1;31m" + s + "\033[0m";
+}
+
 
 static void error_log(const char *s)
 {
@@ -73,4 +80,27 @@ void Client::connect(string address, uint16_t port, EventManager::EventCB callba
 
 void Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async)
 {
+	// 只应有CONNECT回调
+	if ( ! ((callbacks.find(EventType::CONNECT) != callbacks.end()) && callbacks.size() == 1) ) {
+		cout << RED("should only have CONNECT callback") << endl;
+		exit(1);
+	}
+
+	auto s = nonblock_socket(AF_INET, SOCK_STREAM, 0);
+	if (s == -1) error_exit("nonblock_socket");
+
+	auto ret = ::connect(s, addr, addrlen);
+
+	//失败，关闭socket
+	if (ret == -1 && errno != EINPROGRESS) {
+		callbacks[EventType::CONNECT](s, false);
+		::close(s);
+		return;
+	}
+
+	//只有连接localhost时才有可能出现立即成功
+	if (ret == 0) callbacks[EventType::CONNECT](s, true);
+	else {
+		watch(s, callbacks);
+	}
 }

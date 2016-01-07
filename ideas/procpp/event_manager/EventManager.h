@@ -10,7 +10,7 @@ using namespace std;
 
 enum class EventType
 {
-	CONNECT,//客户端用
+	CONNECT,
 	READ,
 	WRITE,//一般不应该watch，除非write返回EAGAIN
 	ERROR,
@@ -24,13 +24,17 @@ public:
 		public:
 			using NR = function<void(int)>;
 			using R = function<void(int, string)>;
+			using C = function<void(int, bool)>;
 			NR _nr;
 			R _r;
+			C _c;
 			U() {}
 			U(NR nr) : _nr(nr) {}
 			U(R r) : _r(r) {}
+			U(C c) : _c(c) {}
 			void operator()(int fd) { _nr(fd); }
 			void operator()(int fd, string message) { _r(fd, message); }
+			void operator()(int fd, bool suc) { _c(fd, suc); }
 			bool want_message() { return _r ? true : false; }
 	};
 	using EventCB = map<EventType, CB>;

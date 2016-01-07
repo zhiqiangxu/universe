@@ -71,6 +71,11 @@ bool EventManager::watch(int fd, EventManager::EventCB& callbacks)
 
 bool EventManager::watch(int fd, EventManager::EventCB&& callbacks)
 {
+	if (callbacks.size() == 0) {
+		cout << RED("watch without callback is invalid") << endl;
+		return false;
+	}
+
 	auto added = _fds.find(fd) != _fds.end();
 
 	if (!added) {
@@ -130,10 +135,18 @@ void EventManager::start()
 
 		for (int i = 0; i < ret; i++) {
 			auto fd = events[i].data.fd;
+			auto has_callback = _fds.find(fd) != _fds.end();
+			if (!has_callback) {
+				//可能是某个回调remove或者close了该fd
+				cout << RED("wait fd has no callback" + to_string(fd)) << endl;
+				continue;
+			}
+
+			auto/*TODO 拷贝性能优化*/ cb = _fds[fd];
 			auto flags = events[i].events;
 			if (flags & EPOLLIN) {
-				if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::READ) != _fds[fd].end()) {
-					auto f = _fds[fd][EventType::READ];
+				if (cb.find(EventType::READ) != cb.end()) {
+					auto f = cb[EventType::READ];
 					if (f.want_message()) {
 						f(fd, Protocol::read(fd));
 					} else {
@@ -144,26 +157,66 @@ void EventManager::start()
 				}
 			}
 			if (flags & EPOLLOUT) {
-				if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::WRITE) != _fds[fd].end()) {
-					auto f = _fds[fd][EventType::WRITE];
+				if (cb.find(EventType::WRITE) != cb.end()) {
+
+					auto f = cb[EventType::WRITE];
 					f(fd);
-				} else {
-					//error handle
+
+				} else if (cb.find(EventType::CONNECT) != cb.end()){
+					int result;
+					socklen_t result_len = sizeof(result);
+					if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &result, &result_len) < 0) {
+						auto f/*f为拷贝*/ = cb[EventType::CONNECT];
+						if (remove(fd)) _add_close_fd(fd);
+						f(fd, false);
+						continue;
+					}
+
+					if (result != 0) {
+						auto f/*f为拷贝*/ = cb[EventType::CONNECT];
+						if (remove(fd)) _add_close_fd(fd);
+						f(fd, false);
+						continue;
+					} else {
+						auto f/*f为拷贝*/ = cb[EventType::CONNECT];
+						f(fd, true);
+						continue;
+					}
 				}
 			}
+
 			if (flags & EPOLLERR) {
-				if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::ERROR) != _fds[fd].end()) {
-					auto f = _fds[fd][EventType::ERROR];
+				if (cb.find(EventType::ERROR) != cb.end()) {
+
+					auto f = cb[EventType::ERROR];
 					f(fd);
+
+				} else if (cb.find(EventType::CONNECT) != cb.end()){
+
+					auto f/*f为拷贝*/ = cb[EventType::CONNECT];
+					if (remove(fd)) _add_close_fd(fd);
+					f(fd, false);
+					continue;
+
 				} else {
-					//error handle
+					cout << RED("EPOLLERR no handler") << endl;
 				}
 			}
+
 			if (flags & (EPOLLRDHUP | EPOLLHUP)) {
-				if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::CLOSE) != _fds[fd].end()) {
-					auto f/*f为拷贝*/ = _fds[fd][EventType::CLOSE];
+				if (cb.find(EventType::CLOSE) != cb.end()) {
+
+					auto f/*f为拷贝*/ = cb[EventType::CLOSE];
 					if (remove(fd)) _add_close_fd(fd);
 					f(fd);
+
+				} else if (cb.find(EventType::CONNECT) != cb.end()){
+
+					auto f/*f为拷贝*/ = cb[EventType::CONNECT];
+					if (remove(fd)) _add_close_fd(fd);
+					f(fd, false);
+					continue;
+
 				} else {
 					if (remove(fd)) _add_close_fd(fd);
 				}
@@ -204,6 +257,8 @@ bool EventManager::_epoll_update(int fd, int epoll_op)
 				case EventType::CLOSE:
 					events |= EPOLLRDHUP | EPOLLHUP;
 					break;
+				case EventType::CONNECT:
+					events |= EPOLLOUT | EPOLLHUP;
 				default:
 					//error handle
 					break;
