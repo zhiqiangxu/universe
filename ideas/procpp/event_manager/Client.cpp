@@ -10,6 +10,11 @@ static void error_exit(const char *s)
 	exit(1);
 }
 
+static void error_log(const char *s)
+{
+	perror(s);
+}
+
 
 bool Client::connect(string address, uint16_t port, EventManager::EventCB callbacks)
 {
@@ -27,7 +32,8 @@ bool Client::connect(string address, uint16_t port, EventManager::EventCB callba
 
 	auto port_string = to_string(port);
 	if (getaddrinfo(address.c_str(), port_string.c_str(), &hints, &result) != 0) {
-		error_exit("getaddrinfo");
+		error_log("getaddrinfo");
+		return false;
 	}
 
 	for (auto rp = result; rp != nullptr; rp = rp->ai_next) {
@@ -45,7 +51,10 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 	auto s = socket(AF_INET, SOCK_STREAM, 0);
 	if (s == -1) error_exit("socket");
 
-	if (::connect(s, addr, addrlen) == -1) error_exit("connect");
+	if (::connect(s, addr, addrlen) == -1) {
+		error_log("connect");
+		return false;
+	}
 
 	if (callbacks.find(EventType::CONNECT) != callbacks.end()) {
 		callbacks[EventType::CONNECT](s);

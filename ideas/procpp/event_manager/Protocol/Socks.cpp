@@ -26,6 +26,7 @@ void Socks::handle(int fd)
 		auto client = accept(fd, nullptr, nullptr);
 		if (client == -1) {
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				cout << "[accept]" << endl;
 				cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
 				return;
 			}
