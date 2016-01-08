@@ -11,11 +11,6 @@ static void error_exit(const char *s)
 	exit(1);
 }
 
-static string RED(string s)
-{
-	return "\033[1;31m" + s + "\033[0m";
-}
-
 
 static void error_log(const char *s)
 {
@@ -76,16 +71,68 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 
 void Client::connect(string address, uint16_t port, EventManager::EventCB callbacks, bool async)
 {
+	//domain name
+	struct addrinfo hints;
+	struct addrinfo** resultp = new struct addrinfo*;
+	bzero(&hints, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+	hints.ai_socktype = SOCK_STREAM; /* Datagram socket */
+	hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
+	hints.ai_protocol = 0;          /* Any protocol */
+	hints.ai_canonname = NULL;
+	hints.ai_addr = NULL;
+	hints.ai_next = NULL;
+
+	//TODO getaddrinfo_a彻底异步化
+	auto port_string = to_string(port);
+	if (getaddrinfo(address.c_str(), port_string.c_str(), &hints, resultp) != 0) {
+		delete resultp;
+		error_log("getaddrinfo");
+	}
+
+	auto cb = new function<void(int, bool)>;
+
+	auto rpp = new struct addrinfo*;
+	*rpp = *resultp;
+	*cb = [resultp, rpp, this, callbacks, cb] (int fd, bool suc) mutable {
+		if (suc) {
+			freeaddrinfo(*resultp);
+			delete resultp;
+			delete rpp;
+			delete cb;
+			callbacks[EventType::CONNECT](fd, suc);
+			callbacks.erase(EventType::CONNECT);
+			if (callbacks.size()) watch(fd, callbacks);
+		} else {
+			auto rp = *rpp;
+			rp = rp->ai_next;
+			if (rp == nullptr) {
+				callbacks[EventType::CONNECT](fd, false);
+				freeaddrinfo(*resultp);
+				delete resultp;
+				delete rpp;
+				delete cb;
+			}
+			else {
+				connect(rp->ai_addr, rp->ai_addrlen, EventManager::EventCB{
+					{
+						EventType::CONNECT, EventManager::CB(*cb)
+					}
+				});
+			}
+			
+		}
+	};
+
+	connect((*resultp)->ai_addr, (*resultp)->ai_addrlen, EventManager::EventCB{
+		{
+			EventType::CONNECT, EventManager::CB(*cb)
+		}
+	});
 }
 
 void Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async)
 {
-	// 只应有CONNECT回调
-	if ( ! ((callbacks.find(EventType::CONNECT) != callbacks.end()) && callbacks.size() == 1) ) {
-		cout << RED("should only have CONNECT callback") << endl;
-		exit(1);
-	}
-
 	auto s = nonblock_socket(AF_INET, SOCK_STREAM, 0);
 	if (s == -1) error_exit("nonblock_socket");
 
@@ -99,7 +146,11 @@ void Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 	}
 
 	//只有连接localhost时才有可能出现立即成功
-	if (ret == 0) callbacks[EventType::CONNECT](s, true);
+	if (ret == 0) {
+		callbacks[EventType::CONNECT](s, true);
+		callbacks.erase(EventType::CONNECT);
+		if (callbacks.size()) watch(s, callbacks);
+	}
 	else {
 		watch(s, callbacks);
 	}

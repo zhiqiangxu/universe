@@ -53,7 +53,7 @@ bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }
 
-bool EventManager::watch(int fd, EventManager::EventCB& callbacks)
+bool EventManager::watch(int fd, const EventManager::EventCB& callbacks)
 {
 	auto added = _fds.find(fd) != _fds.end();
 
@@ -142,8 +142,40 @@ void EventManager::start()
 				continue;
 			}
 
-			auto/*TODO 拷贝性能优化*/ cb = _fds[fd];
 			auto flags = events[i].events;
+
+			auto/*TODO 拷贝性能优化*/ cb = _fds[fd];
+			if (cb.find(EventType::CONNECT) != cb.end()) {
+				auto f/*f为拷贝*/ = cb[EventType::WRITE];
+				if (flags & (EPOLLERR|EPOLLHUP)) {
+					goto CONNECT_NG;
+				}
+
+				if (flags & EPOLLOUT) {
+					int result;
+					socklen_t result_len = sizeof(result);
+					if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &result, &result_len) < 0) {
+						goto CONNECT_NG;
+					}
+
+					if (result != 0) {
+						goto CONNECT_NG;
+					} else {
+						goto CONNECT_OK;
+					}
+				}
+
+CONNECT_NG:
+				if (remove(fd)) _add_close_fd(fd);
+				f(fd, false);
+				continue;
+
+CONNECT_OK:
+				f(fd, true);
+				//回调完就删除
+				_fds[fd].erase(EventType::CONNECT);
+			}
+
 			if (flags & EPOLLIN) {
 				if (cb.find(EventType::READ) != cb.end()) {
 					auto f = cb[EventType::READ];
@@ -162,26 +194,6 @@ void EventManager::start()
 					auto f = cb[EventType::WRITE];
 					f(fd);
 
-				} else if (cb.find(EventType::CONNECT) != cb.end()){
-					int result;
-					socklen_t result_len = sizeof(result);
-					if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &result, &result_len) < 0) {
-						auto f/*f为拷贝*/ = cb[EventType::CONNECT];
-						if (remove(fd)) _add_close_fd(fd);
-						f(fd, false);
-						continue;
-					}
-
-					if (result != 0) {
-						auto f/*f为拷贝*/ = cb[EventType::CONNECT];
-						if (remove(fd)) _add_close_fd(fd);
-						f(fd, false);
-						continue;
-					} else {
-						auto f/*f为拷贝*/ = cb[EventType::CONNECT];
-						f(fd, true);
-						continue;
-					}
 				}
 			}
 
@@ -190,13 +202,6 @@ void EventManager::start()
 
 					auto f = cb[EventType::ERROR];
 					f(fd);
-
-				} else if (cb.find(EventType::CONNECT) != cb.end()){
-
-					auto f/*f为拷贝*/ = cb[EventType::CONNECT];
-					if (remove(fd)) _add_close_fd(fd);
-					f(fd, false);
-					continue;
 
 				} else {
 					cout << RED("EPOLLERR no handler") << endl;
@@ -209,13 +214,6 @@ void EventManager::start()
 					auto f/*f为拷贝*/ = cb[EventType::CLOSE];
 					if (remove(fd)) _add_close_fd(fd);
 					f(fd);
-
-				} else if (cb.find(EventType::CONNECT) != cb.end()){
-
-					auto f/*f为拷贝*/ = cb[EventType::CONNECT];
-					if (remove(fd)) _add_close_fd(fd);
-					f(fd, false);
-					continue;
 
 				} else {
 					if (remove(fd)) _add_close_fd(fd);
