@@ -99,7 +99,7 @@ bool EventManager::watch(int fd, EventManager::EventCB&& callbacks, bool re_watc
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }
 
-bool EventManager::remove(int fd)
+bool EventManager::remove(int fd, bool no_callback)
 {
 	if (_fds.find(fd) == _fds.end()) return false;//已移出
 
@@ -107,7 +107,11 @@ bool EventManager::remove(int fd)
 
 	_fds.erase(fd);
 	if (!_epoll_update(fd, EPOLL_CTL_DEL)) error_exit(string("_epoll_update " + to_string(fd)).c_str());//valid according to http://stackoverflow.com/a/584835
-	//must callback before erase, otherwise ML happens
+
+	// 调用方负责回调
+	if (no_callback) return true;
+
+	//must callback, otherwise ML happens
 	if (cb.find(EventType::CONNECT) != cb.end()) {
 		cb[EventType::CONNECT](fd, ConnectResult::GAME_OVER);
 	}
@@ -184,10 +188,12 @@ void EventManager::start()
 				}
 
 CONNECT_NG:
-				//下面这行会导致多次触发connect回调, 而且，connect失败fd仍需占住，
+				//下面的写法会导致多次触发connect回调, 而且，connect失败fd仍需占住，
 				//所以，将关闭socket的事情交给client
 				//if (remove(fd)) _add_close_fd(fd);
-				f(fd, ConnectResult::NG);
+				//f(fd, ConnectResult::NG);
+
+				remove(fd);
 				continue;
 
 CONNECT_OK:

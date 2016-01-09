@@ -50,7 +50,7 @@ public:
 	virtual bool watch(int fd, EventType event, CB callback) = 0;
 	virtual bool watch(int fd, const EventCB& callbacks, bool re_watch) = 0;
 	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch) = 0;
-	virtual bool remove(int fd) = 0;
+	virtual bool remove(int fd, bool no_callback) = 0;
 	/***主动close
 		如fd已加入watch，则应该调用该方法关闭，否则callback无效
 	****/
@@ -66,7 +66,7 @@ public:
 	virtual bool watch(int fd, EventType event, CB callback) override;//TODO re_watch
 	virtual bool watch(int fd, const EventCB& callbacks, bool re_watch = false) override;
 	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch = false) override;
-	virtual bool remove(int fd) override;
+	virtual bool remove(int fd, bool no_callback = false) override;
 	virtual bool close(int fd, bool force_close = false) override;
 	virtual void start() override;
 	virtual size_t count() override;

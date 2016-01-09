@@ -76,7 +76,8 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 		callbacks.erase(EventType::CONNECT);
 	}
 
-	watch(s, callbacks);
+	//TODO 确认ET模式下，初次回调的逻辑
+	if (callbacks.size()) watch(s, callbacks);
 
 	return true;
 }
@@ -183,6 +184,7 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 
 	//失败，关闭socket
 	if (ret == -1 && errno != EINPROGRESS) {
+		remove(s, true);
 		callbacks[EventType::CONNECT](s, ConnectResult::NG);
 		return -1;
 	}
