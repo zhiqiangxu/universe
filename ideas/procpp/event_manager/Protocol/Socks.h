@@ -7,7 +7,8 @@ enum class SocksState
 {
 	GREETING,
 	REQUEST,
-	CONNECT
+	CONNECTING,
+	CONNECTED
 };
 
 class ISocks

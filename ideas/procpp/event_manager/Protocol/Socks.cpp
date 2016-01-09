@@ -147,11 +147,29 @@ void Socks::on_message(int client, string message)
 				{
 					auto address = message.substr(5, message[4]);
 					cout << "connect remote:\t" << address << ":" << port << endl;
-					if (!dynamic_cast<ClientServer&>(_server).connect(address, port, EventManager::EventCB{
+
+					auto remote_fd = dynamic_cast<ClientServer&>(_server).connect(address, port, EventManager::EventCB{
 						{
-							EventType::CONNECT, EventManager::CB([client,this] (int remote_fd) {
-								_c2r[client] = remote_fd;
-								_r2c[remote_fd] = client;
+							EventType::CONNECT, EventManager::CB([client, this, port] (int remote_fd, bool suc) {
+								auto address = _url.find(client) != _url.end() ? _url[client] : "";
+								if (!suc) {
+									cout << RED("connect remote fail:" + address) << endl;
+									close(client);
+									return;
+								}
+
+								cout << GREEN("connect ok  " + address) << endl;
+								cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
+
+								//cout << "suceeded: " << client << endl;
+								string response("\x05\x00\x00\x03", 4);
+								response.append(1, address.length());
+								response.append(address);
+								response.append(string(reinterpret_cast<const char*>(&port), sizeof(port)));
+								write(client, response.data(), response.length());
+								//cout << "response length: " << response.length() << endl;
+
+								_state[client] = SocksState::CONNECTED;
 							})
 						},
 						{
@@ -165,30 +183,20 @@ void Socks::on_message(int client, string message)
 								close(client);
 							})
 						}
-					})) {
-						cout << RED("connect remote fail:" + address) << endl;
+
+					}, true);
+
+					if (remote_fd == -1) {
+						cout << RED("connect returns -1, close: " + to_string(client) + " " + address) << endl;
 						close(client);
 						return;
 					}
 
-					cout << GREEN("connect ok  " + address) << endl;
-					cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
-
-					//cout << "suceeded: " << client << endl;
-					string response("\x05\x00\x00\x03", 4);
-					response.append(1, message[4]);
-					response.append(address);
-					response.append(string(reinterpret_cast<const char*>(&port), sizeof(port)));
-					write(client, response.data(), response.length());
-					//cout << "response length: " << response.length() << endl;
+					_c2r[client] = remote_fd;
+					_r2c[remote_fd] = client;
 
 					_url[client] = address;
-					_state[client] = SocksState::CONNECT;
-
-					if (message.length() > length) {
-						cout << RED("trigger next frame") << endl;
-						on_message(client, message.substr(length));
-					}
+					_state[client] = SocksState::CONNECTING;
 
 					break;
 				}
@@ -202,7 +210,12 @@ void Socks::on_message(int client, string message)
 
 			break;
 		}
-		case SocksState::CONNECT:
+		case SocksState::CONNECTING:
+		{
+			cout << RED("should not send any more message while connecting") << endl;
+			close(client);
+		}
+		case SocksState::CONNECTED:
 		{
 			//cout << "send_peer length: " << message.length()  << endl;
 			send_peer(_c2r[client], message);

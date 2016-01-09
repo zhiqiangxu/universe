@@ -9,9 +9,18 @@
 #include <fcntl.h>
 #include "Protocol.h"
 
+//https://en.wikipedia.org/wiki/ANSI_escape_code
 static string RED(string s)
 {
 	return "\033[1;31m" + s + "\033[0m";
+}
+static string GREEN(string s)
+{
+	return "\033[1;32m" + s + "\033[0m";
+}
+static string YELLOW(string s)
+{
+	return "\033[1;33m" + s + "\033[0m";
 }
 
 static void error_log(const char *s)
@@ -53,15 +62,17 @@ bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }
 
-bool EventManager::watch(int fd, const EventManager::EventCB& callbacks)
+bool EventManager::watch(int fd, const EventManager::EventCB& callbacks, bool re_watch)
 {
 	auto added = _fds.find(fd) != _fds.end();
+
+	if (re_watch) added = false;
 
 	if (!added) {
 		set_nonblock(fd);
 	} else {
 		//red bold
-		cout << RED("fd already added " +  to_string(fd)) << endl;
+		cout << RED("fd " +  to_string(fd) + " already added") << endl;
 	}
 
 	_fds[fd] = callbacks;
@@ -69,7 +80,7 @@ bool EventManager::watch(int fd, const EventManager::EventCB& callbacks)
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }
 
-bool EventManager::watch(int fd, EventManager::EventCB&& callbacks)
+bool EventManager::watch(int fd, EventManager::EventCB&& callbacks, bool re_watch)
 {
 	if (callbacks.size() == 0) {
 		cout << RED("watch without callback is invalid") << endl;
@@ -91,6 +102,13 @@ bool EventManager::remove(int fd)
 {
 	if (_fds.find(fd) == _fds.end()) return false;//已移出
 
+	{
+		auto& cb = _fds[fd];
+		//must callback before erase, otherwise ML happens
+		if (cb.find(EventType::CONNECT) != cb.end()) {
+			cb[EventType::CONNECT](fd, false);
+		}
+	}
 	_fds.erase(fd);
 	if (!_epoll_update(fd, EPOLL_CTL_DEL)) error_exit(string("_epoll_update " + to_string(fd)).c_str());//valid according to http://stackoverflow.com/a/584835
 
@@ -146,7 +164,7 @@ void EventManager::start()
 
 			auto/*TODO 拷贝性能优化*/ cb = _fds[fd];
 			if (cb.find(EventType::CONNECT) != cb.end()) {
-				auto f/*f为拷贝*/ = cb[EventType::WRITE];
+				auto f/*f为拷贝*/ = cb[EventType::CONNECT];
 				if (flags & (EPOLLERR|EPOLLHUP)) {
 					goto CONNECT_NG;
 				}
@@ -166,7 +184,8 @@ void EventManager::start()
 				}
 
 CONNECT_NG:
-				if (remove(fd)) _add_close_fd(fd);
+				//下面这行会导致多次触发connect回调, 将关闭socket的事情交给client
+				//if (remove(fd)) _add_close_fd(fd);
 				f(fd, false);
 				continue;
 

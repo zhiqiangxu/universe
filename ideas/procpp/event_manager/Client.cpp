@@ -11,6 +11,19 @@ static void error_exit(const char *s)
 	exit(1);
 }
 
+//https://en.wikipedia.org/wiki/ANSI_escape_code
+static string RED(string s)
+{
+	return "\033[1;31m" + s + "\033[0m";
+}
+static string GREEN(string s)
+{
+	return "\033[1;32m" + s + "\033[0m";
+}
+static string YELLOW(string s)
+{
+	return "\033[1;33m" + s + "\033[0m";
+}
 
 static void error_log(const char *s)
 {
@@ -69,7 +82,7 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 }
 
 
-void Client::connect(string address, uint16_t port, EventManager::EventCB callbacks, bool async)
+int Client::connect(string address, uint16_t port, EventManager::EventCB callbacks, bool async)
 {
 	//domain name
 	struct addrinfo hints;
@@ -94,15 +107,18 @@ void Client::connect(string address, uint16_t port, EventManager::EventCB callba
 	if (!result) {
 		delete resultp;
 		callbacks[EventType::CONNECT](-1, false);
-		return;
+		return -1;
 	}
+
+	auto s = nonblock_socket(AF_INET, SOCK_STREAM, 0);
+	if (s == -1) error_exit("nonblock_socket");
 
 	auto cb = new function<void(int, bool)>;
 
 	auto rpp = new struct addrinfo*;
 
 	*rpp = result;
-	*cb = [resultp, rpp, this, callbacks, cb] (int fd, bool suc) mutable {
+	*cb = [resultp, rpp, this, callbacks, cb, s] (int fd, bool suc) mutable {
 		auto result = *resultp;
 		if (suc) {
 			freeaddrinfo(result);
@@ -121,6 +137,7 @@ void Client::connect(string address, uint16_t port, EventManager::EventCB callba
 				delete resultp;
 				delete rpp;
 				delete cb;
+				::close(s);
 			}
 			else {
 				*rpp = rp;
@@ -128,7 +145,7 @@ void Client::connect(string address, uint16_t port, EventManager::EventCB callba
 					{
 						EventType::CONNECT, EventManager::CB(*cb)
 					}
-				});
+				}, true, s);
 			}
 			
 		}
@@ -138,13 +155,23 @@ void Client::connect(string address, uint16_t port, EventManager::EventCB callba
 		{
 			EventType::CONNECT, EventManager::CB(*cb)
 		}
-	});
+	}, true, s);
+
+	cout << GREEN("place holder fd is " + to_string(s)) << endl;
+	return s;
 }
 
-void Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async)
+int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd)
 {
 	auto s = nonblock_socket(AF_INET, SOCK_STREAM, 0);
 	if (s == -1) error_exit("nonblock_socket");
+
+	if (fd != -1) {
+		auto ret = dup2(s, fd);
+		if (ret == -1) error_exit("dup2");
+		::close(s);
+		s = fd;
+	}
 
 	auto ret = ::connect(s, addr, addrlen);
 
@@ -152,16 +179,19 @@ void Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 	if (ret == -1 && errno != EINPROGRESS) {
 		callbacks[EventType::CONNECT](s, false);
 		::close(s);
-		return;
+		return -1;
 	}
 
 	//只有连接localhost时才有可能出现立即成功
 	if (ret == 0) {
 		callbacks[EventType::CONNECT](s, true);
 		callbacks.erase(EventType::CONNECT);
-		if (callbacks.size()) watch(s, callbacks);
+		if (callbacks.size()) watch(s, callbacks, true);
 	}
 	else {
-		watch(s, callbacks);
+		watch(s, callbacks, true);
 	}
+
+	return s;
 }
+

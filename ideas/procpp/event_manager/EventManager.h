@@ -40,8 +40,8 @@ public:
 	using EventCB = map<EventType, CB>;
 
 	virtual bool watch(int fd, EventType event, CB callback) = 0;
-	virtual bool watch(int fd, const EventCB& callbacks) = 0;
-	virtual bool watch(int fd, EventCB&& callbacks) = 0;
+	virtual bool watch(int fd, const EventCB& callbacks, bool re_watch) = 0;
+	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch) = 0;
 	virtual bool remove(int fd) = 0;
 	/***主动close
 		如fd已加入watch，则应该调用该方法关闭，否则callback无效
@@ -55,9 +55,9 @@ class EventManager : public IEventManager
 {
 public:
 	EventManager();
-	virtual bool watch(int fd, EventType event, CB callback) override;
-	virtual bool watch(int fd, const EventCB& callbacks) override;
-	virtual bool watch(int fd, EventCB&& callbacks) override;
+	virtual bool watch(int fd, EventType event, CB callback) override;//TODO re_watch
+	virtual bool watch(int fd, const EventCB& callbacks, bool re_watch = false) override;
+	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch = false) override;
 	virtual bool remove(int fd) override;
 	virtual bool close(int fd, bool force_close = false) override;
 	virtual void start() override;
