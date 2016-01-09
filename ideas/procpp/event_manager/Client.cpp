@@ -90,17 +90,26 @@ void Client::connect(string address, uint16_t port, EventManager::EventCB callba
 		error_log("getaddrinfo");
 	}
 
+	auto result = *resultp;
+	if (!result) {
+		delete resultp;
+		callbacks[EventType::CONNECT](-1, false);
+		return;
+	}
+
 	auto cb = new function<void(int, bool)>;
 
 	auto rpp = new struct addrinfo*;
-	*rpp = *resultp;
+
+	*rpp = result;
 	*cb = [resultp, rpp, this, callbacks, cb] (int fd, bool suc) mutable {
+		auto result = *resultp;
 		if (suc) {
-			freeaddrinfo(*resultp);
+			freeaddrinfo(result);
 			delete resultp;
 			delete rpp;
 			delete cb;
-			callbacks[EventType::CONNECT](fd, suc);
+			callbacks[EventType::CONNECT](fd, true);
 			callbacks.erase(EventType::CONNECT);
 			if (callbacks.size()) watch(fd, callbacks);
 		} else {
@@ -108,12 +117,13 @@ void Client::connect(string address, uint16_t port, EventManager::EventCB callba
 			rp = rp->ai_next;
 			if (rp == nullptr) {
 				callbacks[EventType::CONNECT](fd, false);
-				freeaddrinfo(*resultp);
+				freeaddrinfo(result);
 				delete resultp;
 				delete rpp;
 				delete cb;
 			}
 			else {
+				*rpp = rp;
 				connect(rp->ai_addr, rp->ai_addrlen, EventManager::EventCB{
 					{
 						EventType::CONNECT, EventManager::CB(*cb)
@@ -124,7 +134,7 @@ void Client::connect(string address, uint16_t port, EventManager::EventCB callba
 		}
 	};
 
-	connect((*resultp)->ai_addr, (*resultp)->ai_addrlen, EventManager::EventCB{
+	connect(result->ai_addr, result->ai_addrlen, EventManager::EventCB{
 		{
 			EventType::CONNECT, EventManager::CB(*cb)
 		}
