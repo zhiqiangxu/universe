@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <fcntl.h>
+#include <strings.h>//bzero
 #include "Protocol.h"
 
 //https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -256,6 +257,7 @@ size_t EventManager::count()
 bool EventManager::_epoll_update(int fd, int epoll_op)
 {
 	struct epoll_event ev;
+	bzero(&ev, sizeof(ev));
 	ev.data.fd = fd;
 
 	uint32_t events = EPOLLET;

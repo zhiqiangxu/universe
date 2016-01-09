@@ -199,6 +199,10 @@ void Socks::on_message(int client, string message)
 					_url[client] = address;
 					_state[client] = SocksState::CONNECTING;
 
+					if (message.length() > length) {
+						cout << RED("trigger next frame") << endl;
+						on_message(client, message.substr(length));
+					}
 
 					break;
 				}
