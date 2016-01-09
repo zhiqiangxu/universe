@@ -30,7 +30,7 @@ void Socks::handle(int fd)
 		auto client = accept(fd, nullptr, nullptr);
 		if (client == -1) {
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				cout << "[accept]" << endl;
+				cout << "[accept] end" << endl;
 				cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
 				return;
 			}
@@ -150,16 +150,18 @@ void Socks::on_message(int client, string message)
 
 					auto remote_fd = dynamic_cast<ClientServer&>(_server).connect(address, port, EventManager::EventCB{
 						{
-							EventType::CONNECT, EventManager::CB([client, this, port] (int remote_fd, bool suc) {
+							EventType::CONNECT, EventManager::CB([client, this, port] (int remote_fd, ConnectResult r) {
 								auto address = _url.find(client) != _url.end() ? _url[client] : "";
-								if (!suc) {
-									cout << RED("connect remote fail:" + address) << endl;
+								if (r != ConnectResult::OK) {
+									cout << RED("connect remote fail:" + address + " ") /*TODO << r */<< endl;
 									close(client);
 									return;
 								}
 
 								cout << GREEN("connect ok  " + address) << endl;
 								cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
+
+								_state[client] = SocksState::CONNECTED;
 
 								//cout << "suceeded: " << client << endl;
 								string response("\x05\x00\x00\x03", 4);
@@ -169,7 +171,6 @@ void Socks::on_message(int client, string message)
 								write(client, response.data(), response.length());
 								//cout << "response length: " << response.length() << endl;
 
-								_state[client] = SocksState::CONNECTED;
 							})
 						},
 						{
@@ -198,6 +199,7 @@ void Socks::on_message(int client, string message)
 					_url[client] = address;
 					_state[client] = SocksState::CONNECTING;
 
+
 					break;
 				}
 				case 0x04:
@@ -214,6 +216,7 @@ void Socks::on_message(int client, string message)
 		{
 			cout << RED("should not send any more message while connecting") << endl;
 			close(client);
+			return;
 		}
 		case SocksState::CONNECTED:
 		{

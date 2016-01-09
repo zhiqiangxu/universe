@@ -17,6 +17,14 @@ enum class EventType
 	CLOSE
 };
 
+enum class ConnectResult
+{
+	OK,
+	NG,
+	GAME_OVER,
+};
+
+
 class IEventManager
 {
 public:
@@ -24,7 +32,7 @@ public:
 		public:
 			using NR = function<void(int)>;
 			using R = function<void(int, string)>;
-			using C = function<void(int, bool)>;
+			using C = function<void(int, ConnectResult)>;
 			NR _nr;
 			R _r;
 			C _c;
@@ -34,7 +42,7 @@ public:
 			U(C c) : _c(c) {}
 			void operator()(int fd) { _nr(fd); }
 			void operator()(int fd, string message) { _r(fd, message); }
-			void operator()(int fd, bool suc) { _c(fd, suc); }
+			void operator()(int fd, ConnectResult r) { _c(fd, r); }
 			bool want_message() { return _r ? true : false; }
 	};
 	using EventCB = map<EventType, CB>;

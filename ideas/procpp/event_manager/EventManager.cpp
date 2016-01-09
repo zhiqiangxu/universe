@@ -102,15 +102,14 @@ bool EventManager::remove(int fd)
 {
 	if (_fds.find(fd) == _fds.end()) return false;//已移出
 
-	{
-		auto& cb = _fds[fd];
-		//must callback before erase, otherwise ML happens
-		if (cb.find(EventType::CONNECT) != cb.end()) {
-			cb[EventType::CONNECT](fd, false);
-		}
-	}
+	auto cb = _fds[fd];//拷贝
+
 	_fds.erase(fd);
 	if (!_epoll_update(fd, EPOLL_CTL_DEL)) error_exit(string("_epoll_update " + to_string(fd)).c_str());//valid according to http://stackoverflow.com/a/584835
+	//must callback before erase, otherwise ML happens
+	if (cb.find(EventType::CONNECT) != cb.end()) {
+		cb[EventType::CONNECT](fd, ConnectResult::GAME_OVER);
+	}
 
 	return true;
 }
@@ -184,13 +183,14 @@ void EventManager::start()
 				}
 
 CONNECT_NG:
-				//下面这行会导致多次触发connect回调, 将关闭socket的事情交给client
+				//下面这行会导致多次触发connect回调, 而且，connect失败fd仍需占住，
+				//所以，将关闭socket的事情交给client
 				//if (remove(fd)) _add_close_fd(fd);
-				f(fd, false);
+				f(fd, ConnectResult::NG);
 				continue;
 
 CONNECT_OK:
-				f(fd, true);
+				f(fd, ConnectResult::OK);
 				//回调完就删除
 				_fds[fd].erase(EventType::CONNECT);
 			}

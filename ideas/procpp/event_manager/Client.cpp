@@ -106,39 +106,45 @@ int Client::connect(string address, uint16_t port, EventManager::EventCB callbac
 	auto result = *resultp;
 	if (!result) {
 		delete resultp;
-		callbacks[EventType::CONNECT](-1, false);
+		callbacks[EventType::CONNECT](-1, ConnectResult::NG);
 		return -1;
 	}
 
 	auto s = nonblock_socket(AF_INET, SOCK_STREAM, 0);
 	if (s == -1) error_exit("nonblock_socket");
 
-	auto cb = new function<void(int, bool)>;
+	auto cb = new function<void(int, ConnectResult)>;
 
 	auto rpp = new struct addrinfo*;
 
 	*rpp = result;
-	*cb = [resultp, rpp, this, callbacks, cb, s] (int fd, bool suc) mutable {
+	*cb = [resultp, rpp, this, callbacks, cb, s] (int fd, ConnectResult r) mutable {
 		auto result = *resultp;
-		if (suc) {
+		if (r == ConnectResult::GAME_OVER) {
+
+CONNECT_FAIL:
+			callbacks[EventType::CONNECT](fd, r);
 			freeaddrinfo(result);
 			delete resultp;
 			delete rpp;
 			delete cb;
-			callbacks[EventType::CONNECT](fd, true);
+			close(s, true);
+
+		} else if (r == ConnectResult::OK) {
+
+			freeaddrinfo(result);
+			delete resultp;
+			delete rpp;
+			delete cb;
+			callbacks[EventType::CONNECT](fd, ConnectResult::OK);
 			callbacks.erase(EventType::CONNECT);
 			if (callbacks.size()) watch(fd, callbacks);
-		} else {
+
+		} else if (r == ConnectResult::NG) {
+
 			auto rp = *rpp;
 			rp = rp->ai_next;
-			if (rp == nullptr) {
-				callbacks[EventType::CONNECT](fd, false);
-				freeaddrinfo(result);
-				delete resultp;
-				delete rpp;
-				delete cb;
-				::close(s);
-			}
+			if (rp == nullptr) goto CONNECT_FAIL;
 			else {
 				*rpp = rp;
 				connect(rp->ai_addr, rp->ai_addrlen, EventManager::EventCB{
@@ -177,14 +183,13 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 
 	//失败，关闭socket
 	if (ret == -1 && errno != EINPROGRESS) {
-		callbacks[EventType::CONNECT](s, false);
-		::close(s);
+		callbacks[EventType::CONNECT](s, ConnectResult::NG);
 		return -1;
 	}
 
 	//只有连接localhost时才有可能出现立即成功
 	if (ret == 0) {
-		callbacks[EventType::CONNECT](s, true);
+		callbacks[EventType::CONNECT](s, ConnectResult::OK);
 		callbacks.erase(EventType::CONNECT);
 		if (callbacks.size()) watch(s, callbacks, true);
 	}
