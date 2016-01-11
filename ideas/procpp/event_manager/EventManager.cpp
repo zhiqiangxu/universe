@@ -266,7 +266,8 @@ bool EventManager::_epoll_update(int fd, int epoll_op)
 	bzero(&ev, sizeof(ev));
 	ev.data.fd = fd;
 
-	uint32_t events = EPOLLET;
+	// 经测试，ET模式下，即使上一个IN没处理，下一个IN进来后，仍然会触发，但只会触发一次
+	uint32_t events = EPOLLET;//TODO ET可配置
 
 	if (epoll_op != EPOLL_CTL_DEL) {
 		for (const auto& r : _fds[fd]) {

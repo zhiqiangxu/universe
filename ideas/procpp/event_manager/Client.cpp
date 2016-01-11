@@ -76,7 +76,7 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 		callbacks.erase(EventType::CONNECT);
 	}
 
-	//TODO 确认ET模式下，初次回调的逻辑
+	//刚注册的fd，如果有事件，不会遗漏
 	if (callbacks.size()) watch(s, callbacks);
 
 	return true;
