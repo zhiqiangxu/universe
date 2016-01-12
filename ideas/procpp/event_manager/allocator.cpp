@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "ShmAllocator.h"
+#include "Allocator/ShmAllocator.h"
 #include <unistd.h>//sleep,fork
 
 using namespace std;
