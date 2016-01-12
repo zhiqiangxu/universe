@@ -1,7 +1,9 @@
 #pragma once
+#include "Allocator/ShmAllocPolicy.h"
+#include "Allocator/ObjectTraits.h"
 
 template<typename T, typename Policy = ShmAllocPolicy<T>, typename Traits = ObjectTraits<T> >
-class Allocator : public Policy, public Traits {
+class ShmAllocator : public Policy, public Traits {
 private:
     typedef Policy AllocationPolicy;
     typedef Traits TTraits;
@@ -18,56 +20,55 @@ public:
 public:
     template<typename U>
     struct rebind {
-        typedef Allocator<U, typename AllocationPolicy::rebind<U>::other, 
-            typename TTraits::rebind<U>::other > other;
+        typedef ShmAllocator<U/*, typename AllocationPolicy::rebind<U>::other, typename TTraits::rebind<U>::other*/> other;
     };
 
 public:
-    inline explicit Allocator() {}
-    inline ~Allocator() {}
-    inline Allocator(Allocator const& rhs):Traits(rhs), Policy(rhs) {}
+    inline explicit ShmAllocator() {}
+    inline ~ShmAllocator() {}
+    inline ShmAllocator(ShmAllocator const& rhs):Traits(rhs), Policy(rhs) {}
     template <typename U>
-    inline Allocator(Allocator<U> const&) {}
+    inline ShmAllocator(ShmAllocator<U> const&) {}
     template <typename U, typename P, typename T2>
-    inline Allocator(Allocator<U, P, 
+    inline ShmAllocator(ShmAllocator<U, P, 
        T2> const& rhs):Traits(rhs), Policy(rhs) {}
-};    //    end of class Allocator
+};    //    end of class ShmAllocator
 
 // determines if memory from another
 // allocator can be deallocated from this one
 template<typename T, typename P, typename Tr>
-inline bool operator==(Allocator<T, P,
-   Tr> const& lhs, Allocator<T,
+inline bool operator==(ShmAllocator<T, P,
+   Tr> const& lhs, ShmAllocator<T,
    P, Tr> const& rhs) {
     return operator==(static_cast<P&>(lhs),
                        static_cast<P&>(rhs));
 }
 template<typename T, typename P, typename Tr,
         typename T2, typename P2, typename Tr2>
-inline bool operator==(Allocator<T, P,
-    Tr> const& lhs, Allocator<T2, P2, Tr2> const& rhs) {
+inline bool operator==(ShmAllocator<T, P,
+    Tr> const& lhs, ShmAllocator<T2, P2, Tr2> const& rhs) {
       return operator==(static_cast<P&>(lhs),
                        static_cast<P2&>(rhs));
 }
-template<typename T, typename P, typename Tr, typename OtherAllocator>
-inline bool operator==(Allocator<T, P, 
-          Tr> const& lhs, OtherAllocator const& rhs) { 
+template<typename T, typename P, typename Tr, typename OtherShmAllocator>
+inline bool operator==(ShmAllocator<T, P, 
+          Tr> const& lhs, OtherShmAllocator const& rhs) { 
     return operator==(static_cast<P&>(lhs), rhs); 
 }
 template<typename T, typename P, typename Tr>
-inline bool operator!=(Allocator<T, P, Tr> const& lhs, 
-                         Allocator<T, P, Tr> const& rhs) { 
+inline bool operator!=(ShmAllocator<T, P, Tr> const& lhs, 
+                         ShmAllocator<T, P, Tr> const& rhs) { 
     return !operator==(lhs, rhs); 
 }
 template<typename T, typename P, typename Tr, 
            typename T2, typename P2, typename Tr2>
-inline bool operator!=(Allocator<T, P, Tr> const& lhs, 
-                   Allocator<T2, P2, Tr2> const& rhs) { 
+inline bool operator!=(ShmAllocator<T, P, Tr> const& lhs, 
+                   ShmAllocator<T2, P2, Tr2> const& rhs) { 
     return !operator==(lhs, rhs);
 }
 template<typename T, typename P, typename Tr, 
-                              typename OtherAllocator>
-inline bool operator!=(Allocator<T, P,
-        Tr> const& lhs, OtherAllocator const& rhs) {
+                              typename OtherShmAllocator>
+inline bool operator!=(ShmAllocator<T, P,
+        Tr> const& lhs, OtherShmAllocator const& rhs) {
     return !operator==(lhs, rhs);
 }

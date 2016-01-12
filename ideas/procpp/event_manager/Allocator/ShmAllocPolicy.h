@@ -1,4 +1,7 @@
 #pragma once
+#include "Memory/SharedMemory.h"
+#include <limits>
+#include <memory>
 
 template<typename T>
 class ShmAllocPolicy {
@@ -28,28 +31,27 @@ public :
     
     //    memory allocation
     inline pointer allocate(size_type cnt, 
-      typename std::allocator<void>::const_pointer = 0) { 
-        return reinterpret_cast<pointer>(::operator 
-                                      new(cnt * sizeof (T))); 
+      typename std::allocator<void>::const_pointer = 0) {
+        return reinterpret_cast<pointer>(SharedMemory::get_instance()->allocate(cnt * sizeof (T)));
     }
-    inline void deallocate(pointer p, size_type) 
-                            { ::operator delete(p); }
+    inline void deallocate(pointer p, size_type size)
+                            { SharedMemory::get_instance()->deallocate(p, size); }
 
     //    size
-    inline size_type max_size() const { 
-        return std::numeric_limits<size_type>::max(); 
+    inline size_type max_size() const {
+        return std::numeric_limits<size_type>::max();
     }
 };    //    end of class ShmAllocPolicy
 
 // determines if memory from another
 // allocator can be deallocated from this one
 template<typename T, typename T2>
-inline bool operator==(ShmAllocPolicy<T> const&, 
-                        ShmAllocPolicy<T2> const&) { 
+inline bool operator==(ShmAllocPolicy<T> const&,
+                        ShmAllocPolicy<T2> const&) {
     return true;
 }
 template<typename T, typename OtherAllocator>
-inline bool operator==(ShmAllocPolicy<T> const&, 
-                                     OtherAllocator const&) { 
-    return false; 
+inline bool operator==(ShmAllocPolicy<T> const&,
+                                     OtherAllocator const&) {
+    return false;
 }

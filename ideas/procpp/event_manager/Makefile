@@ -13,3 +13,6 @@ socks: socks.cpp EventManager.cpp Protocol.cpp Server.cpp Client.cpp ClientServe
 
 pool: pool.cpp ThreadPool.cpp
 	bash -lic 'rc $+ '
+
+allocator: allocator.cpp Memory/SharedMemory.cpp
+	bash -lic 'rc $+ '
