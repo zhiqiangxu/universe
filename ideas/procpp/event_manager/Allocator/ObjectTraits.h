@@ -1,4 +1,6 @@
 #pragma once
+#include <iostream>//cout
+using namespace std;
 
 template<typename T>
 class ObjectTraits {
@@ -19,6 +21,7 @@ public :
     inline T* address(T& r) { return &r; }
     inline T const* address(T const& r) { return &r; }
 
-    inline void construct(T* p, const T& t) { new(p) T(t); }
+    inline void construct(T* p) { cout << "p1 = " << p << endl;new(p) T(); }
+    inline void construct(T* p, const T& t) { cout << "p2 = " << p << endl;new(p) T(t); }
     inline void destroy(T* p) { p->~T(); }
 };    //    end of class ObjectTraits

@@ -34,8 +34,8 @@ public :
       typename std::allocator<void>::const_pointer = 0) {
         return reinterpret_cast<pointer>(SharedMemory::get_instance()->allocate(cnt * sizeof (T)));
     }
-    inline void deallocate(pointer p, size_type size)
-                            { SharedMemory::get_instance()->deallocate(p, size); }
+    inline void deallocate(pointer p, size_type cnt)
+                            { SharedMemory::get_instance()->deallocate(p, cnt * sizeof(T)); }
 
     //    size
     inline size_type max_size() const {

@@ -1,15 +1,33 @@
 #include <iostream>
 #include <vector>
 #include "ShmAllocator.h"
+#include <unistd.h>//sleep,fork
+
 using namespace std;
 
 int main()
 {
-	std::vector<int, ShmAllocator<int> > v;
-	v.push_back(1);
+	ShmAllocator<std::vector<int, ShmAllocator<int>>> al;
 
-	for (auto i : v) {
-		cout << i << endl;
+	auto vp = al.allocate(1);
+	al.construct(vp);
+
+	auto& v = *vp;
+
+	auto pid = fork();
+
+	if (pid) {
+		//parent
+		sleep(1);
+		for (auto i : v) {
+			cout << i << endl;
+		}
+	} else {
+		//child
+		v.push_back(1);
+
+		sleep(3);
 	}
+
 	return 0;
 }

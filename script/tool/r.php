@@ -1,7 +1,7 @@
 <?php
 include __DIR__ . "/common.php";
 
-$options = get_options(['cflags', 'cppflags', 'ldflags', 'suffix', 'args'], ['keep', 'backtrace', 'sudo']);
+$options = get_options(['cflags', 'cppflags', 'ldflags', 'suffix', 'args'], ['keep', 'backtrace', 'sudo', 'valgrind']);
 backtrace(isset($options['backtrace']) ? true : false);
 
 $remaining_args = get_remaining_args();
@@ -55,5 +55,6 @@ if (!isset($options['keep'])) {
 
 
 $run_cmd = (isset($options['sudo']) ? 'sudo ' : '') . "$executable" . (isset($options['args']) ? ' ' . $options['args'] : '');
+if (isset($options['valgrind'])) $run_cmd = "valgrind $run_cmd";
 shell_exec_realtime_output($run_cmd);
 
