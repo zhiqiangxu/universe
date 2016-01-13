@@ -12,7 +12,7 @@ static void error_exit(const char *s)
 
 void Echo::handle(int fd)
 {
-	auto client = accept(fd, nullptr, nullptr);
+	auto client = _server.accept(fd, nullptr, nullptr);
 	if (client == -1) error_exit("accept");
 	cout << "[client " + to_string(client) + "]" << endl;
 

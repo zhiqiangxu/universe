@@ -182,7 +182,7 @@ void EventManager::start()
 			auto has_callback = _fds.find(fd) != _fds.end();
 			if (!has_callback) {
 				//可能是某个回调remove或者close了该fd
-				cout << RED("wait fd has no callback" + to_string(fd)) << endl;
+				cout << RED("wait fd has no callback " + to_string(fd)) << endl;
 				continue;
 			}
 
