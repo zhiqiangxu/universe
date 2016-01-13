@@ -74,6 +74,7 @@ public:
 	virtual size_t count() override;
 
 	static void set_nonblock(int fd);
+	static void set_keepalive(int socketfd, int keepidle = 3600, int keepinterval = 60, int keepcount = 5);
 	static int nonblock_socket(int domain, int type, int protocol);
 
 

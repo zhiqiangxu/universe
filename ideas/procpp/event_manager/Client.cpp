@@ -76,6 +76,7 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 		callbacks.erase(EventType::CONNECT);
 	}
 
+	set_keepalive(s);
 	//刚注册的fd，如果有事件，不会遗漏
 	if (callbacks.size()) watch(s, callbacks);
 
@@ -139,6 +140,10 @@ CONNECT_FAIL:
 			delete cb;
 			callbacks[EventType::CONNECT](fd, ConnectResult::OK);
 			callbacks.erase(EventType::CONNECT);
+			
+			//TODO udp ?
+			set_keepalive(fd);
+
 			if (callbacks.size()) watch(fd, callbacks);
 
 		} else if (r == ConnectResult::NG) {

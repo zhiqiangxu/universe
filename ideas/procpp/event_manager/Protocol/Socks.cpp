@@ -26,15 +26,11 @@ static void error_exit(const char *s)
 void Socks::handle(int fd)
 {
 	while (true) {
-		auto client = accept(fd, nullptr, nullptr);
+		auto client = _server.accept(fd, nullptr, nullptr);
 		if (client == -1) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				cout << "[accept] end" << endl;
-				cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
-				return;
-			}
-
-			error_exit("accept");
+			cout << "[accept] end" << endl;
+			cout << endl << GREEN("connections:" + to_string(_state.size()) + " sockets:" + to_string(_server.count())) << endl << endl;
+			return;
 		}
 
 		cout << "[client] " << GREEN(to_string(client)) << endl;

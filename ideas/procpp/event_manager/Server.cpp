@@ -54,6 +54,20 @@ bool Server::listen(uint16_t port, EventManager::EventCB callbacks, int domain)
 	return false;
 }
 
+int Server::accept(int socketfd, struct sockaddr *addr, socklen_t *addrlen)
+{
+	auto client = ::accept(socketfd, addr, addrlen);
+	if (client == -1) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) return -1;
+
+		error_exit("accept");
+	}
+
+	set_keepalive(client);
+
+	return client;
+}
+
 bool Server::listen4(const struct sockaddr_in *addr, EventManager::EventCB callbacks)
 {
 	auto s = socket(AF_INET, SOCK_STREAM, 0);

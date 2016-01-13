@@ -10,6 +10,14 @@
 #include <strings.h>//bzero
 #include <signal.h>//signal
 #include <unistd.h>//write
+//setsockopt
+#include <sys/types.h>
+#include <sys/socket.h>
+//IPPROTO_TCP
+#include <netinet/in.h>
+//TCP_KEEPIDLE
+#include <netinet/tcp.h>
+
 #include "Protocol.h"
 
 //https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -313,8 +321,23 @@ bool EventManager::_epoll_update(int fd, int epoll_op)
 void EventManager::set_nonblock(int fd)
 {
 	auto old_flags = fcntl(fd, F_GETFL);
+
+	if (old_flags & O_NONBLOCK) return;//已经nonblock
+
 	auto new_flags = old_flags | O_NONBLOCK;
 	if (fcntl(fd, F_SETFL, new_flags) == -1) error_exit("set_nonblock");
+}
+
+void EventManager::set_keepalive(int socketfd, int keepidle, int keepinterval, int keepcount)
+{
+	int sockopt = 1;
+	if (setsockopt(socketfd, SOL_SOCKET, SO_KEEPALIVE, (void *) &sockopt, sizeof(int)) == -1) error_exit("setsockopt SO_KEEPALIVE");
+
+	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPIDLE, (void *) &keepidle, sizeof(int)) == -1) error_exit("setsockopt TCP_KEEPIDLE");
+
+	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPINTVL, (void *) &keepinterval, sizeof(int)) == -1) error_exit("setsockopt TCP_KEEPINTVL");
+
+	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPCNT, (void *) &keepcount, sizeof(int)) == -1) error_exit("setsockopt TCP_KEEPCNT");
 }
 
 int EventManager::nonblock_socket(int domain, int type, int protocol)
