@@ -331,13 +331,13 @@ void EventManager::set_nonblock(int fd)
 void EventManager::set_keepalive(int socketfd, int keepidle, int keepinterval, int keepcount)
 {
 	int sockopt = 1;
-	if (setsockopt(socketfd, SOL_SOCKET, SO_KEEPALIVE, (void *) &sockopt, sizeof(int)) == -1) error_exit("setsockopt SO_KEEPALIVE");
+	if (setsockopt(socketfd, SOL_SOCKET, SO_KEEPALIVE, &sockopt, sizeof(int)) == -1) error_exit("setsockopt SO_KEEPALIVE");
 
-	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPIDLE, (void *) &keepidle, sizeof(int)) == -1) error_exit("setsockopt TCP_KEEPIDLE");
+	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int)) == -1) error_exit("setsockopt TCP_KEEPIDLE");
 
-	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPINTVL, (void *) &keepinterval, sizeof(int)) == -1) error_exit("setsockopt TCP_KEEPINTVL");
+	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPINTVL, &keepinterval, sizeof(int)) == -1) error_exit("setsockopt TCP_KEEPINTVL");
 
-	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPCNT, (void *) &keepcount, sizeof(int)) == -1) error_exit("setsockopt TCP_KEEPCNT");
+	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPCNT, &keepcount, sizeof(int)) == -1) error_exit("setsockopt TCP_KEEPCNT");
 }
 
 int EventManager::nonblock_socket(int domain, int type, int protocol)
