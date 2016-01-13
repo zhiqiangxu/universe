@@ -7,6 +7,7 @@ using namespace std;
 
 int main()
 {
+	//容器和元素都在shm
 	ShmAllocator<vector<int, ShmAllocator<int>>> al;
 
 	auto vp = al.allocate(1);
@@ -17,9 +18,14 @@ int main()
 
 	auto pid = fork();
 
+	//只有元素在shm
+	vector<int, ShmAllocator<int>> v2;
+	v2.push_back(20);
+
 	if (pid) {
 		//parent
 		v[0] = 2;
+		v2[0] = 30;
 
 		sleep(3);
 
@@ -27,6 +33,9 @@ int main()
 		//child
 		sleep(1);
 		for (auto& i : v) {
+			cout << i << endl;
+		}
+		for (auto& i : v2) {
 			cout << i << endl;
 		}
 
