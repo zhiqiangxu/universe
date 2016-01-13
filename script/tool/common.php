@@ -267,6 +267,24 @@ function compile_pre_so($source, $cflags = '', $ldflags = '', $out = null) {
 	return $out;
 }
 
+function load_rflags($rflags_file, &$cflags, &$ldflags, &$alternate_compiler, &$suffix) {
+	static $loaded = [];
+
+	$rflags_file = realpath($rflags_file);
+	if (in_array($rflags_file, $loaded)) return;
+	$loaded[] = $rflags_file;
+
+	$rflags = require $rflags_file;
+	if (isset($rflags['cflags'])) $cflags[C_COMPILER][] = shell_expand_string($rflags['cflags']);
+	if (isset($rflags['cppflags'])) $cflags[CXX_COMPILER][] = shell_expand_string($rflags['cppflags']);
+	if (isset($rflags['ldflags'])) $ldflags[] = shell_expand_string($rflags['ldflags']);
+	if (isset($rflags['compiler'])) $alternate_compiler = $rflags['compiler'];
+	if (isset($rflags['suffix'])) {
+		myassert(empty($suffix) || ($suffix == $rflags['suffix']), "conflict suffix: $suffix vs {$rflags['suffix']}");
+		$suffix = $rflags['suffix'];
+	}
+}
+
 /***load common***/
 call_user_func(function (){
     $mydir = dir(__DIR__."/common");

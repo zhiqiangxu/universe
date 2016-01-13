@@ -1,37 +1,29 @@
 <?php
 include __DIR__ . "/common.php";
 
-$options = get_options(['cflags', 'cppflags', 'ldflags', 'suffix', 'args'], ['keep', 'backtrace', 'sudo', 'valgrind']);
+$options = get_options(['rflags', 'cflags', 'cppflags', 'ldflags', 'suffix', 'args'], ['keep', 'backtrace', 'sudo', 'valgrind']);
 backtrace(isset($options['backtrace']) ? true : false);
 
 $remaining_args = get_remaining_args();
 $source_files = glob_files($remaining_args);
 
 $suffix = array_value($options, 'suffix', '');
-$rflags_once = [];
 $cflags = [];
 if (isset($options['cflags'])) $cflags[C_COMPILER] = arraylize($options['cflags']);
 if (isset($options['cppflags'])) $cflags[CXX_COMPILER] = arraylize($options['cppflags']);
 
 $ldflags = isset($options['ldflags']) ? arraylize($options['ldflags']) : [];
 $alternate_compiler = [];
+
+if (isset($options['rflags'])) load_rflags($options['rflags'], $cflags, $ldflags, $alternate_compiler, $suffix);
+
 foreach ($source_files as $source_file)
 {
 	$dir = dirname($source_file);
-	if (isset($rflags_once[$dir])) continue;
-	$rflags_once[$dir] = 1;
 
 	if (file_exists($rflags_file = $dir . DIRECTORY_SEPARATOR . 'rflags.php'))
 	{
-		$rflags = require $rflags_file;
-		if (isset($rflags['cflags'])) $cflags[C_COMPILER][] = shell_expand_string($rflags['cflags']);
-		if (isset($rflags['cppflags'])) $cflags[CXX_COMPILER][] = shell_expand_string($rflags['cppflags']);
-		if (isset($rflags['ldflags'])) $ldflags[] = shell_expand_string($rflags['ldflags']);
-		if (isset($rflags['compiler'])) $alternate_compiler = $rflags['compiler'];
-		if (isset($rflags['suffix'])) {
-			myassert(empty($suffix) || ($suffix == $rflags['suffix']), "conflict suffix: $suffix vs {$rflags['suffix']}");
-			$suffix = $rflags['suffix'];
-		}
+		load_rflags($rflags_file, $cflags, $ldflags, $alternate_compiler, $suffix);
 	}
 }
 if ($cflags) {
