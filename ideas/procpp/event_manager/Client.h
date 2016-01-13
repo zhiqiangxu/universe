@@ -12,7 +12,7 @@ public:
 	// 如异常，返回-1
 	virtual int connect(string address, uint16_t port, EventManager::EventCB callbacks, bool async) = 0;
 	virtual bool connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks) = 0;
-	// 一般不调该接口，实在需要，该接口CONNECT回调必须负责关闭fd
+	// 一般不调该接口，实在需要，该接口CONNECT回调必须负责关闭fd和set_keepalive
 	virtual int connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd) = 0;
 };
 
