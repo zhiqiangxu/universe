@@ -55,6 +55,7 @@ public:
 		如fd已加入watch，则应该调用该方法关闭，否则callback无效
 	****/
 	virtual bool close(int fd, bool force_close) = 0;
+	virtual ssize_t write(int fd, const void *buf, size_t count) = 0;
 	virtual void start() = 0;
 	virtual size_t count() = 0;
 };
@@ -68,6 +69,7 @@ public:
 	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch = false) override;
 	virtual bool remove(int fd, bool no_callback = false) override;
 	virtual bool close(int fd, bool force_close = false) override;
+	virtual ssize_t write(int fd, const void *buf, size_t count) override;//TODO 完善，目前仅处理EPIPE
 	virtual void start() override;
 	virtual size_t count() override;
 

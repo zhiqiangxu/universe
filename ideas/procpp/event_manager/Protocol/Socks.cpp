@@ -1,7 +1,6 @@
 #include "Protocol/Socks.h"
 #include "ClientServer.h"
 #include <arpa/inet.h>//ntohs
-#include <unistd.h>//write
 #include <iostream>//cout
 using namespace std;
 
@@ -98,7 +97,7 @@ void Socks::on_message(int client, string message)
 			}
 
 			string response("\x05\x0", 2);
-			write(client, response.data(), response.length());
+			_server.write(client, response.data(), response.length());
 
 			_state[client] = SocksState::REQUEST;
 
@@ -168,7 +167,7 @@ void Socks::on_message(int client, string message)
 								response.append(1, address.length());
 								response.append(address);
 								response.append(string(reinterpret_cast<const char*>(&port), sizeof(port)));
-								write(client, response.data(), response.length());
+								_server.write(client, response.data(), response.length());
 								//cout << "response length: " << response.length() << endl;
 
 							})
@@ -234,7 +233,7 @@ void Socks::on_message(int client, string message)
 
 bool Socks::send_peer(int peer_fd, string& message)
 {
-	return write(peer_fd, message.data(), message.length());
+	return _server.write(peer_fd, message.data(), message.length());
 }
 
 void Socks::on_close(int client)

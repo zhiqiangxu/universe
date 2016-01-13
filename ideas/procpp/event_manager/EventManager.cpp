@@ -8,6 +8,8 @@
 #include <string>
 #include <fcntl.h>
 #include <strings.h>//bzero
+#include <signal.h>//signal
+#include <unistd.h>//write
 #include "Protocol.h"
 
 //https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -137,8 +139,20 @@ bool EventManager::close(int fd, bool force_close)
 	return false;
 }
 
+ssize_t EventManager::write(int fd, const void *buf, size_t count)
+{
+	auto ret = ::write(fd, buf, count);
+	if (ret == -1) {
+		if (errno == EPIPE) close(fd);
+	}
+
+	return ret;
+}
+
 void EventManager::start()
 {
+	signal(SIGPIPE, SIG_IGN);
+
 	const int kMaxEvents = 32;
 	struct epoll_event events[kMaxEvents];
 	while (true) {
