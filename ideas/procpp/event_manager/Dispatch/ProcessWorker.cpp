@@ -27,7 +27,7 @@ void ProcessWorker<Proto>::handle(int fd)
 template <typename Proto>
 void ProcessWorker<Proto>::on_connect(int client)
 {
-	L.debug_log("on_connect client = " + to_string(client));
+	//L.debug_log("on_connect client = " + to_string(client));
 
 	this->set_state(client, IProcessWorker::ConnectState::B4CONNECT);
 
@@ -75,7 +75,7 @@ void ProcessWorker<Proto>::on_connect(int client)
 template <typename Proto>
 void ProcessWorker<Proto>::on_message(int client, string message, int remote_fd)
 {
-	L.debug_log("on_message client = " + to_string(client) + " remote_fd = " + to_string(remote_fd));
+	//L.debug_log("on_message client = " + to_string(client) + " remote_fd = " + to_string(remote_fd));
 	//**this** is MUST:  http://stackoverflow.com/a/19129605
 	this->append_buf(client, message);
 
@@ -83,13 +83,13 @@ void ProcessWorker<Proto>::on_message(int client, string message, int remote_fd)
 	DEBUG(_c2r[client] == remote_fd, "remote_fd of client[" + to_string(client) + "] should be [" + to_string(remote_fd) + "], but got [" + to_string(_c2r[client]) + "]");
 	DEBUG(_r2c[remote_fd] == client, "client of remote_fd[" + to_string(remote_fd) + "] should be [" + to_string(client) + "], but got [" + to_string(_r2c[remote_fd]) + "]");
 
-	L.debug_log("get_state = " + enum_string(this->get_state(client)));
+	//L.debug_log("get_state = " + enum_string(this->get_state(client)));
 	if (this->need_buf(client, message, this->get_state(client) != IProcessWorker::ConnectState::CONNECTED)) {
-		L.debug_log("connecting...buffed");
+		//L.debug_log("connecting...buffed");
 		return;
 	}
 
-	L.debug_log("write to remote_fd " + to_string(remote_fd));
+	//L.debug_log("write to remote_fd " + to_string(remote_fd));
 	_server.write(remote_fd, message.data(), message.length());
 }
 
@@ -98,7 +98,7 @@ void ProcessWorker<Proto>::on_close(int client, int remote_fd)
 {
 	if (_c2r.find(client) == _c2r.end()) return;
 
-	L.debug_log("on_close client = " + to_string(client) + " remote_fd = " + to_string(remote_fd));
+	//L.debug_log("on_close client = " + to_string(client) + " remote_fd = " + to_string(remote_fd));
 
 	_erase_pair_info(client, remote_fd);
 
@@ -108,13 +108,11 @@ void ProcessWorker<Proto>::on_close(int client, int remote_fd)
 template <typename Proto>
 void ProcessWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int client)
 {
-	L.debug_log( "on_remote_connect client = " + to_string(client) + " remote_fd = " + to_string(remote_fd) + " result = " + enum_string(r) );
+	//L.debug_log( "on_remote_connect client = " + to_string(client) + " remote_fd = " + to_string(remote_fd) + " result = " + enum_string(r) );
 
 	if (r == ConnectResult::OK) {
-		L.debug_log("client " + to_string(client) + " set_stat CONNECTED");
+		//L.debug_log("client " + to_string(client) + " set_stat CONNECTED");
 		this->set_state(client, IProcessWorker::ConnectState::CONNECTED);
-		if (this->get_state(client) != IProcessWorker::ConnectState::CONNECTED) L.debug_log("set_state bug");
-		else L.debug_log("set_state ok");
 	} else {
 		if (this->get_state(client) == IProcessWorker::ConnectState::B4CONNECT)
 			this->erase_state_buffer(client);//此时pair信息还没生成
@@ -128,7 +126,7 @@ void ProcessWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int
 template <typename Proto>
 void ProcessWorker<Proto>::on_remote_message(int remote_fd, string message, int client)
 {
-	L.debug_log("on_remote_message client = " + to_string(client) + " remote_fd = " + to_string(remote_fd));
+	//L.debug_log("on_remote_message client = " + to_string(client) + " remote_fd = " + to_string(remote_fd));
 
 	DEBUG(this->has_state(client), "on_remote_message fired when client already removed");
 	DEBUG(_c2r[client] == remote_fd, "remote_fd of client[" + to_string(client) + "] should be [" + to_string(remote_fd) + "], but got [" + to_string(_c2r[client]) + "]");
@@ -142,7 +140,7 @@ void ProcessWorker<Proto>::on_remote_close(int remote_fd, int client)
 {
 	if (_c2r.find(client) == _c2r.end()) return;
 
-	L.debug_log("on_remote_close client = " + to_string(client) + " remote_fd = " + to_string(remote_fd));
+	//L.debug_log("on_remote_close client = " + to_string(client) + " remote_fd = " + to_string(remote_fd));
 
 	_erase_pair_info(client, remote_fd);
 
