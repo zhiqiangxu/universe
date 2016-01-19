@@ -164,6 +164,8 @@ void ProcessWorker<Proto>::_erase_pair_info(int client, int remote_fd)
 template <typename Proto>
 void ProcessWorker<Proto>::_set_path(string sun_path)
 {
+	if (Utils::file_exists(sun_path)) L.error_exit(sun_path + " already exists!");
+
 	_sockaddr = Utils::addr_sun(sun_path);
 }
 

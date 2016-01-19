@@ -14,11 +14,9 @@ socks: tests/socks.cpp EventManager.cpp Protocol.cpp Server.cpp Client.cpp Clien
 	bash -lic 'rc $+ -valgrind'
 
 echo_worker: tests/echo_worker.cpp EventManager.cpp Protocol.cpp Server.cpp Client.cpp ClientServer.cpp Protocol/Echo.cpp Log/ErrorHandler.cpp
-	rm -f /tmp/react_handler.sock
 	bash -lic 'rc $+ -valgrind'
 
 socks_worker: tests/socks_worker.cpp EventManager.cpp Protocol.cpp Server.cpp Client.cpp ClientServer.cpp Protocol/Socks.cpp Log/ErrorHandler.cpp
-	rm -f /tmp/react_handler.sock
 	bash -lic 'rc $+ -valgrind'
 
 pool: tests/pool.cpp ThreadPool.cpp

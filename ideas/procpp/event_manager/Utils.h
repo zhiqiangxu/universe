@@ -5,6 +5,10 @@
 #include <string.h>//memcpy
 #include <netinet/in.h>//sockaddr_in
 #include <linux/un.h>//struct sockaddr_un
+//stat
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -55,6 +59,12 @@ public:
 		serveraddr.sin6_addr = in6addr_any;
 
 		return serveraddr;
+	}
+
+	static bool file_exists(string path)
+	{
+		struct stat buffer;
+		return stat (path.c_str(), &buffer) == 0;
 	}
 
 	//https://en.wikipedia.org/wiki/ANSI_escape_code
