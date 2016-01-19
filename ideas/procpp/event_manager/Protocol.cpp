@@ -16,7 +16,7 @@ bool Protocol::read(string& message, size_t size, string& result)
 	return true;
 }
 
-bool Protocol::readUtil(string& message, string separator, string& result, int scanned)
+bool Protocol::read_until(string& message, string separator, string& result, int scanned)
 {
 	auto pos = message.find(separator, max(0, static_cast<int>(scanned - separator.length())));
 	if (pos != string::npos) {
@@ -63,7 +63,7 @@ string Protocol::read(int fd, size_t size)
 	return "no impl";
 }
 
-string Protocol::readUtil(int fd, string separator)
+string Protocol::read_until(int fd, string separator)
 {
 	return "no impl";
 }

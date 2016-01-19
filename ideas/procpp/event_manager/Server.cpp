@@ -2,36 +2,17 @@
 #include <stdio.h>//perror
 #include <arpa/inet.h>//htons
 #include <strings.h>//bzero
+#include <string.h>//memcpy
 #include <iostream>//cout,endl
+#include "ReactHandler.h"
 
 using namespace std;
 
-static void error_exit(const char *s)
+
+
+bool Server::listen(uint16_t port, Protocol& proto, int domain)
 {
-	perror(s);
-	exit(1);
-}
-
-static struct sockaddr_in addr4(uint16_t port)
-{
-	struct sockaddr_in serveraddr;
-	bzero(&serveraddr, sizeof(serveraddr));
-	serveraddr.sin_family = AF_INET;
-	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serveraddr.sin_port = htons(port);
-
-	return serveraddr;
-}
-
-static struct sockaddr_in6 addr6(uint16_t port)
-{
-	struct sockaddr_in6 serveraddr;
-	bzero(&serveraddr, sizeof(serveraddr));
-	serveraddr.sin6_family = AF_INET6;
-	serveraddr.sin6_port = htons(port);
-	serveraddr.sin6_addr = in6addr_any;
-
-	return serveraddr;
+	return listen(port, to_callbacks(proto), domain);
 }
 
 bool Server::listen(uint16_t port, EventManager::EventCB callbacks, int domain)
@@ -39,14 +20,13 @@ bool Server::listen(uint16_t port, EventManager::EventCB callbacks, int domain)
 	switch (domain) {
 		case AF_INET:
 		{
-			auto serveraddr = addr4(port);
-			return listen4(&serveraddr, callbacks);
-			break;
+			auto serveraddr = Utils::addr4(port);
+			return listen(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), callbacks);
 		}
 		case AF_INET6:
 		{
-			auto serveraddr = addr6(port);
-			return listen6(&serveraddr, callbacks);
+			auto serveraddr = Utils::addr6(port);
+			return listen(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), callbacks);
 			break;
 		}
 	}
@@ -54,61 +34,100 @@ bool Server::listen(uint16_t port, EventManager::EventCB callbacks, int domain)
 	return false;
 }
 
+bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, Protocol& proto)
+{
+	return listen(addr, addrlen, to_callbacks(proto));
+}
+
+bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, EventManager::EventCB callbacks)
+{
+	auto s = socket(addr->sa_family, SOCK_STREAM, 0);
+	if (s == -1) L.error_exit("socket");
+
+	const int enable = 1;
+	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR/* TODO figure its usage*/, &enable, sizeof(enable)) == -1) L.error_exit("setsockopt");
+
+	// bind,listen接受的都是sockaddr类型参数
+	if (bind(s, addr, addrlen) < 0) L.error_exit("bind");
+
+	if (::listen(s, 100) < 0) L.error_exit("listen");
+
+
+	if ( !watch(s, callbacks) ) L.error_exit("watch " + to_string(s));
+
+	L.info_log("listen ok");
+
+	return true;
+}
+
+bool Server::listen(string sun_path, Protocol& proto)
+{
+	return listen(sun_path, to_callbacks(proto));
+}
+
+bool Server::listen(string sun_path, EventManager::EventCB callbacks)
+{
+	auto serveraddr = Utils::addr_sun(sun_path);
+
+	cout << "listening " << sun_path << endl;
+
+	return listen(reinterpret_cast<struct sockaddr*>(&serveraddr), sizeof(serveraddr), callbacks);
+}
+
 int Server::accept(int socketfd, struct sockaddr *addr, socklen_t *addrlen)
 {
+	static struct sockaddr _addr;
+	static socklen_t _addrlen = sizeof(_addr);
+
+	if (addr == nullptr) {
+		addr = &_addr;
+		addrlen = &_addrlen;
+	}
+
 	auto client = ::accept(socketfd, addr, addrlen);
 	if (client == -1) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK) return -1;
 
-		error_exit("accept");
+		L.error_exit("accept");
 	}
 
-	set_keepalive(client);
+	if (addr->sa_family != AF_UNIX) set_keepalive(client);
 
 	return client;
 }
 
-bool Server::listen4(const struct sockaddr_in *addr, EventManager::EventCB callbacks)
+
+EventManager::EventCB Server::to_callbacks(Protocol& proto)
 {
-	auto s = socket(AF_INET, SOCK_STREAM, 0);
-	if (s == -1) error_exit("socket");
+	return EventManager::EventCB{
+		{
+			EventType::READ, EventManager::CB([&proto, this] (int fd) mutable {
 
-	const int enable = 1;
-	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == -1) error_exit("setsockopt");
+				while (true) {
+					auto client = accept(fd, nullptr, nullptr);
+					if (client == -1) {
+						cout << "[accept] end" << endl;
+						return;
+					}
 
-	// bind,listen接受的都是sockaddr类型参数
-	if (bind(s, reinterpret_cast<const struct sockaddr*>(addr), sizeof(*addr)) < 0) error_exit("bind");
+					proto.on_connect(client);
 
-	if (::listen(s, 100) < 0) error_exit("listen");
+					watch(client, EventManager::EventCB{
+						{
+							EventType::READ, EventManager::CB([&proto] (int client, string message) mutable {
+								proto.on_message(client, message);
+							}),
+						},
+						{
+							EventType::CLOSE, EventManager::CB([&proto] (int client) {
+								proto.on_close(client);
+							})
+						}
+					});
 
-	watch(s, callbacks);
+				}
 
-	auto port = ntohs(addr->sin_port);
-	cout << "listening port " << port << endl;
-
-	return true;
+			})
+		}
+	};
 }
-
-bool Server::listen6(const struct sockaddr_in6 *addr, EventManager::EventCB callbacks)
-{
-	auto s = socket(AF_INET6, SOCK_STREAM, 0);
-	if (s == -1) error_exit("socket");
-
-	const int enable = 1;
-	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == -1) error_exit("setsockopt");
-
-	// bind,listen接受的都是sockaddr类型参数
-	if (bind(s, reinterpret_cast<const struct sockaddr*>(addr), sizeof(*addr)) < 0) error_exit("bind");
-
-	if (::listen(s, 100) < 0) error_exit("listen");
-
-	watch(s, callbacks);
-
-	auto port = ntohs(addr->sin6_port);
-	cout << "listening port " << port << endl;
-
-	return true;
-
-}
-
-

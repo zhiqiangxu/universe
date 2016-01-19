@@ -2,33 +2,16 @@
 #include <strings.h>//bzero
 #include <netdb.h>//getaddrinfo
 #include <unistd.h>//close
+#include <linux/un.h>//struct sockaddr_un
 #include <iostream>
+#include "ReactHandler.h"
 using namespace std;
 
-static void error_exit(const char *s)
-{
-	perror(s);
-	exit(1);
-}
 
-//https://en.wikipedia.org/wiki/ANSI_escape_code
-static string RED(string s)
-{
-	return "\033[1;31m" + s + "\033[0m";
-}
-static string GREEN(string s)
-{
-	return "\033[1;32m" + s + "\033[0m";
-}
-static string YELLOW(string s)
-{
-	return "\033[1;33m" + s + "\033[0m";
-}
 
-static void error_log(const char *s)
-{
-	perror(s);
-}
+
+
+
 
 
 bool Client::connect(string address, uint16_t port, EventManager::EventCB callbacks)
@@ -47,7 +30,7 @@ bool Client::connect(string address, uint16_t port, EventManager::EventCB callba
 
 	auto port_string = to_string(port);
 	if (getaddrinfo(address.c_str(), port_string.c_str(), &hints, &result) != 0) {
-		error_log("getaddrinfo");
+		L.error_log("getaddrinfo");
 		return false;
 	}
 
@@ -61,13 +44,38 @@ bool Client::connect(string address, uint16_t port, EventManager::EventCB callba
 	return false;
 }
 
+int Client::connect(const struct sockaddr_un* addr, EventManager::EventCB callbacks, bool async)
+{
+	return connect(reinterpret_cast<const struct sockaddr*>(addr), sizeof(*addr), EventManager::EventCB{
+		{
+			EventType::CONNECT, EventManager::CB([this, callbacks] (int remote_fd, ConnectResult r) mutable {
+				//TODO should copy -> erase -> call
+				callbacks[EventType::CONNECT](remote_fd, r);
+				callbacks.erase(EventType::CONNECT);
+
+				if (r == ConnectResult::OK) {
+
+					//AF_UNIX不需要keepalive
+
+					if (callbacks.size()) watch(remote_fd, callbacks);
+
+				} else {
+
+					close(remote_fd, true);
+
+				}
+			})
+		}
+	}, true);
+}
+
 bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks)
 {
-	auto s = socket(AF_INET, SOCK_STREAM, 0);
-	if (s == -1) error_exit("socket");
+	auto s = socket(addr->sa_family, SOCK_STREAM, 0);
+	if (s == -1) L.error_exit("socket");
 
 	if (::connect(s, addr, addrlen) == -1) {
-		error_log("connect");
+		L.error_log("connect");
 		return false;
 	}
 
@@ -76,7 +84,8 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 		callbacks.erase(EventType::CONNECT);
 	}
 
-	set_keepalive(s);
+	if (addr->sa_family != AF_UNIX) set_keepalive(s);
+
 	//刚注册的fd，如果有事件，不会遗漏
 	if (callbacks.size()) watch(s, callbacks);
 
@@ -102,7 +111,7 @@ int Client::connect(string address, uint16_t port, EventManager::EventCB callbac
 	auto port_string = to_string(port);
 	if (getaddrinfo(address.c_str(), port_string.c_str(), &hints, resultp) != 0) {
 		delete resultp;
-		error_log("getaddrinfo");
+		L.error_log("getaddrinfo");
 	}
 
 	auto result = *resultp;
@@ -113,7 +122,7 @@ int Client::connect(string address, uint16_t port, EventManager::EventCB callbac
 	}
 
 	auto s = nonblock_socket(AF_INET, SOCK_STREAM, 0);
-	if (s == -1) error_exit("nonblock_socket");
+	if (s == -1) L.error_exit("nonblock_socket");
 
 	auto cb = new function<void(int, ConnectResult)>;
 
@@ -169,18 +178,18 @@ CONNECT_FAIL:
 		}
 	}, true, s);
 
-	cout << GREEN("place holder fd is " + to_string(s)) << endl;
+	cout << Utils::GREEN("place holder fd is " + to_string(s)) << endl;
 	return s;
 }
 
 int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd)
 {
-	auto s = nonblock_socket(AF_INET, SOCK_STREAM, 0);
-	if (s == -1) error_exit("nonblock_socket");
+	auto s = nonblock_socket(addr->sa_family, SOCK_STREAM, 0);
+	if (s == -1) L.error_exit("nonblock_socket");
 
 	if (fd != -1) {
 		auto ret = dup2(s, fd);
-		if (ret == -1) error_exit("dup2");
+		if (ret == -1) L.error_exit("dup2");
 		::close(s);
 		s = fd;
 	}
@@ -189,6 +198,8 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 
 	//失败，关闭socket
 	if (ret == -1 && errno != EINPROGRESS) {
+		L.error_log("connect");
+
 		remove(s, true);
 		callbacks[EventType::CONNECT](s, ConnectResult::NG);
 		return -1;

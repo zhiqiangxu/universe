@@ -1,23 +1,14 @@
 #include "ThreadPool.h"
 #include <mutex>
 #include <iostream>
+#include "Utils.h"
 
 static string RED(string s)
 {
 	return "\033[1;31m" + s + "\033[0m";
 }
 
-static int get_cpu_cores()
-{
-	auto n = thread::hardware_concurrency();
 
-	if (n == 0) {
-		cout << "hardware_concurrency returns 0" << endl;
-		n = 8;
-	}
-
-	return n;
-}
 
 void run()
 {
@@ -25,7 +16,7 @@ void run()
 
 ThreadPool::ThreadPool(int n)
 {
-	if (n <= 0) n = get_cpu_cores();
+	if (n <= 0) n = Utils::get_cpu_cores();
 
 	for (int i = 0; i < n; i++) {
 		_threads.push_back(thread{ [this] { run(); } });
