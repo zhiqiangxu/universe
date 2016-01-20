@@ -53,7 +53,6 @@ public:
 	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch) = 0;
 	virtual bool remove(int fd, bool no_callback) = 0;
 	virtual bool clear_fds() = 0;
-	virtual bool destroy() = 0;//should work with fork TODO make it perfect
 	/***主动close
 		如fd已加入watch，则应该调用该方法关闭，否则callback无效
 	****/
@@ -67,14 +66,13 @@ class EventManager : public IEventManager
 {
 public:
 	EventManager();
-	virtual ~EventManager() { destroy(); };
+	virtual ~EventManager() { _destroy(); };
 
 	virtual bool watch(int fd, EventType event, CB callback) override;//TODO re_watch
 	virtual bool watch(int fd, const EventCB& callbacks, bool re_watch = false) override;
 	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch = false) override;
 	virtual bool remove(int fd, bool no_callback = false) override;
 	virtual bool clear_fds() override;
-	virtual bool destroy() override;
 	virtual bool close(int fd, bool force_close = false) override;
 	virtual ssize_t write(int fd, const void *buf, size_t count) override;//TODO 完善，目前仅处理EPIPE
 	virtual void start() override;
@@ -88,6 +86,8 @@ public:
 private:
 	bool _epoll_update(int fd, int epoll_op);
 	void _add_close_fd(int fd);
+	//called by dtor, works with fork
+	virtual bool _destroy();//TODO almost perfect
 
 	int _epoll_fd;
 	vector<int> _close_fds;

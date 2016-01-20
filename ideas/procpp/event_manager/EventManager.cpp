@@ -138,7 +138,7 @@ bool EventManager::close(int fd, bool force_close)
 	return true;
 }
 
-bool EventManager::destroy()
+bool EventManager::_destroy()
 {
 
 	::close(_epoll_fd);
