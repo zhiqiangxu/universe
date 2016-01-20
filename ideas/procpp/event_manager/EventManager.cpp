@@ -21,6 +21,9 @@
 
 #include "Protocol.h"
 
+template<>
+const char* Utils::enum_strings<ConnectResult>::data[] = {"OK", "NG", "GAME_OVER"};
+
 
 
 EventManager::EventManager()

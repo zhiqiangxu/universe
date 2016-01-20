@@ -23,14 +23,6 @@ public:
 	virtual void on_remote_close(int remote_fd, int client) = 0;
 };
 
-static string enum_string(IProcessWorker::ConnectState s)
-{
-	if (s == IProcessWorker::ConnectState::B4CONNECT) return "B4CONNECT";
-	if (s == IProcessWorker::ConnectState::CONNECT) return "CONNECT";
-	if (s == IProcessWorker::ConnectState::CONNECTED) return "CONNECTED";
-
-	return "bug";
-}
 
 //why template ?
 //because the Proto needs to be based on Server created in listen_then_fork
@@ -67,4 +59,4 @@ private:
 	map<int, int> _r2c;
 };
 
-#include "Dispatch/ProcessWorker.cpp"
+#include "Dispatch/ProcessWorker.hpp"

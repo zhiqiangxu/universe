@@ -13,10 +13,10 @@ client: tests/client.cpp EventManager.cpp Protocol.cpp Client.cpp Log/ErrorHandl
 socks: tests/socks.cpp EventManager.cpp Protocol.cpp Server.cpp Client.cpp ClientServer.cpp Protocol/Socks.cpp Log/ErrorHandler.cpp
 	bash -lic 'rc $+ -valgrind'
 
-echo_worker: tests/echo_worker.cpp EventManager.cpp Protocol.cpp Server.cpp Client.cpp ClientServer.cpp Protocol/Echo.cpp Log/ErrorHandler.cpp
+echo_worker: tests/echo_worker.cpp EventManager.cpp Protocol.cpp Server.cpp Client.cpp ClientServer.cpp Protocol/Echo.cpp Log/ErrorHandler.cpp Dispatch/ProcessWorker.cpp
 	bash -lic 'rc $+ -valgrind'
 
-socks_worker: tests/socks_worker.cpp EventManager.cpp Protocol.cpp Server.cpp Client.cpp ClientServer.cpp Protocol/Socks.cpp Log/ErrorHandler.cpp
+socks_worker: tests/socks_worker.cpp EventManager.cpp Protocol.cpp Server.cpp Client.cpp ClientServer.cpp Protocol/Socks.cpp Log/ErrorHandler.cpp Dispatch/ProcessWorker.cpp
 	bash -lic 'rc $+ -valgrind'
 
 pool: tests/pool.cpp ThreadPool.cpp

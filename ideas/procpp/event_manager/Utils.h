@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <type_traits>//underlying_type
 
 using namespace std;
 
@@ -82,5 +83,33 @@ public:
 	{
 		return "\033[1;33m" + s + "\033[0m";
 	}
+
+	template<typename E>
+	static auto enum_int(E e)
+	{
+		return static_cast<typename underlying_type<E>::type>(e);
+	}
+
+	template<typename E>
+	static string enum_string(E e)
+	{
+		return enum_strings<E>::data[Utils::enum_int(e)];
+	}
+
+	// Ehis is the type that will hold all the strings.
+	// Each enumerate type will declare its own specialization.
+	// Any enum that does not have a specialization will generate a compiler error
+	// indicating that there is no definition of this variable (as there should be
+	// be no definition of a generic version).
+	template<typename E>
+	struct enum_strings
+	{
+		static const char * data[];
+	};
+
+
+
 };
+
+
 

@@ -4,6 +4,7 @@
 #include <tuple>
 #include <map>
 #include <string>
+#include "Utils.h"
 
 
 using namespace std;
@@ -24,15 +25,6 @@ enum class ConnectResult
 	GAME_OVER,
 };
 
-//TODO fix this...
-static string enum_string(ConnectResult r)
-{
-	if (r == ConnectResult::OK) return "OK";
-	if (r == ConnectResult::NG) return "NG";
-	if (r == ConnectResult::GAME_OVER) return "GAME_OVER";
-
-	return "BUG";
-}
 
 class IEventManager
 {

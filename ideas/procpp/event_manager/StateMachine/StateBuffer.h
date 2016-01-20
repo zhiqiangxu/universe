@@ -41,4 +41,4 @@ private:
 	map<int, State> _state;
 };
 
-#include "StateMachine/StateBuffer.cpp"
+#include "StateMachine/StateBuffer.hpp"
