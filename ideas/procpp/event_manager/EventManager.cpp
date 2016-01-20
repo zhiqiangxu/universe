@@ -62,9 +62,6 @@ bool EventManager::watch(int fd, const EventManager::EventCB& callbacks, bool re
 
 	if (!added) {
 		set_nonblock(fd);
-	} else {
-		//red bold
-		cout << Utils::RED("fd " +  to_string(fd) + " already added") << endl;
 	}
 
 	_fds[fd] = callbacks;
