@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "StateMachine/Bufferable.h"
 
 class Server;
 
@@ -16,9 +17,10 @@ public:
 	virtual void on_message(int client, string message) = 0;
 	virtual void on_close(int client) {};
 
+
 };
 
-class Protocol : public IProtocol
+class Protocol : public IProtocol, public Bufferable
 {
 public:
 	static string read(int fd);//fd为ET
@@ -27,10 +29,12 @@ public:
 	static string read_until(int fd, string separator);
 	static bool read_until(string& message, string separator, string& result, int scanned = 0);
 
+
 	virtual Server& getServer() override { return _server; };
 	/*未实现on_message，是抽象类*/
 
 	Protocol(Server& server) : _server(server) {}
 protected:
 	Server& _server;
+
 };

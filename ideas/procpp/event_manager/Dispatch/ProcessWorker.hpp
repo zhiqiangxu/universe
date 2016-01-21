@@ -26,6 +26,13 @@ void ProcessWorker<Proto>::handle(int fd)
 }
 
 template <typename Proto>
+void ProcessWorker<Proto>::erase_state_buffer(int client)
+{
+	erase_state(client);
+	erase_buf(client);
+}
+
+template <typename Proto>
 void ProcessWorker<Proto>::on_connect(int client)
 {
 	//L.debug_log("on_connect client = " + to_string(client));
@@ -78,14 +85,14 @@ void ProcessWorker<Proto>::on_message(int client, string message, int remote_fd)
 {
 	//L.debug_log("on_message client = " + to_string(client) + " remote_fd = " + to_string(remote_fd));
 	//**this** is MUST:  http://stackoverflow.com/a/19129605
-	this->append_buf(client, message);
+	append_buf(client, message);
 
 	DEBUG(this->has_state(client), "on_message fired when client already removed");
 	DEBUG(_c2r[client] == remote_fd, "remote_fd of client[" + to_string(client) + "] should be [" + to_string(remote_fd) + "], but got [" + to_string(_c2r[client]) + "]");
 	DEBUG(_r2c[remote_fd] == client, "client of remote_fd[" + to_string(remote_fd) + "] should be [" + to_string(client) + "], but got [" + to_string(_r2c[remote_fd]) + "]");
 
 	L.debug_log("get_state = " + Utils::enum_string(this->get_state(client)));
-	if (this->need_buf(client, message, this->get_state(client) != IProcessWorker::ConnectState::CONNECTED)) {
+	if (need_buf(client, message, this->get_state(client) != IProcessWorker::ConnectState::CONNECTED)) {
 		//L.debug_log("connecting...buffed");
 		return;
 	}
@@ -116,7 +123,7 @@ void ProcessWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int
 		this->set_state(client, IProcessWorker::ConnectState::CONNECTED);
 	} else {
 		if (this->get_state(client) == IProcessWorker::ConnectState::B4CONNECT)
-			this->erase_state_buffer(client);//此时pair信息还没生成
+			erase_state_buffer(client);//此时pair信息还没生成
 		else
 			_erase_pair_info(client, remote_fd);
 
@@ -151,7 +158,7 @@ void ProcessWorker<Proto>::on_remote_close(int remote_fd, int client)
 template <typename Proto>
 void ProcessWorker<Proto>::_erase_pair_info(int client, int remote_fd)
 {
-	this->erase_state_buffer(client);
+	erase_state_buffer(client);
 
 	DEBUG(_c2r[client] == remote_fd, "remote_fd of client[" + to_string(client) + "] should be [" + to_string(remote_fd) + "], but got [" + to_string(_c2r[client]) + "]");
 	DEBUG(_r2c[remote_fd] == client, "client of remote_fd[" + to_string(remote_fd) + "] should be [" + to_string(client) + "], but got [" + to_string(_r2c[remote_fd]) + "]");

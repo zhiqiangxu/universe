@@ -13,7 +13,8 @@
 #include "Protocol.h"
 #include "Log/ErrorHandler.h"
 #include "Utils.h"
-#include "StateMachine/StateBuffer.h"
+#include "StateMachine/Stateful.h"
+#include "StateMachine/Bufferable.h"
 #include "Dispatch/ProcessWorker.h"
 
 

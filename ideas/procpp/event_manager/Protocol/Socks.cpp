@@ -194,6 +194,12 @@ bool Socks::send_peer(int peer_fd, string& message)
 	return _server.write(peer_fd, message.data(), message.length());
 }
 
+void Socks::erase_state_buffer(int fd)
+{
+	erase_state(fd);
+	erase_buf(fd);
+}
+
 void Socks::on_close(int client)
 {
 	auto address = _url.find(client) != _url.end() ? _url[client] : "";

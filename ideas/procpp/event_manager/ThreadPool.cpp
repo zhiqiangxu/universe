@@ -3,11 +3,6 @@
 #include <iostream>
 #include "Utils.h"
 
-static string RED(string s)
-{
-	return "\033[1;31m" + s + "\033[0m";
-}
-
 
 
 void run()

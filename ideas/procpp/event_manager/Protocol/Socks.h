@@ -1,6 +1,6 @@
 #pragma once
 #include "Protocol.h"
-#include "StateMachine/StateBuffer.h"
+#include "StateMachine/Stateful.h"
 #include <map>
 using namespace std;
 
@@ -20,7 +20,7 @@ public:
 };
 
 //socks5,不支持认证,只支持connect
-class Socks : public Protocol, public ISocks, public StateBuffer<SocksState>
+class Socks : public Protocol, public ISocks, public Stateful<SocksState>
 {
 public:
 	using Protocol::Protocol;
@@ -31,6 +31,8 @@ public:
 
 	virtual void close(int fd) override;
 	virtual bool send_peer(int peer_fd, string& message) override;
+
+	virtual void erase_state_buffer(int fd);
 
 private:
 	map<int, string> _url;

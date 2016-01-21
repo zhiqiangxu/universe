@@ -27,7 +27,7 @@ public:
 //why template ?
 //because the Proto needs to be based on Server created in listen_then_fork
 template <typename Proto>
-class ProcessWorker : public IProcessWorker, public StateBuffer<IProcessWorker::ConnectState>
+class ProcessWorker : public IProcessWorker, public Bufferable, public Stateful<IProcessWorker::ConnectState>
 {
 	static const int NUMBER_CORES = -1;
 
@@ -44,6 +44,8 @@ public:
 	virtual void on_remote_close(int remote_fd, int client) override;
 
 	virtual void handle(int fd);
+
+	virtual void erase_state_buffer(int fd);
 
 private:
 	//remove all info about the pair

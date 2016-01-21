@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <type_traits>//underlying_type
+#include <sys/socket.h>//getpeername
 
 using namespace std;
 
@@ -60,6 +61,23 @@ public:
 		serveraddr.sin6_addr = in6addr_any;
 
 		return serveraddr;
+	}
+
+	union SocketAddress
+	{
+		struct sockaddr_in6 in6;
+		struct sockaddr_in in4;
+		struct sockaddr_un un;
+	};
+
+	static bool get_peer_name(int socket, SocketAddress& addr)
+	{
+		socklen_t len = sizeof(SocketAddress);
+		auto ret = getpeername(socket, reinterpret_cast<struct sockaddr*>(&addr), &len);
+	
+		if (ret == -1) return false;
+
+		return true;
 	}
 
 	static bool file_exists(string path)
