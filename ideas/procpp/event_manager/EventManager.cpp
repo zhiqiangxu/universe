@@ -156,6 +156,12 @@ ssize_t EventManager::write(int fd, const void *buf, size_t count)
 	return ret;
 }
 
+ssize_t EventManager::write_line(int fd, const string message)
+{
+	auto l = message + "\n";
+	return write(fd, l.data(), l.length());
+}
+
 void EventManager::start()
 {
 	signal(SIGPIPE, SIG_IGN);

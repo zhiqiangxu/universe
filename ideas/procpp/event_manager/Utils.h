@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <type_traits>//underlying_type
 #include <sys/socket.h>//getpeername
+#include <netdb.h>//getnameinfo
 
 using namespace std;
 
@@ -70,15 +71,28 @@ public:
 		struct sockaddr_un un;
 	};
 
-	static bool get_peer_name(int socket, SocketAddress& addr)
+	static ssize_t addr_size(int domain)
+	{
+		if (domain == AF_INET) return sizeof(struct sockaddr_in);
+
+		if (domain == AF_INET6) return sizeof(struct sockaddr_in6);
+
+		if (domain == AF_UNIX) return sizeof(struct sockaddr_un);
+
+		return -1;
+	}
+
+	static bool get_peer_name(int sock, SocketAddress& addr)
 	{
 		socklen_t len = sizeof(SocketAddress);
-		auto ret = getpeername(socket, reinterpret_cast<struct sockaddr*>(&addr), &len);
+		auto ret = getpeername(sock, reinterpret_cast<struct sockaddr*>(&addr), &len);
 	
 		if (ret == -1) return false;
 
 		return true;
 	}
+
+	static string get_name_info(const SocketAddress& addr);
 
 	static bool file_exists(string path)
 	{
