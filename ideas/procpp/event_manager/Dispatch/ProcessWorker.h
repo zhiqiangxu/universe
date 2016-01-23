@@ -3,31 +3,13 @@
 #include <linux/un.h>//struct sockaddr_un
 #include <map>
 
-class IProcessWorker
-{
-public:
-	enum class ConnectState
-	{
-		B4CONNECT,
-		CONNECT,
-		CONNECTED,
-	};
 
-
-	virtual void on_connect(int client) = 0;
-	virtual void on_message(int client, string message, int remote_fd) = 0;
-	virtual void on_close(int client, int remote_fd) = 0;
-
-	virtual void on_remote_connect(int remote_fd, ConnectResult r, int client) = 0;
-	virtual void on_remote_message(int remote_fd, string message, int client) = 0;
-	virtual void on_remote_close(int remote_fd, int client) = 0;
-};
 
 
 //why template ?
 //because the Proto needs to be based on Server created in listen_then_fork
 template <typename Proto>
-class ProcessWorker : public IProcessWorker, public Bufferable, public Stateful<IProcessWorker::ConnectState>
+class ProcessWorker : public IBaseWorker, public StateBuffer<IBaseWorker::ConnectState>
 {
 	static const int NUMBER_CORES = -1;
 
@@ -46,9 +28,8 @@ public:
 	virtual void on_remote_message(int remote_fd, string message, int client) override;
 	virtual void on_remote_close(int remote_fd, int client) override;
 
-	virtual void handle(int fd);
+	virtual void handle(int fd) override;
 
-	virtual void erase_state_buffer(int fd);
 
 private:
 	//remove all info about the pair

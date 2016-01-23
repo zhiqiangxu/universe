@@ -12,6 +12,7 @@
 #include <type_traits>//underlying_type
 #include <sys/socket.h>//getpeername
 #include <netdb.h>//getnameinfo
+#include <arpa/inet.h>//inet_pton
 
 using namespace std;
 
@@ -80,6 +81,34 @@ public:
 		if (domain == AF_UNIX) return sizeof(struct sockaddr_un);
 
 		return -1;
+	}
+
+	static SocketAddress to_addr(sun_path)
+	{
+		SocketAddress addr;
+		addr.un = addr_sun(sun_addr);
+
+		return addr;
+	}
+
+	static SocketAddress to_addr(string ip, uint16_t port)
+	{
+		SocketAddress addr;
+
+		if ( ip.find(":") >= 0 ) {
+			addr.in6.sin6_family = AF_INET6;
+			addr.in6.sin6_port = htons(port);
+
+			inet_pton( AF_INET6, ip.c_str(), &(addr.in6.sin6_addr) );
+		} else {
+			addr.in4.sin_family = AF_INET6;
+			addr.in4.sin_port = htons(port);
+
+			inet_pton( AF_INET, ip.c_str(), &(addr.in4.sin_addr) );
+		}
+
+
+		return addr;
 	}
 
 	static bool get_peer_name(int sock, SocketAddress& addr)

@@ -15,6 +15,8 @@
 #include "Utils.h"
 #include "StateMachine/Stateful.h"
 #include "StateMachine/Bufferable.h"
+#include "StateMachine/StateBuffer.h"
+#include "Dispatch/IBaseWorker.h"
 #include "Dispatch/ProcessWorker.h"
 
 

@@ -16,12 +16,12 @@ socks: tests/socks.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp 
 	bash -lic 'rc $+ -valgrind'
 
 echo_worker: tests/echo_worker.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp \
-			 Server.cpp Client.cpp ClientServer.cpp Protocol/Echo.cpp Log/ErrorHandler.cpp Dispatch/ProcessWorker.cpp
+			 Server.cpp Client.cpp ClientServer.cpp Protocol/Echo.cpp Log/ErrorHandler.cpp Dispatch/IBaseWorker.cpp
 	rm -f /tmp/react_handler.sock
 	bash -lic 'rc $+ -valgrind'
 
 socks_worker: tests/socks_worker.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp \
-			  Server.cpp Client.cpp ClientServer.cpp Protocol/Socks.cpp Log/ErrorHandler.cpp Dispatch/ProcessWorker.cpp
+			  Server.cpp Client.cpp ClientServer.cpp Protocol/Socks.cpp Log/ErrorHandler.cpp Dispatch/IBaseWorker.cpp
 	rm -f /tmp/react_handler.sock
 	bash -lic 'rc $+ -valgrind'
 

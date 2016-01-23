@@ -25,19 +25,13 @@ void ProcessWorker<Proto>::handle(int fd)
 	}
 }
 
-template <typename Proto>
-void ProcessWorker<Proto>::erase_state_buffer(int client)
-{
-	erase_state(client);
-	erase_buf(client);
-}
 
 template <typename Proto>
 void ProcessWorker<Proto>::on_connect(int client)
 {
 	//L.debug_log("on_connect client = " + to_string(client));
 
-	this->set_state(client, IProcessWorker::ConnectState::B4CONNECT);
+	this->set_state(client, IBaseWorker::ConnectState::B4CONNECT);
 
 	auto remote_fd = _server.connect(&_child_sockaddr, EventManager::EventCB{
 		{
@@ -61,7 +55,7 @@ void ProcessWorker<Proto>::on_connect(int client)
 	if (remote_fd == -1) return;//on_remote_connect会关闭client
 
 	// AF_UNIX的情况，一般情况下，此时已经CONNECTED
-	if (this->get_state(client) == IProcessWorker::ConnectState::B4CONNECT) this->set_state(client, IProcessWorker::ConnectState::CONNECT);
+	if (this->get_state(client) == IBaseWorker::ConnectState::B4CONNECT) this->set_state(client, IBaseWorker::ConnectState::CONNECT);
 
 	_server.watch(client, EventManager::EventCB{
 		{
@@ -92,7 +86,7 @@ void ProcessWorker<Proto>::on_message(int client, string message, int remote_fd)
 	DEBUG(_r2c[remote_fd] == client, "client of remote_fd[" + to_string(remote_fd) + "] should be [" + to_string(client) + "], but got [" + to_string(_r2c[remote_fd]) + "]");
 
 	L.debug_log("get_state = " + Utils::enum_string(this->get_state(client)));
-	if (need_buf(client, message, this->get_state(client) != IProcessWorker::ConnectState::CONNECTED)) {
+	if (need_buf(client, message, this->get_state(client) != IBaseWorker::ConnectState::CONNECTED)) {
 		//L.debug_log("connecting...buffed");
 		return;
 	}
@@ -120,7 +114,7 @@ void ProcessWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int
 
 	if (r == ConnectResult::OK) {
 		//L.debug_log("client " + to_string(client) + " set_stat CONNECTED");
-		this->set_state(client, IProcessWorker::ConnectState::CONNECTED);
+		this->set_state(client, IBaseWorker::ConnectState::CONNECTED);
 
 		_server.send_session_id(remote_fd, client);
 
@@ -128,7 +122,7 @@ void ProcessWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int
 		if (this->has_buf(client)) on_message(client, "", remote_fd);
 
 	} else {
-		if (this->get_state(client) == IProcessWorker::ConnectState::B4CONNECT)
+		if (this->get_state(client) == IBaseWorker::ConnectState::B4CONNECT)
 			erase_state_buffer(client);//此时pair信息还没生成
 		else
 			_erase_pair_info(client, remote_fd);
