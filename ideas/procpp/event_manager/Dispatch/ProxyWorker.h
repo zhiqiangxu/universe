@@ -25,6 +25,10 @@ public:
 	virtual void handle(int fd) override;
 
 private:
+	void _erase_pair_info(int client, int remote_fd);
+
+	unsigned int _rr_index = 0;
+
 	ClientServer& _server;
 	map<int, int> _c2r;
 	map<int, int> _r2c;

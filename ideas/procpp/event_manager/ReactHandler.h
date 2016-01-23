@@ -18,6 +18,7 @@
 #include "StateMachine/StateBuffer.h"
 #include "Dispatch/IBaseWorker.h"
 #include "Dispatch/ProcessWorker.h"
+#include "Dispatch/ProxyWorker.h"
 
 
 

@@ -52,16 +52,22 @@ int Client::connect(const string sun_path, EventManager::EventCB callbacks)
 
 int Client::connect(const struct sockaddr_un* addr, EventManager::EventCB callbacks, bool async)
 {
+	return connect(reinterpret_cast<const struct sockaddr*>(addr), sizeof(*addr), callbacks, async);
+}
+
+int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async)
+{
 	return connect(reinterpret_cast<const struct sockaddr*>(addr), sizeof(*addr), EventManager::EventCB{
 		{
-			EventType::CONNECT, EventManager::CB([this, callbacks] (int remote_fd, ConnectResult r) mutable {
-				//TODO should copy -> erase -> call
-				callbacks[EventType::CONNECT](remote_fd, r);
+			EventType::CONNECT, EventManager::CB([this, callbacks, sa_family=addr->sa_family] (int remote_fd, ConnectResult r) mutable {
+				auto f = callbacks[EventType::CONNECT];
 				callbacks.erase(EventType::CONNECT);
+				f(remote_fd, r);
 
 				if (r == ConnectResult::OK) {
 
 					//AF_UNIX不需要keepalive
+					if ( sa_family != AF_UNIX ) set_keepalive(remote_fd);
 
 					if (callbacks.size()) watch(remote_fd, callbacks);
 
@@ -72,7 +78,8 @@ int Client::connect(const struct sockaddr_un* addr, EventManager::EventCB callba
 				}
 			})
 		}
-	}, true);
+	}, true, -1);
+
 }
 
 bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks)

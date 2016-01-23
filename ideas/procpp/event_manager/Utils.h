@@ -83,10 +83,15 @@ public:
 		return -1;
 	}
 
-	static SocketAddress to_addr(sun_path)
+	static ssize_t addr_size(SocketAddress& addr)
+	{
+		return addr_size(addr.in6.sin6_family);
+	}
+
+	static SocketAddress to_addr(string sun_path)
 	{
 		SocketAddress addr;
-		addr.un = addr_sun(sun_addr);
+		addr.un = addr_sun(sun_path);
 
 		return addr;
 	}
@@ -95,13 +100,13 @@ public:
 	{
 		SocketAddress addr;
 
-		if ( ip.find(":") >= 0 ) {
+		if ( ip.find(":") != string::npos ) {
 			addr.in6.sin6_family = AF_INET6;
 			addr.in6.sin6_port = htons(port);
 
 			inet_pton( AF_INET6, ip.c_str(), &(addr.in6.sin6_addr) );
 		} else {
-			addr.in4.sin_family = AF_INET6;
+			addr.in4.sin_family = AF_INET;
 			addr.in4.sin_port = htons(port);
 
 			inet_pton( AF_INET, ip.c_str(), &(addr.in4.sin_addr) );

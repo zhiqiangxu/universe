@@ -24,6 +24,8 @@ public:
 	/********通用地址*********/
 	virtual bool connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks) = 0;
 
+	/******通用异步接口******/
+	virtual int connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async) = 0;
 
 	// 一般不调该接口，实在需要，该接口CONNECT回调必须负责关闭fd和set_keepalive(若需要)
 	//TODO keepalive能否在connect前就设定好？
@@ -42,7 +44,10 @@ public:
 	virtual int connect(const struct sockaddr_un* addr, EventManager::EventCB callbacks, bool async) override;
 
 	virtual bool connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks) override;
-	virtual int connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd = -1) override;
+
+	virtual int connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async) override;
+
+	virtual int connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd) override;
 
 
 private:

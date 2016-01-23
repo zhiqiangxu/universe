@@ -25,6 +25,11 @@ socks_worker: tests/socks_worker.cpp EventManager.cpp Server/Protocol/Global.cpp
 	rm -f /tmp/react_handler.sock
 	bash -lic 'rc $+ -valgrind'
 
+proxy_worker: tests/proxy_worker.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp \
+			  Server.cpp Client.cpp ClientServer.cpp Log/ErrorHandler.cpp Dispatch/IBaseWorker.cpp Dispatch/ProxyWorker.cpp \
+			  Utils.cpp
+	bash -lic 'rc $+ -valgrind'
+
 pool: tests/pool.cpp ThreadPool.cpp
 	bash -lic 'rc $+ '
 
