@@ -97,6 +97,7 @@ int Server::accept(int socketfd, struct sockaddr *addr, socklen_t *addrlen)
 }
 
 
+
 EventManager::EventCB Server::to_callbacks(Protocol& proto)
 {
 	return EventManager::EventCB{
@@ -116,6 +117,7 @@ EventManager::EventCB Server::to_callbacks(Protocol& proto)
 						{
 							EventType::READ, EventManager::CB([&proto] (int client, string message) mutable {
 								proto.on_message(client, message);
+
 							}),
 						},
 						{

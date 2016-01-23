@@ -46,10 +46,7 @@ bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 	}
 
 	auto& ecb = added ? ecb_iter->second : _fds[fd];
-	auto event_added = added ? ecb.find(event) != ecb.end() : false;
-	if (!event_added) {
-		ecb[event] = callback;
-	}
+	ecb[event] = callback;
 	
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }

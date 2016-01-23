@@ -28,6 +28,10 @@ size_t Bufferable::count_buf()
 	return _buf.size();
 }
 
+bool Bufferable::has_buf(int id)
+{
+	return _buf.find(id) != _buf.end();
+}
 
 void Bufferable::erase_buf(int id)
 {

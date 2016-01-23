@@ -48,6 +48,7 @@ public:
 	};
 	using EventCB = map<EventType, CB>;
 
+	//如果同一个event调两次，后者覆盖前者
 	virtual bool watch(int fd, EventType event, CB callback) = 0;
 	virtual bool watch(int fd, const EventCB& callbacks, bool re_watch) = 0;
 	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch) = 0;

@@ -44,6 +44,12 @@ bool Client::connect(string address, uint16_t port, EventManager::EventCB callba
 	return false;
 }
 
+int Client::connect(const string sun_path, EventManager::EventCB callbacks)
+{
+	auto addr = Utils::addr_sun(sun_path);
+	return connect(reinterpret_cast<const struct sockaddr*>(&addr), sizeof(addr), callbacks);
+}
+
 int Client::connect(const struct sockaddr_un* addr, EventManager::EventCB callbacks, bool async)
 {
 	return connect(reinterpret_cast<const struct sockaddr*>(addr), sizeof(*addr), EventManager::EventCB{

@@ -26,6 +26,8 @@ public:
 	static string read(int fd);//fd为ET
 	static string read(int fd, size_t size);
 	static bool read(string& message, size_t size, string& result);
+	template <typename type>
+	static bool read(string& message, type& value);
 	static string read_until(int fd, string separator);
 	static bool read_until(string& message, string separator, string& result, int scanned = 0);
 
@@ -38,3 +40,6 @@ protected:
 	Server& _server;
 
 };
+
+
+#include "Protocol.hpp"

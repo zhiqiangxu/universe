@@ -1,6 +1,8 @@
 #include "Protocol.h"
 #include <algorithm>//max
 #include <unistd.h>//read
+#include <string.h>//memcpy
+#include "ReactHandler.h"
 
 bool Protocol::read(string& message, size_t size, string& result)
 {

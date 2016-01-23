@@ -5,10 +5,10 @@
 
 
 template <typename Proto>
-ProcessWorker<Proto>::ProcessWorker(ClientServer& server, int n, string sun_path)
+ProcessWorker<Proto>::ProcessWorker(ClientServer& server, int n, string child_sun_path, string parent_sun_path)
 : _server(server)
 {
-	_set_path(sun_path);
+	_set_path(child_sun_path, parent_sun_path);
 	_listen_then_fork(n);
 }
 
@@ -39,7 +39,7 @@ void ProcessWorker<Proto>::on_connect(int client)
 
 	this->set_state(client, IProcessWorker::ConnectState::B4CONNECT);
 
-	auto remote_fd = _server.connect(&_sockaddr, EventManager::EventCB{
+	auto remote_fd = _server.connect(&_child_sockaddr, EventManager::EventCB{
 		{
 			EventType::CONNECT, EventManager::CB([this, client] (int remote_fd, ConnectResult r) {
 				on_remote_connect(remote_fd, r, client);
@@ -121,6 +121,12 @@ void ProcessWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int
 	if (r == ConnectResult::OK) {
 		//L.debug_log("client " + to_string(client) + " set_stat CONNECTED");
 		this->set_state(client, IProcessWorker::ConnectState::CONNECTED);
+
+		_server.send_session_id(remote_fd, client);
+
+		//trigger on_message once in case buffered
+		if (this->has_buf(client)) on_message(client, "", remote_fd);
+
 	} else {
 		if (this->get_state(client) == IProcessWorker::ConnectState::B4CONNECT)
 			erase_state_buffer(client);//此时pair信息还没生成
@@ -168,11 +174,13 @@ void ProcessWorker<Proto>::_erase_pair_info(int client, int remote_fd)
 }
 
 template <typename Proto>
-void ProcessWorker<Proto>::_set_path(string sun_path)
+void ProcessWorker<Proto>::_set_path(string child_sun_path, string parent_sun_path)
 {
-	if (Utils::file_exists(sun_path)) L.error_exit(sun_path + " already exists!");
+	if (Utils::file_exists(child_sun_path)) L.error_exit(parent_sun_path + " already exists!");
+	if (Utils::file_exists(parent_sun_path)) L.error_exit(parent_sun_path + " already exists!");
 
-	_sockaddr = Utils::addr_sun(sun_path);
+	_child_sockaddr = Utils::addr_sun(child_sun_path);
+	_parent_sockaddr = Utils::addr_sun(parent_sun_path);
 }
 
 template <typename Proto>
@@ -182,10 +190,11 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 
 	ClientServer worker_server;
 	Proto proto(worker_server);
-	auto ok = worker_server.listen( reinterpret_cast<const struct sockaddr*>(&_sockaddr), sizeof(_sockaddr), proto );
+	auto ok = worker_server.listen( reinterpret_cast<const struct sockaddr*>(&_child_sockaddr), sizeof(_child_sockaddr), proto );
 
 
-	if (!ok) L.error_exit("listen failed");
+	if (!ok) L.error_exit("listen child sock failed");
+
 
 	for (int i = 0; i < n; i++) {
 		auto pid = fork();
@@ -193,12 +202,18 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 
 		if (pid) {
 		} else {
+			worker_server.set_parent(_parent_sockaddr.sun_path);/* not master, so it should receive session id */
+
 			worker_server.start();
 
 			// child should never return
 			exit(0);
 		}
 	}
+
+	ok = _server.listen_for_child(_parent_sockaddr.sun_path);
+
+	if (!ok) L.error_exit("listen parent sock failed");
 }
 
 
