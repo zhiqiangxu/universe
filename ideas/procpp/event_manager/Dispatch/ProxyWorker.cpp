@@ -107,7 +107,6 @@ void ProxyWorker::on_remote_connect(int remote_fd, ConnectResult r, int client)
 		//L.debug_log("client " + to_string(client) + " set_stat CONNECTED");
 		this->set_state(client, IBaseWorker::ConnectState::CONNECTED);
 
-		_server.send_session_id(remote_fd, client);
 
 		//trigger on_message once in case buffered
 		if (has_buf(client)) {
