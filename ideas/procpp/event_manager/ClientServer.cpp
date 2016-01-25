@@ -19,9 +19,9 @@ int ClientServer::accept(int socketfd, struct sockaddr *addr, socklen_t *addrlen
 	return client;
 }
 
-bool ClientServer::remove(int fd, bool no_callback)
+bool ClientServer::unwatch(int fd, bool no_callback)
 {
-	if (EventManager::remove(fd, no_callback)) {
+	if (EventManager::unwatch(fd, no_callback)) {
 		if (_c2s.find(fd) != _c2s.end()) {
 			auto session_id = _c2s[fd];
 			_s2c.erase(session_id);

@@ -91,7 +91,7 @@ int Server::accept(int socketfd, struct sockaddr *addr, socklen_t *addrlen)
 		L.error_exit("accept");
 	}
 
-	if (addr->sa_family != AF_UNIX) set_keepalive(client);
+	if (addr->sa_family != AF_UNIX) Utils::set_keepalive(client);
 
 	return client;
 }

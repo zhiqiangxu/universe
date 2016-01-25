@@ -128,6 +128,10 @@ public:
 
 	static string get_name_info(const SocketAddress& addr);
 
+	static void set_nonblock(int fd);
+	static void set_keepalive(int socketfd, int keepidle = 3600, int keepinterval = 60, int keepcount = 5);
+	static int nonblock_socket(int domain, int type, int protocol);
+
 	static bool file_exists(string path)
 	{
 		struct stat buffer;

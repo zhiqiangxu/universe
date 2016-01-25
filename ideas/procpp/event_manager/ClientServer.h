@@ -26,7 +26,7 @@ public:
 	virtual ~ClientServer();
 
 	virtual int accept(int socketfd, struct sockaddr *addr, socklen_t *addrlen) override;
-	virtual bool remove(int fd, bool no_callback = false) override;
+	virtual bool unwatch(int fd, bool no_callback = false) override;
 
 	virtual bool get_session_id(int client, uint32_t* session_id) override;
 	virtual bool send_session_id(int worker_fd, int client) override;//from master

@@ -67,7 +67,7 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 				if (r == ConnectResult::OK) {
 
 					//AF_UNIX不需要keepalive
-					if ( sa_family != AF_UNIX ) set_keepalive(remote_fd);
+					if ( sa_family != AF_UNIX ) Utils::set_keepalive(remote_fd);
 
 					if (callbacks.size()) watch(remote_fd, callbacks);
 
@@ -97,7 +97,7 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 		callbacks.erase(EventType::CONNECT);
 	}
 
-	if (addr->sa_family != AF_UNIX) set_keepalive(s);
+	if (addr->sa_family != AF_UNIX) Utils::set_keepalive(s);
 
 	//刚注册的fd，如果有事件，不会遗漏
 	if (callbacks.size()) watch(s, callbacks);
@@ -134,8 +134,8 @@ int Client::connect(string address, uint16_t port, EventManager::EventCB callbac
 		return -1;
 	}
 
-	auto s = nonblock_socket(AF_INET, SOCK_STREAM, 0);
-	if (s == -1) L.error_exit("nonblock_socket");
+	auto s = Utils::nonblock_socket(AF_INET, SOCK_STREAM, 0);
+	if (s == -1) L.error_exit("Utils::nonblock_socket");
 
 	auto cb = new function<void(int, ConnectResult)>;
 
@@ -164,7 +164,7 @@ CONNECT_FAIL:
 			callbacks.erase(EventType::CONNECT);
 			
 			//TODO udp ?
-			set_keepalive(fd);
+			Utils::set_keepalive(fd);
 
 			if (callbacks.size()) watch(fd, callbacks);
 
@@ -197,8 +197,8 @@ CONNECT_FAIL:
 
 int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd)
 {
-	auto s = nonblock_socket(addr->sa_family, SOCK_STREAM, 0);
-	if (s == -1) L.error_exit("nonblock_socket");
+	auto s = Utils::nonblock_socket(addr->sa_family, SOCK_STREAM, 0);
+	if (s == -1) L.error_exit("Utils::nonblock_socket");
 
 	if (fd != -1) {
 		auto ret = dup2(s, fd);
@@ -213,7 +213,7 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 	if (ret == -1 && errno != EINPROGRESS) {
 		L.error_log("connect");
 
-		remove(s, true);
+		unwatch(s, true);
 		callbacks[EventType::CONNECT](s, ConnectResult::NG);
 		return -1;
 	}

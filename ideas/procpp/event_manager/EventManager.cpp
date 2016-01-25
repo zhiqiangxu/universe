@@ -10,16 +10,7 @@
 #include <strings.h>//bzero
 #include <signal.h>//signal
 #include <unistd.h>//write
-//setsockopt
-#include <sys/types.h>
-#include <sys/socket.h>
-//IPPROTO_TCP
-#include <netinet/in.h>
-//TCP_KEEPIDLE
-#include <netinet/tcp.h>
 #include "ReactHandler.h"
-
-#include "Protocol.h"
 
 template<>
 const char* Utils::enum_strings<ConnectResult>::data[] = {"OK", "NG", "GAME_OVER"};
@@ -42,7 +33,7 @@ bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 
 	// TODO 当所有socket都通过nonblock_socket/set_nonblock时，即可干掉这行
 	if (!added) {
-		set_nonblock(fd);
+		Utils::set_nonblock(fd);
 	}
 
 	auto& ecb = added ? ecb_iter->second : _fds[fd];
@@ -58,7 +49,7 @@ bool EventManager::watch(int fd, const EventManager::EventCB& callbacks, bool re
 	if (re_watch) added = false;
 
 	if (!added) {
-		set_nonblock(fd);
+		Utils::set_nonblock(fd);
 	}
 
 	_fds[fd] = callbacks;
@@ -76,7 +67,7 @@ bool EventManager::watch(int fd, EventManager::EventCB&& callbacks, bool re_watc
 	auto added = _fds.find(fd) != _fds.end();
 
 	if (!added) {
-		set_nonblock(fd);
+		Utils::set_nonblock(fd);
 	}
 
 	_fds[fd] = callbacks;
@@ -84,7 +75,7 @@ bool EventManager::watch(int fd, EventManager::EventCB&& callbacks, bool re_watc
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }
 
-bool EventManager::remove(int fd, bool no_callback)
+bool EventManager::unwatch(int fd, bool no_callback)
 {
 	if (_fds.find(fd) == _fds.end()) return false;//已移出
 
@@ -104,30 +95,30 @@ bool EventManager::remove(int fd, bool no_callback)
 	return true;
 }
 
-bool EventManager::clear_fds()
-{
-	auto _copy = _fds;
-	for (const auto& r : _copy) {
-		if (!close(r.first)) L.error_exit(("clear failed for " + to_string(r.first)).c_str());
-	}
-
-	return true;
-}
-
 bool EventManager::close(int fd, bool force_close)
 {
 	auto ret = true;
 
 	if (_fds.find(fd) != _fds.end() && _fds[fd].find(EventType::CLOSE) != _fds[fd].end()) {
 		auto f = _fds[fd][EventType::CLOSE];
-		if ((ret &= remove(fd)) || force_close) _add_close_fd(fd);
+		if ((ret &= unwatch(fd)) || force_close) _add_close_fd(fd);
 
 		f(fd);
 
 		return ret;
 	}
 
-	if ((ret &= remove(fd)) || force_close) _add_close_fd(fd);
+	if ((ret &= unwatch(fd)) || force_close) _add_close_fd(fd);
+
+	return true;
+}
+
+bool EventManager::close_all()
+{
+	auto _copy = _fds;
+	for (const auto& r : _copy) {
+		if (!close(r.first)) L.error_exit(("clear failed for " + to_string(r.first)).c_str());
+	}
 
 	return true;
 }
@@ -183,7 +174,7 @@ void EventManager::start()
 			auto fd = events[i].data.fd;
 			auto has_callback = _fds.find(fd) != _fds.end();
 			if (!has_callback) {
-				//可能是某个回调remove或者close了该fd
+				//可能是某个回调unwatch或者close了该fd
 				cout << Utils::RED("wait fd has no callback " + to_string(fd)) << endl;
 				continue;
 			}
@@ -214,10 +205,10 @@ void EventManager::start()
 CONNECT_NG:
 				//下面的写法会导致多次触发connect回调, 而且，connect失败fd仍需占住，
 				//所以，将关闭socket的事情交给client
-				//if (remove(fd)) _add_close_fd(fd);
+				//if (unwatch(fd)) _add_close_fd(fd);
 				//f(fd, ConnectResult::NG);
 
-				remove(fd);
+				unwatch(fd);
 				continue;
 
 CONNECT_OK:
@@ -262,11 +253,11 @@ CONNECT_OK:
 				if (cb.find(EventType::CLOSE) != cb.end()) {
 
 					auto f/*f为拷贝*/ = cb[EventType::CLOSE];
-					if (remove(fd)) _add_close_fd(fd);
+					if (unwatch(fd)) _add_close_fd(fd);
 					f(fd);
 
 				} else {
-					if (remove(fd)) _add_close_fd(fd);
+					if (unwatch(fd)) _add_close_fd(fd);
 				}
 			}
 
@@ -318,40 +309,6 @@ bool EventManager::_epoll_update(int fd, int epoll_op)
 	ev.events = events;
 
 	return epoll_ctl(_epoll_fd, epoll_op, fd, &ev) != -1;
-}
-
-void EventManager::set_nonblock(int fd)
-{
-	auto old_flags = fcntl(fd, F_GETFL);
-
-	if (old_flags & O_NONBLOCK) return;//已经nonblock
-
-	auto new_flags = old_flags | O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, new_flags) == -1) L.error_exit("set_nonblock");
-}
-
-void EventManager::set_keepalive(int socketfd, int keepidle, int keepinterval, int keepcount)
-{
-	int sockopt = 1;
-	if (setsockopt(socketfd, SOL_SOCKET, SO_KEEPALIVE, &sockopt, sizeof(int)) == -1) L.error_exit("setsockopt SO_KEEPALIVE");
-
-	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int)) == -1) L.error_exit("setsockopt TCP_KEEPIDLE");
-
-	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPINTVL, &keepinterval, sizeof(int)) == -1) L.error_exit("setsockopt TCP_KEEPINTVL");
-
-	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPCNT, &keepcount, sizeof(int)) == -1) L.error_exit("setsockopt TCP_KEEPCNT");
-}
-
-int EventManager::nonblock_socket(int domain, int type, int protocol)
-{
-	auto s = socket(domain, type, protocol);
-	if (s == -1) {
-		L.error_log("socket");
-		return -1;
-	}
-
-	set_nonblock(s);
-	return s;
 }
 
 void EventManager::_add_close_fd(int fd)
