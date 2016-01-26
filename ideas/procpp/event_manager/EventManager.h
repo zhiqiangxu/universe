@@ -92,5 +92,8 @@ private:
 	int _epoll_fd;
 	vector<int> _close_fds;
 	map<int, EventCB> _fds;
+
+	int _current_fd = -1;
+	EventCB _current_cb;
 };
 

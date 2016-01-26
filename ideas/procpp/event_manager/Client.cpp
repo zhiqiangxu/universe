@@ -57,7 +57,7 @@ int Client::connect(const struct sockaddr_un* addr, EventManager::EventCB callba
 
 int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async)
 {
-	return connect(reinterpret_cast<const struct sockaddr*>(addr), sizeof(*addr), EventManager::EventCB{
+	return connect(reinterpret_cast<const struct sockaddr*>(addr), addrlen, EventManager::EventCB{
 		{
 			EventType::CONNECT, EventManager::CB([this, callbacks, sa_family=addr->sa_family] (int remote_fd, ConnectResult r) mutable {
 				auto f = callbacks[EventType::CONNECT];

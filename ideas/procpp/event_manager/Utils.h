@@ -127,6 +127,7 @@ public:
 	}
 
 	static string get_name_info(const SocketAddress& addr);
+	static string get_name_info(const struct sockaddr* sa);
 
 	static void set_nonblock(int fd);
 	static void set_keepalive(int socketfd, int keepidle = 3600, int keepinterval = 60, int keepcount = 5);

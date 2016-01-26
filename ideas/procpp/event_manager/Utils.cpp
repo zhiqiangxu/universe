@@ -15,11 +15,16 @@
 
 string Utils::get_name_info(const SocketAddress& addr)
 {
-	static char host[40];
-	static char service[20];
-
 	auto addrp = reinterpret_cast<const struct sockaddr*>(&addr);
-	if (getnameinfo(addrp, addr_size(addrp->sa_family), host, sizeof(host), service, sizeof(service), 0) != 0) {
+	return get_name_info(addrp);
+}
+
+string Utils::get_name_info(const struct sockaddr* sa)
+{
+	static char host[UNIX_PATH_MAX];
+	static char service[UNIX_PATH_MAX];
+
+	if (getnameinfo(sa, addr_size(sa->sa_family), host, sizeof(host), service, sizeof(service), 0) != 0) {
 		L.error_exit("getnameinfo");
 	}
 

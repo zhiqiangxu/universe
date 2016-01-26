@@ -39,6 +39,10 @@ bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 	auto& ecb = added ? ecb_iter->second : _fds[fd];
 	ecb[event] = callback;
 	
+	if (fd == _current_fd) {
+		_current_cb[event] = callback;
+	}
+
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }
 
@@ -46,7 +50,16 @@ bool EventManager::watch(int fd, const EventManager::EventCB& callbacks, bool re
 {
 	auto added = _fds.find(fd) != _fds.end();
 
-	if (re_watch) added = false;
+	//re_watch表示该fd并不在epoll set，所以不可能是_current_fd
+	if (re_watch) {
+		added = false;
+	} else {
+
+		if (fd == _current_fd) {
+			_current_cb = callbacks;
+		}
+
+	}
 
 	if (!added) {
 		Utils::set_nonblock(fd);
@@ -57,14 +70,27 @@ bool EventManager::watch(int fd, const EventManager::EventCB& callbacks, bool re
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }
 
+//TODO investigate how to avoid duplicate code for rvalue handling...
 bool EventManager::watch(int fd, EventManager::EventCB&& callbacks, bool re_watch)
 {
+
+	auto added = _fds.find(fd) != _fds.end();
+
 	if (callbacks.size() == 0) {
 		cout << Utils::RED("watch without callback is invalid") << endl;
 		return false;
 	}
 
-	auto added = _fds.find(fd) != _fds.end();
+	//re_watch表示该fd并不在epoll set，所以不可能是_current_fd
+	if (re_watch) {
+		added = false;
+	} else {
+
+		if (fd == _current_fd) {
+			_current_cb = callbacks;
+		}
+
+	}
 
 	if (!added) {
 		Utils::set_nonblock(fd);
@@ -80,6 +106,10 @@ bool EventManager::unwatch(int fd, bool no_callback)
 	if (_fds.find(fd) == _fds.end()) return false;//已移出
 
 	auto cb = _fds[fd];//拷贝
+
+	if (fd == _current_fd) {
+		_current_cb.clear();
+	}
 
 	_fds.erase(fd);
 	if (!_epoll_update(fd, EPOLL_CTL_DEL)) L.error_exit(string("_epoll_update " + to_string(fd)).c_str());//valid according to http://stackoverflow.com/a/584835
@@ -171,19 +201,19 @@ void EventManager::start()
 		}
 
 		for (int i = 0; i < ret; i++) {
-			auto fd = events[i].data.fd;
-			auto has_callback = _fds.find(fd) != _fds.end();
+			_current_fd = events[i].data.fd;
+			auto has_callback = _fds.find(_current_fd) != _fds.end();
 			if (!has_callback) {
 				//可能是某个回调unwatch或者close了该fd
-				cout << Utils::RED("wait fd has no callback " + to_string(fd)) << endl;
+				cout << Utils::RED("waited fd has no callback " + to_string(_current_fd)) << endl;
 				continue;
 			}
 
 			auto flags = events[i].events;
 
-			auto/*TODO 拷贝性能优化*/ cb = _fds[fd];
-			if (cb.find(EventType::CONNECT) != cb.end()) {
-				auto f/*f为拷贝*/ = cb[EventType::CONNECT];
+			_current_cb = _fds[_current_fd];
+			if (_current_cb.find(EventType::CONNECT) != _current_cb.end()) {
+				auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::CONNECT];
 				if (flags & (EPOLLERR|EPOLLHUP)) {
 					goto CONNECT_NG;
 				}
@@ -191,7 +221,7 @@ void EventManager::start()
 				if (flags & EPOLLOUT) {
 					int result;
 					socklen_t result_len = sizeof(result);
-					if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &result, &result_len) < 0) {
+					if (getsockopt(_current_fd, SOL_SOCKET, SO_ERROR, &result, &result_len) < 0) {
 						goto CONNECT_NG;
 					}
 
@@ -203,46 +233,52 @@ void EventManager::start()
 				}
 
 CONNECT_NG:
-				//下面的写法会导致多次触发connect回调, 而且，connect失败fd仍需占住，
-				//所以，将关闭socket的事情交给client
-				//if (unwatch(fd)) _add_close_fd(fd);
-				//f(fd, ConnectResult::NG);
 
-				unwatch(fd);
+				/*******实现要求*******
+				 **********************
+				 **** 1.只回调一次 ****
+				***** 2.fd占住(所以不能close) ********
+				***********************
+				**/
+				_fds[_current_fd].erase(EventType::CONNECT);
+				_current_cb.erase(EventType::CONNECT);
+				unwatch(_current_fd);
+				f(_current_fd, ConnectResult::NG);
 				continue;
 
 CONNECT_OK:
-				f(fd, ConnectResult::OK);
-				//回调完就删除
-				_fds[fd].erase(EventType::CONNECT);
+				//回调前就删除
+				_fds[_current_fd].erase(EventType::CONNECT);
+				_current_cb.erase(EventType::CONNECT);
+				f(_current_fd, ConnectResult::OK);
 			}
 
 			if (flags & EPOLLIN) {
-				if (cb.find(EventType::READ) != cb.end()) {
-					auto f = cb[EventType::READ];
+				if (_current_cb.find(EventType::READ) != _current_cb.end()) {
+					auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::READ];
 					if (f.want_message()) {
-						f(fd, Protocol::read(fd));
+						f(_current_fd, Protocol::read(_current_fd));
 					} else {
-						f(fd);
+						f(_current_fd);
 					}
 				} else {
 					//error handle
 				}
 			}
 			if (flags & EPOLLOUT) {
-				if (cb.find(EventType::WRITE) != cb.end()) {
+				if (_current_cb.find(EventType::WRITE) != _current_cb.end()) {
 
-					auto f = cb[EventType::WRITE];
-					f(fd);
+					auto f = _current_cb[EventType::WRITE];
+					f(_current_fd);
 
 				}
 			}
 
 			if (flags & EPOLLERR) {
-				if (cb.find(EventType::ERROR) != cb.end()) {
+				if (_current_cb.find(EventType::ERROR) != _current_cb.end()) {
 
-					auto f = cb[EventType::ERROR];
-					f(fd);
+					auto f = _current_cb[EventType::ERROR];
+					f(_current_fd);
 
 				} else {
 					cout << Utils::RED("EPOLLERR no handler") << endl;
@@ -250,18 +286,20 @@ CONNECT_OK:
 			}
 
 			if (flags & (EPOLLRDHUP | EPOLLHUP)) {
-				if (cb.find(EventType::CLOSE) != cb.end()) {
+				if (_current_cb.find(EventType::CLOSE) != _current_cb.end()) {
 
-					auto f/*f为拷贝*/ = cb[EventType::CLOSE];
-					if (unwatch(fd)) _add_close_fd(fd);
-					f(fd);
+					auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::CLOSE];
+					if (unwatch(_current_fd)) _add_close_fd(_current_fd);
+					f(_current_fd);
 
 				} else {
-					if (unwatch(fd)) _add_close_fd(fd);
+					if (unwatch(_current_fd)) _add_close_fd(_current_fd);
 				}
 			}
 
 		}
+
+		_current_fd = -1;
 
 		for (auto fd : _close_fds) {
 			::close(fd);

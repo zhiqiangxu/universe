@@ -33,6 +33,7 @@ void ProcessWorker<Proto>::on_connect(int client)
 
 	this->set_state(client, IBaseWorker::ConnectState::B4CONNECT);
 
+
 	auto remote_fd = _server.connect(&_child_sockaddr, EventManager::EventCB{
 		{
 			EventType::CONNECT, EventManager::CB([this, client] (int remote_fd, ConnectResult r) {
@@ -170,7 +171,7 @@ void ProcessWorker<Proto>::_erase_pair_info(int client, int remote_fd)
 template <typename Proto>
 void ProcessWorker<Proto>::_set_path(string child_sun_path, string parent_sun_path)
 {
-	if (Utils::file_exists(child_sun_path)) L.error_exit(parent_sun_path + " already exists!");
+	if (Utils::file_exists(child_sun_path)) L.error_exit(child_sun_path + " already exists!");
 	if (Utils::file_exists(parent_sun_path)) L.error_exit(parent_sun_path + " already exists!");
 
 	_child_sockaddr = Utils::addr_sun(child_sun_path);

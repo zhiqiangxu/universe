@@ -21,7 +21,7 @@ echo_worker: tests/echo_worker.cpp EventManager.cpp Server/Protocol/Global.cpp P
 	bash -lic 'rc $+ -valgrind'
 
 socks_worker: tests/socks_worker.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp \
-			  Server.cpp Client.cpp ClientServer.cpp Protocol/Socks.cpp Log/ErrorHandler.cpp Dispatch/IBaseWorker.cpp
+			  Server.cpp Client.cpp ClientServer.cpp Protocol/Socks.cpp Log/ErrorHandler.cpp Dispatch/IBaseWorker.cpp Utils.cpp
 	rm -f /tmp/react_handler.sock
 	bash -lic 'rc $+ -valgrind'
 
