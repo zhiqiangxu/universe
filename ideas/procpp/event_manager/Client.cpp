@@ -14,7 +14,7 @@ using namespace std;
 
 
 
-bool Client::connect(string address, uint16_t port, EventManager::EventCB callbacks)
+int Client::connect(string address, uint16_t port, EventManager::EventCB callbacks)
 {
 	//domain name
 	struct addrinfo hints;
@@ -31,17 +31,18 @@ bool Client::connect(string address, uint16_t port, EventManager::EventCB callba
 	auto port_string = to_string(port);
 	if (getaddrinfo(address.c_str(), port_string.c_str(), &hints, &result) != 0) {
 		L.error_log("getaddrinfo");
-		return false;
+		return -1;
 	}
 
+	int sock;
 	for (auto rp = result; rp != nullptr; rp = rp->ai_next) {
-		if (connect(rp->ai_addr, rp->ai_addrlen, callbacks)) {
+		if ( (sock = connect(rp->ai_addr, rp->ai_addrlen, callbacks)) > 0 ) {
 			freeaddrinfo(result);
-			return true;
+			return sock;
 		}
 	}
 
-	return false;
+	return -1;
 }
 
 int Client::connect(const string sun_path, EventManager::EventCB callbacks)
@@ -82,14 +83,15 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 
 }
 
-bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks)
+int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks)
 {
 	auto s = socket(addr->sa_family, SOCK_STREAM, 0);
 	if (s == -1) L.error_exit("socket");
 
 	if (::connect(s, addr, addrlen) == -1) {
+		::close(s);
 		L.error_log("connect");
-		return false;
+		return -1;
 	}
 
 	if (callbacks.find(EventType::CONNECT) != callbacks.end()) {
@@ -102,7 +104,7 @@ bool Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManage
 	//刚注册的fd，如果有事件，不会遗漏
 	if (callbacks.size()) watch(s, callbacks);
 
-	return true;
+	return s;
 }
 
 

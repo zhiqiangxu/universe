@@ -172,7 +172,7 @@ bool ClientServer::connect_parent()
 	switch (_parent_addr_type) {
 		case ClientServer::AddressType::SUN:
 		{
-			if (!connect(_parent_sun, callbacks)) {
+			if ( connect(_parent_sun, callbacks) < 0 ) {
 				L.error_exit("set_parent " + _parent_sun + " failed!");
 			}
 
@@ -180,7 +180,7 @@ bool ClientServer::connect_parent()
 		}
 		case ClientServer::AddressType::INET:
 		{
-			if (!connect(_parent_host, _parent_port, callbacks)) {
+			if ( connect(_parent_host, _parent_port, callbacks) < 0 ) {
 				L.error_exit("set_parent " + _parent_host + ":" + to_string(_parent_port) + " failed!");
 			}
 
