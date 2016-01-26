@@ -1,33 +1,28 @@
+SOURCES = EventManager.cpp Server.cpp Client.cpp ClientServer.cpp Server/Protocol/Global.cpp \
+		  Protocol.cpp StateMachine/Bufferable.cpp Protocol/Echo.cpp Protocol/Socks.cpp Protocol/EasyP2P.cpp\
+		  Dispatch/IBaseWorker.cpp Dispatch/ProxyWorker.cpp Dispatch/ProxyWorker.cpp Utils.cpp Log/ErrorHandler.cpp
 
-all: test server  client socks socks_worker pool allocator
-
-test: tests/test.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp Log/ErrorHandler.cpp Utils.cpp
+test: tests/test.cpp $(SOURCES)
 	bash -lic 'rc $+ '
 
-server: tests/server.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp Server.cpp \
-		Protocol/Echo.cpp Log/ErrorHandler.cpp Utils.cpp
+server: tests/server.cpp $(SOURCES)
 	bash -lic 'rc $+ '
 
-client: tests/client.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp Client.cpp Log/ErrorHandler.cpp Utils.cpp
+client: tests/client.cpp $(SOURCES)
 	bash -lic 'rc $+ '
 
-socks: tests/socks.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp Server.cpp \
-	   Client.cpp ClientServer.cpp Protocol/Socks.cpp Log/ErrorHandler.cpp Utils.cpp
+socks: tests/socks.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
-echo_worker: tests/echo_worker.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp \
-			 Server.cpp Client.cpp ClientServer.cpp Protocol/Echo.cpp Log/ErrorHandler.cpp Dispatch/IBaseWorker.cpp
+echo_worker: tests/echo_worker.cpp $(SOURCES)
 	rm -f /tmp/react_handler.sock
 	bash -lic 'rc $+ -valgrind'
 
-socks_worker: tests/socks_worker.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp \
-			  Server.cpp Client.cpp ClientServer.cpp Protocol/Socks.cpp Log/ErrorHandler.cpp Dispatch/IBaseWorker.cpp Utils.cpp
+socks_worker: tests/socks_worker.cpp $(SOURCES)
 	rm -f /tmp/react_handler.sock
 	bash -lic 'rc $+ -valgrind'
 
-proxy_worker: tests/proxy_worker.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp \
-			  Server.cpp Client.cpp ClientServer.cpp Log/ErrorHandler.cpp Dispatch/IBaseWorker.cpp Dispatch/ProxyWorker.cpp \
-			  Utils.cpp
+proxy_worker: tests/proxy_worker.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
 pool: tests/pool.cpp ThreadPool.cpp
@@ -36,13 +31,11 @@ pool: tests/pool.cpp ThreadPool.cpp
 allocator: tests/allocator.cpp Memory/SharedMemory.cpp Log/ErrorHandler.cpp
 	bash -lic 'rc $+  -rflags rflags.php'
 
-unix_server: tests/unix_server.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp Server.cpp \
-			 Client.cpp ClientServer.cpp Protocol/Echo.cpp Log/ErrorHandler.cpp Utils.cpp
+unix_server: tests/unix_server.cpp $(SOURCES)
 	rm -f /tmp/test.sock
 	bash -lic 'rc $+ '
 
-p2p: tests/easyp2p.cpp EventManager.cpp Server/Protocol/Global.cpp Protocol.cpp StateMachine/Bufferable.cpp \
-	 Server.cpp Log/ErrorHandler.cpp Protocol/EasyP2P.cpp Utils.cpp
+p2p: tests/easyp2p.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
 
