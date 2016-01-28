@@ -46,7 +46,7 @@ bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }
 
-bool EventManager::watch(int fd, const EventManager::EventCB& callbacks, bool re_watch)
+bool EventManager::watch(int fd, const EventManager::EventCB callbacks, bool re_watch)
 {
 	auto added = _fds.find(fd) != _fds.end();
 
@@ -65,38 +65,7 @@ bool EventManager::watch(int fd, const EventManager::EventCB& callbacks, bool re
 		Utils::set_nonblock(fd);
 	}
 
-	_fds[fd] = callbacks;
-
-	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
-}
-
-//TODO investigate how to avoid duplicate code for rvalue handling...
-bool EventManager::watch(int fd, EventManager::EventCB&& callbacks, bool re_watch)
-{
-
-	auto added = _fds.find(fd) != _fds.end();
-
-	if (callbacks.size() == 0) {
-		cout << Utils::RED("watch without callback is invalid") << endl;
-		return false;
-	}
-
-	//re_watch表示该fd并不在epoll set，所以不可能是_current_fd
-	if (re_watch) {
-		added = false;
-	} else {
-
-		if (fd == _current_fd) {
-			_current_cb = callbacks;
-		}
-
-	}
-
-	if (!added) {
-		Utils::set_nonblock(fd);
-	}
-
-	_fds[fd] = callbacks;
+	_fds[fd] = move(callbacks);
 
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }
