@@ -1,5 +1,5 @@
 #pragma once
-#include "EventManager.h"
+#include "Scheduler.h"
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
 #include <string>
@@ -37,7 +37,7 @@ public:
 	virtual int connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd) = 0;
 };
 
-class Client : public IClient, public virtual EventManager
+class Client : public IClient, public virtual Scheduler
 {
 public:
 	/* 没有async参数的都是同步 */

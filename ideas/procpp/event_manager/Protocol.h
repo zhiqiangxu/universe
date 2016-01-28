@@ -24,7 +24,7 @@ class Protocol : public IProtocol, public Bufferable
 {
 public:
 	static string read(int fd);//fd为ET
-	static string read(int fd, size_t size);
+	static ssize_t read(int fd, void* buf, size_t size);
 	static bool read(string& message, size_t size, string& result);
 	template <typename type>
 	static bool read(string& message, type& value);

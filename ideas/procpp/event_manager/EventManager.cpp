@@ -102,7 +102,7 @@ bool EventManager::close(int fd, bool force_close)
 		auto f = _fds[fd][EventType::CLOSE];
 		if ((ret &= unwatch(fd)) || force_close) _add_close_fd(fd);
 
-		f(fd);
+		f(fd);//TODO make it possible to transfer state and buffer when close
 
 		return ret;
 	}
@@ -259,7 +259,7 @@ CONNECT_OK:
 
 					auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::CLOSE];
 					if (unwatch(_current_fd)) _add_close_fd(_current_fd);
-					f(_current_fd);
+					f(_current_fd);//TODO make it possible to transfer state and buffer when close
 
 				} else {
 					if (unwatch(_current_fd)) _add_close_fd(_current_fd);

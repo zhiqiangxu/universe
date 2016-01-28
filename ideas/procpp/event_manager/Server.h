@@ -1,5 +1,5 @@
 #pragma once
-#include "EventManager.h"
+#include "Scheduler.h"
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
 #include <linux/un.h>//struct sockaddr_un
@@ -29,7 +29,7 @@ public:
 
 };
 
-class Server : public IServer, public virtual EventManager
+class Server : public IServer, public virtual Scheduler
 {
 public:
 

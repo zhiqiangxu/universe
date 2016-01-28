@@ -60,9 +60,9 @@ string Protocol::read(int fd)
 	return message;
 }
 
-string Protocol::read(int fd, size_t size)
+ssize_t Protocol::read(int fd, void* buf, size_t size)
 {
-	return "no impl";
+	return ::read(fd, buf, size);
 }
 
 string Protocol::read_until(int fd, string separator)

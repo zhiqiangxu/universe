@@ -71,8 +71,13 @@ public:
 	virtual ~EventManager() { _destroy(); };
 
 	virtual bool watch(int fd, EventType event, CB callback) override;//TODO re_watch
-	//TODO more general solution for lvalue/rvalue:
-	//     http://www.codesynthesis.com/~boris/blog/2012/06/19/efficient-argument-passing-cxx11-part1/
+    //TODO finish reading:
+    //     http://www.codesynthesis.com/~boris/blog/2012/06/19/efficient-argument-passing-cxx11-part1/
+
+	/***********************************perfect forwarding***************************************/
+	/**http://stackoverflow.com/questions/3582001/advantages-of-using-forward/3582313#3582313****/
+	/*************has the disadvantage that it can NOT be virtual********************************/
+	/*************which makes the code ugly, so only do it when need*****************************/
 	virtual bool watch(int fd, const EventCB callbacks, bool re_watch = false) override;
 	virtual bool unwatch(int fd, bool no_callback = false) override;
 	virtual bool close(int fd, bool force_close = false) override;

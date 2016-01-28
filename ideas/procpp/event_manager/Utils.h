@@ -33,10 +33,17 @@ public:
 		return n;
 	}
 
+	static void to_timespec(float sec, struct timespec& tv)
+	{
+		time_t seconds_num = static_cast<time_t>(sec);
+		tv.tv_sec = seconds_num;
+		tv.tv_nsec = (sec - seconds_num) * 1000000000/*9...*/;
+	}
+
 	static struct sockaddr_un addr_sun(string sun_path)
 	{
 		struct sockaddr_un serveraddr;
-		bzero(&serveraddr, sizeof(serveraddr));
+		::bzero(&serveraddr, sizeof(serveraddr));
 		serveraddr.sun_family = AF_UNIX;
 		memcpy(serveraddr.sun_path, sun_path.c_str(), min(static_cast<int>(sun_path.length() + 1), UNIX_PATH_MAX));
 
@@ -46,7 +53,7 @@ public:
 	static struct sockaddr_in addr4(uint16_t port)
 	{
 		struct sockaddr_in serveraddr;
-		bzero(&serveraddr, sizeof(serveraddr));
+		::bzero(&serveraddr, sizeof(serveraddr));
 		serveraddr.sin_family = AF_INET;
 		serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
 		serveraddr.sin_port = htons(port);
@@ -57,12 +64,34 @@ public:
 	static struct sockaddr_in6 addr6(uint16_t port)
 	{
 		struct sockaddr_in6 serveraddr;
-		bzero(&serveraddr, sizeof(serveraddr));
+		::bzero(&serveraddr, sizeof(serveraddr));
 		serveraddr.sin6_family = AF_INET6;
 		serveraddr.sin6_port = htons(port);
 		serveraddr.sin6_addr = in6addr_any;
 
 		return serveraddr;
+	}
+
+	template <typename T>
+	static void bzero(T& s)
+	{
+		::bzero(&s, sizeof(T));
+	}
+
+	static void bzero(void *s, size_t n)
+	{
+		::bzero(s, n);
+	}
+
+	template <typename T>
+	static void* memcpy(T& dest, const T& src)
+	{
+		return ::memcpy(&dest, &src, sizeof(T));
+	}
+
+	static void* memcpy(void *dest, const void *src, size_t n)
+	{
+		return ::memcpy(dest, src, n);
 	}
 
 	union SocketAddress

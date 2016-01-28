@@ -1,4 +1,4 @@
-SOURCES = EventManager.cpp Server.cpp Client.cpp ClientServer.cpp Server/Protocol/Global.cpp \
+SOURCES = EventManager.cpp Scheduler.cpp Server.cpp Client.cpp ClientServer.cpp Server/Protocol/Global.cpp \
 		  Protocol.cpp StateMachine/Bufferable.cpp Protocol/Echo.cpp Protocol/Socks.cpp Protocol/EasyP2P.cpp\
 		  Dispatch/IBaseWorker.cpp Dispatch/ProxyWorker.cpp Dispatch/ProxyWorker.cpp Utils.cpp Log/ErrorHandler.cpp
 
@@ -25,12 +25,6 @@ socks_worker: tests/socks_worker.cpp $(SOURCES)
 proxy_worker: tests/proxy_worker.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
-pool: tests/pool.cpp ThreadPool.cpp
-	bash -lic 'rc $+ '
-
-allocator: tests/allocator.cpp Memory/SharedMemory.cpp Log/ErrorHandler.cpp
-	bash -lic 'rc $+  -rflags rflags.php'
-
 unix_server: tests/unix_server.cpp $(SOURCES)
 	rm -f /tmp/test.sock
 	bash -lic 'rc $+ '
@@ -38,4 +32,12 @@ unix_server: tests/unix_server.cpp $(SOURCES)
 p2p: tests/easyp2p.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
+pool: tests/pool.cpp ThreadPool.cpp
+	bash -lic 'rc $+ '
+
+allocator: tests/allocator.cpp Memory/SharedMemory.cpp Log/ErrorHandler.cpp
+	bash -lic 'rc $+  -rflags rflags.php'
+
+event_hook: tests/event_hook.cpp
+	bash -lic 'rc $+  -rflags rflags.php'
 
