@@ -46,7 +46,7 @@ bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }
 
-bool EventManager::watch(int fd, const EventManager::EventCB callbacks, bool re_watch)
+bool EventManager::watch(int fd, EventManager::EventCB&& callbacks, bool re_watch)
 {
 	auto added = _fds.find(fd) != _fds.end();
 
@@ -65,7 +65,7 @@ bool EventManager::watch(int fd, const EventManager::EventCB callbacks, bool re_
 		Utils::set_nonblock(fd);
 	}
 
-	_fds[fd] = move(callbacks);
+	_fds[fd] = move(callbacks);//move is needed for local rvalue reference
 
 	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
 }

@@ -53,7 +53,7 @@ bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, EventManager
 	if (::listen(s, 100) < 0) L.error_exit("listen");
 
 
-	if ( !watch(s, callbacks) ) L.error_exit("watch " + to_string(s));
+	if ( !watch(s, move(callbacks)) ) L.error_exit("watch " + to_string(s));
 
 	L.info_log("listen ok");
 

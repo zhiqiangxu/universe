@@ -70,7 +70,7 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 					//AF_UNIX不需要keepalive
 					if ( sa_family != AF_UNIX ) Utils::set_keepalive(remote_fd);
 
-					if (callbacks.size()) watch(remote_fd, callbacks);
+					if (callbacks.size()) watch(remote_fd, move(callbacks));
 
 				} else {
 
@@ -102,7 +102,7 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 	if (addr->sa_family != AF_UNIX) Utils::set_keepalive(s);
 
 	//刚注册的fd，如果有事件，不会遗漏
-	if (callbacks.size()) watch(s, callbacks);
+	if (callbacks.size()) watch(s, move(callbacks));
 
 	return s;
 }
@@ -168,7 +168,7 @@ CONNECT_FAIL:
 			//TODO udp ?
 			Utils::set_keepalive(fd);
 
-			if (callbacks.size()) watch(fd, callbacks);
+			if (callbacks.size()) watch(fd, move(callbacks));
 
 		} else if (r == ConnectResult::NG) {
 
@@ -224,10 +224,10 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 	if (ret == 0) {
 		callbacks[EventType::CONNECT](s, ConnectResult::OK);
 		callbacks.erase(EventType::CONNECT);
-		if (callbacks.size()) watch(s, callbacks, true);
+		if (callbacks.size()) watch(s, move(callbacks), true);
 	}
 	else {
-		watch(s, callbacks, true);
+		watch(s, move(callbacks), true);
 	}
 
 	return s;
