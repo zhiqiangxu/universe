@@ -3,9 +3,9 @@
 int main()
 {
 	ClientServer server;
-	U::Echo proto(server, 1024);
+	U::Echo uproto(server, 1024);
 
-	server.listen_u(8080, proto);
+	server.listen_u(8080, uproto);
 
 	server.start();
 
