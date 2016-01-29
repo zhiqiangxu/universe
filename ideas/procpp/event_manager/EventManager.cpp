@@ -162,7 +162,7 @@ static void _at_exit(int sig)
 
 void EventManager::_exit()
 {
-	EventHook<EventManager, EventManager::EXIT >::get_instance().fire();
+	EventHook< EventManager, EventManager::EXIT >::get_instance().fire();
 	exit(0);
 }
 

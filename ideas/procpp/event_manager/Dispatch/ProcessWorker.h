@@ -37,6 +37,7 @@ private:
 	void _set_path(string child_sun_path, string parent_sun_path);
 	//master side
 	void _listen_then_fork(int n);
+	void _on_exit();
 
 	ClientServer& _server;
 	struct sockaddr_un _child_sockaddr;

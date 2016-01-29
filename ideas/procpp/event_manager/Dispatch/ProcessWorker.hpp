@@ -1,6 +1,7 @@
 #include <unistd.h>//fork
 #include "ReactHandler.h"
 #include <stdlib.h>//exit
+#include <unistd.h>//unlink
 
 
 
@@ -10,6 +11,11 @@ ProcessWorker<Proto>::ProcessWorker(ClientServer& server, int n, string child_su
 {
 	_set_path(child_sun_path, parent_sun_path);
 	_listen_then_fork(n);
+
+	//only master can reach here
+	EventHook< EventManager, EventManager::EXIT >::get_instance().attach([this] {
+		this->_on_exit();
+	});
 }
 
 template <typename Proto>
@@ -211,4 +217,9 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 	if (!ok) L.error_exit("listen parent sock failed");
 }
 
-
+template <typename Proto>
+void ProcessWorker<Proto>::_on_exit()
+{
+	::unlink(_child_sockaddr.sun_path);
+	::unlink(_parent_sockaddr.sun_path);
+}
