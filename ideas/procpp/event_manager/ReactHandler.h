@@ -7,6 +7,7 @@
 #define L ErrorHandler::get_instance()
 
 #include "EventManager.h"
+#include "EventHook.hpp"
 #include "Server.h"
 #include "ClientServer.h"
 #include "Client.h"

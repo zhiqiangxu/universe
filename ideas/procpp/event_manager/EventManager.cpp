@@ -154,13 +154,28 @@ ssize_t EventManager::sendto(int u_sock, const void *buf, size_t len, int flags,
 	return ::sendto(u_sock, buf, len, flags, dest_addr, addrlen);
 }
 
+static bool S_exit = false;
+static void _at_exit(int sig)
+{
+	S_exit = true;
+}
+
+void EventManager::_exit()
+{
+	EventHook<EventManager, EventManager::EXIT >::get_instance().fire();
+	exit(0);
+}
+
 void EventManager::start()
 {
 	signal(SIGPIPE, SIG_IGN);
+	signal(SIGINT, _at_exit);
 
 	const int kMaxEvents = 32;
 	struct epoll_event events[kMaxEvents];
 	while (true) {
+		if (S_exit) _exit();
+
 		int timeout = -1;
 		//cout << "epoll_wait" << endl;
 		auto ret = epoll_wait(_epoll_fd, events, kMaxEvents, timeout);

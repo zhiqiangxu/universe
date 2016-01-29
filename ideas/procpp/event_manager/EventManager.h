@@ -29,6 +29,9 @@ enum class ConnectResult
 class IEventManager
 {
 public:
+	/**event tags**/
+	class EXIT {};
+
 	using CB = class U {
 		public:
 			using NR = function<void(int)>;
@@ -95,6 +98,7 @@ public:
 private:
 	bool _epoll_update(int fd, int epoll_op);
 	void _add_close_fd(int fd);
+	void _exit();
 	//called by dtor, works with fork
 	virtual bool _destroy();//TODO almost perfect
 
