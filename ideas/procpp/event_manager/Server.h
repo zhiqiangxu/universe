@@ -52,7 +52,7 @@ public:
 
 
 private:
-	virtual EventManager::EventCB to_callbacks(Protocol& proto);
+	virtual EventManager::EventCB _to_callbacks(Protocol& proto);
 
 
 };

@@ -12,7 +12,7 @@ using namespace std;
 
 bool Server::listen(uint16_t port, Protocol& proto, int domain)
 {
-	return listen(port, to_callbacks(proto), domain);
+	return listen(port, _to_callbacks(proto), domain);
 }
 
 bool Server::listen(uint16_t port, EventManager::EventCB callbacks, int domain)
@@ -36,7 +36,7 @@ bool Server::listen(uint16_t port, EventManager::EventCB callbacks, int domain)
 
 bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, Protocol& proto)
 {
-	return listen(addr, addrlen, to_callbacks(proto));
+	return listen(addr, addrlen, _to_callbacks(proto));
 }
 
 bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, EventManager::EventCB callbacks)
@@ -62,7 +62,7 @@ bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, EventManager
 
 bool Server::listen(string sun_path, Protocol& proto)
 {
-	return listen(sun_path, to_callbacks(proto));
+	return listen(sun_path, _to_callbacks(proto));
 }
 
 bool Server::listen(string sun_path, EventManager::EventCB callbacks)
@@ -98,7 +98,7 @@ int Server::accept(int socketfd, struct sockaddr *addr, socklen_t *addrlen)
 
 
 
-EventManager::EventCB Server::to_callbacks(Protocol& proto)
+EventManager::EventCB Server::_to_callbacks(Protocol& proto)
 {
 	return EventManager::EventCB{
 		{
