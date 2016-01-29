@@ -10,7 +10,7 @@ using namespace std;
 class IProtocol
 {
 public:
-	virtual Server& getServer() = 0;
+	virtual Server& get_server() = 0;
 
 	/****事件系****/
 	virtual void on_connect(int client) {};
@@ -32,7 +32,7 @@ public:
 	static bool read_until(string& message, string separator, string& result, int scanned = 0);
 
 
-	virtual Server& getServer() override { return _server; };
+	virtual Server& get_server() override { return _server; };
 	/*未实现on_message，是抽象类*/
 
 	Protocol(Server& server) : _server(server) {}
