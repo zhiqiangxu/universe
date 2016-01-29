@@ -19,6 +19,7 @@
 #include "Dispatch/IBaseWorker.h"
 #include "Dispatch/ProcessWorker.h"
 #include "Dispatch/ProxyWorker.h"
+#include "UProtocol/Echo.h"
 
 
 

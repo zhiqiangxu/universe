@@ -3,14 +3,9 @@
 int main()
 {
 	ClientServer server;
+	U::Echo proto(server, 1024);
 
-	server.listen_u(8080, EventManager::EventCB{
-		{
-			EventType::READ, EventManager::CB([] (int fd) {
-				cout << "read event" << endl;
-			})
-		}
-	});
+	server.listen_u(8080, proto);
 
 	server.start();
 

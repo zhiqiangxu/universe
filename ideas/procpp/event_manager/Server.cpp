@@ -141,14 +141,19 @@ bool Server::listen_u(const struct sockaddr *addr, socklen_t addrlen, EventManag
 	return listen(addr, addrlen, callbacks, SOCK_DGRAM);
 }
 
-bool Server::listen_u(const struct sockaddr *addr, socklen_t addrlen, Protocol& proto)
+bool Server::listen_u(const struct sockaddr *addr, socklen_t addrlen, UProtocol& proto)
 {
 	return listen_u(addr, addrlen, _to_callbacks(proto));
 }
 
-bool Server::listen_u(uint16_t port, Protocol& proto, int domain)
+bool Server::listen_u(uint16_t port, UProtocol& proto, int domain)
 {
 	return listen_u(port, _to_callbacks(proto), domain);
+}
+
+bool Server::listen_u(uint16_t port, EventManager::CB cb, int domain)
+{
+	return listen_u(port, _to_callbacks_u(cb), domain);
 }
 
 bool Server::listen_u(uint16_t port, EventManager::EventCB callbacks, int domain)
@@ -170,17 +175,56 @@ bool Server::listen_u(uint16_t port, EventManager::EventCB callbacks, int domain
 	return false;
 }
 
-bool Server::listen_u(string sun_path, Protocol& proto)
+bool Server::listen_u(string sun_path, UProtocol& proto)
 {
 	auto serveraddr = Utils::addr_sun(sun_path);
 
 	return listen_u(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), proto);
 }
 
-bool Server::listen_u(string sun_path, EventManager::EventCB callbacks)
+bool Server::listen_u(string sun_path, EventManager::CB cb)
 {
 	auto serveraddr = Utils::addr_sun(sun_path);
 
-	return listen_u(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), callbacks);
+	return listen_u(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), _to_callbacks_u(cb));
 }
 
+EventManager::EventCB Server::_to_callbacks(UProtocol& proto)
+{
+	auto buffer_size = proto.get_buffer_size();
+	auto buffer = new char[buffer_size];
+
+	return EventManager::EventCB{
+		{
+			EventType::READ, EventManager::CB([&proto, buffer_size, buffer, this] (int u_sock) mutable {
+
+				Utils::SocketAddress addr;
+				socklen_t addrlen = sizeof(addr);
+				auto ret = recvfrom(u_sock, buffer, buffer_size, 0, reinterpret_cast<struct sockaddr *>(&addr), &addrlen);
+				if (ret < 0) {
+					L.error_log("recvfrom");
+					return;
+				}
+
+				string message("");
+				message.assign(buffer, ret);
+				proto.on_message(u_sock, message, addr, addrlen);
+
+			})
+		},
+		{
+			EventType::CLOSE, EventManager::CB([buffer] (int fd) {
+				delete [] buffer;
+			})
+		}
+	};
+}
+
+EventManager::EventCB Server::_to_callbacks_u(EventManager::CB cb)
+{
+	return EventManager::EventCB{
+		{
+			EventType::READ, cb
+		}
+	};
+}

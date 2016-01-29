@@ -149,6 +149,11 @@ ssize_t EventManager::write_line(int fd, const string message)
 	return write(fd, l.data(), l.length());
 }
 
+ssize_t EventManager::sendto(int u_sock, const void *buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen)
+{
+	return ::sendto(u_sock, buf, len, flags, dest_addr, addrlen);
+}
+
 void EventManager::start()
 {
 	signal(SIGPIPE, SIG_IGN);

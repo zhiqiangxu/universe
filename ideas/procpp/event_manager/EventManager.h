@@ -60,6 +60,7 @@ public:
 	virtual bool close_all() = 0;
 	virtual ssize_t write(int fd, const void *buf, size_t count) = 0;
 	virtual ssize_t write_line(int fd, const string message) = 0;
+	virtual ssize_t sendto(int u_sock, const void *buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen) = 0;
 	virtual void start() = 0;
 	virtual size_t count() = 0;
 };
@@ -86,6 +87,7 @@ public:
 	virtual bool close_all() override;
 	virtual ssize_t write(int fd, const void *buf, size_t count) override;//TODO 完善，目前仅处理EPIPE
 	virtual ssize_t write_line(int fd, const string message) override;
+	virtual ssize_t sendto(int u_sock, const void *buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen) override;
 	virtual void start() override;
 	virtual size_t count() override;
 
