@@ -29,6 +29,9 @@ unix_server: tests/unix_server.cpp $(SOURCES)
 	rm -f /tmp/test.sock
 	bash -lic 'rc $+ '
 
+udp_server: tests/udp_server.cpp $(SOURCES)
+	bash -lic 'rc $+ '
+
 p2p: tests/easyp2p.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 

@@ -40,7 +40,7 @@ public:
 	virtual bool connect_parent() override;
 
 private:
-	virtual EventManager::EventCB to_callbacks(Protocol& proto) override;
+	virtual EventManager::EventCB _to_callbacks(Protocol& proto) override;
 
 	bool _is_child = false;
 

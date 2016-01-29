@@ -39,9 +39,9 @@ bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, Protocol& pr
 	return listen(addr, addrlen, _to_callbacks(proto));
 }
 
-bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, EventManager::EventCB callbacks)
+bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, EventManager::EventCB callbacks, int type)
 {
-	auto s = socket(addr->sa_family, SOCK_STREAM, 0);
+	auto s = socket(addr->sa_family, type, 0);
 	if (s == -1) L.error_exit("socket");
 
 	const int enable = 1;
@@ -50,7 +50,7 @@ bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, EventManager
 	// bind,listen接受的都是sockaddr类型参数
 	if (bind(s, addr, addrlen) < 0) L.error_exit("bind");
 
-	if (::listen(s, 100) < 0) L.error_exit("listen");
+	if ( type == SOCK_STREAM && ::listen(s, 100) < 0 ) L.error_exit("listen");
 
 
 	if ( !watch(s, move(callbacks)) ) L.error_exit("watch " + to_string(s));
@@ -133,3 +133,54 @@ EventManager::EventCB Server::_to_callbacks(Protocol& proto)
 		}
 	};
 }
+
+/**********************TCP END**********************************/
+/**********************UDP START********************************/
+bool Server::listen_u(const struct sockaddr *addr, socklen_t addrlen, EventManager::EventCB callbacks)
+{
+	return listen(addr, addrlen, callbacks, SOCK_DGRAM);
+}
+
+bool Server::listen_u(const struct sockaddr *addr, socklen_t addrlen, Protocol& proto)
+{
+	return listen_u(addr, addrlen, _to_callbacks(proto));
+}
+
+bool Server::listen_u(uint16_t port, Protocol& proto, int domain)
+{
+	return listen_u(port, _to_callbacks(proto), domain);
+}
+
+bool Server::listen_u(uint16_t port, EventManager::EventCB callbacks, int domain)
+{
+	switch (domain) {
+		case AF_INET:
+		{
+			auto serveraddr = Utils::addr4(port);
+			return listen_u(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), callbacks);
+		}
+		case AF_INET6:
+		{
+			auto serveraddr = Utils::addr6(port);
+			return listen_u(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), callbacks);
+			break;
+		}
+	}
+
+	return false;
+}
+
+bool Server::listen_u(string sun_path, Protocol& proto)
+{
+	auto serveraddr = Utils::addr_sun(sun_path);
+
+	return listen_u(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), proto);
+}
+
+bool Server::listen_u(string sun_path, EventManager::EventCB callbacks)
+{
+	auto serveraddr = Utils::addr_sun(sun_path);
+
+	return listen_u(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), callbacks);
+}
+
