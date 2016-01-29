@@ -23,7 +23,7 @@ public:
 
 	/*未实现on_message，是抽象类*/
 
-	UProtocol(Server& server, uint64_t buffer_size) : _server(server), _buffer_size(buffer_size) {}
+	UProtocol(Server& server, uint64_t buffer_size = 1024*1024/*1M*/) : _server(server), _buffer_size(buffer_size) {}
 
 protected:
 	Server& _server;

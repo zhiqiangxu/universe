@@ -3,7 +3,7 @@
 int main()
 {
 	ClientServer server;
-	U::Echo uproto(server, 1024);
+	U::Echo uproto(server);
 
 	server.listen_u(8080, uproto);
 
