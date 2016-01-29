@@ -19,6 +19,7 @@ public:
 
 
 	ProcessWorker(ClientServer& server, int n = NUMBER_CORES, string child_sun_path = DEFAULT_CHILD_SUN_PATH, string parent_sun_path = DEFAULT_PARENT_SUN_PATH);
+	~ProcessWorker();
 
 	virtual void on_connect(int client) override;
 	virtual void on_message(int client, string message, int remote_fd) override;
@@ -37,7 +38,6 @@ private:
 	void _set_path(string child_sun_path, string parent_sun_path);
 	//master side
 	void _listen_then_fork(int n);
-	void _on_exit();
 
 	ClientServer& _server;
 	struct sockaddr_un _child_sockaddr;

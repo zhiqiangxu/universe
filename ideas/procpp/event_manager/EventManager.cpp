@@ -160,12 +160,6 @@ static void _at_exit(int sig)
 	S_exit = true;
 }
 
-void EventManager::_exit()
-{
-	EventHook< EventManager, EventManager::EXIT >::get_instance().fire();
-	exit(0);
-}
-
 void EventManager::start()
 {
 	signal(SIGPIPE, SIG_IGN);
@@ -174,7 +168,7 @@ void EventManager::start()
 	const int kMaxEvents = 32;
 	struct epoll_event events[kMaxEvents];
 	while (true) {
-		if (S_exit) _exit();
+		if (S_exit) return;
 
 		int timeout = -1;
 		//cout << "epoll_wait" << endl;

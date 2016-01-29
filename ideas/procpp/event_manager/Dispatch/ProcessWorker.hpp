@@ -12,10 +12,6 @@ ProcessWorker<Proto>::ProcessWorker(ClientServer& server, int n, string child_su
 	_set_path(child_sun_path, parent_sun_path);
 	_listen_then_fork(n);
 
-	//only master can reach here
-	EventHook< EventManager, EventManager::EXIT >::get_instance().attach([this] {
-		this->_on_exit();
-	});
 }
 
 template <typename Proto>
@@ -218,7 +214,7 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 }
 
 template <typename Proto>
-void ProcessWorker<Proto>::_on_exit()
+ProcessWorker<Proto>::~ProcessWorker()
 {
 	::unlink(_child_sockaddr.sun_path);
 	::unlink(_parent_sockaddr.sun_path);
