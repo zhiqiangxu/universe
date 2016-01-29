@@ -2,6 +2,7 @@
 #include "ReactHandler.h"
 #include <linux/un.h>//struct sockaddr_un
 #include <map>
+#include <type_traits>
 
 
 
@@ -11,6 +12,8 @@
 template <typename Proto>
 class ProcessWorker : public IBaseWorker, public StateBuffer<IBaseWorker::ConnectState>
 {
+	static_assert(std::is_base_of<Protocol, Proto>::value, "ProcessWorker only works for TCP Protocol");
+
 	static const int NUMBER_CORES = -1;
 
 public:
