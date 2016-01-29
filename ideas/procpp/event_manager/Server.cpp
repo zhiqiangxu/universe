@@ -200,15 +200,19 @@ EventManager::EventCB Server::_to_callbacks(UProtocol& proto)
 
 				Utils::SocketAddress addr;
 				socklen_t addrlen = sizeof(addr);
-				auto ret = recvfrom(u_sock, buffer, buffer_size, 0, reinterpret_cast<struct sockaddr *>(&addr), &addrlen);
-				if (ret < 0) {
-					L.error_log("recvfrom");
-					return;
-				}
+				while(true) {
 
-				string message("");
-				message.assign(buffer, ret);
-				proto.on_message(u_sock, message, addr, addrlen);
+					auto ret = recvfrom(u_sock, buffer, buffer_size, 0, reinterpret_cast<struct sockaddr *>(&addr), &addrlen);
+					if (ret < 0) {
+						L.debug_log("recvfrom finish");
+						return;
+					}
+
+					string message("");
+					message.assign(buffer, ret);
+					proto.on_message(u_sock, message, addr, addrlen);
+
+				}
 
 			})
 		},
