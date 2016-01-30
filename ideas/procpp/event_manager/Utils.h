@@ -120,6 +120,7 @@ public:
 	static SocketAddress to_addr(string sun_path)
 	{
 		SocketAddress addr;
+		bzero(addr);
 		addr.un = addr_sun(sun_path);
 
 		return addr;
@@ -128,6 +129,7 @@ public:
 	static SocketAddress to_addr(string ip, uint16_t port)
 	{
 		SocketAddress addr;
+		bzero(addr);
 
 		if ( ip.find(":") != string::npos ) {
 			addr.in6.sin6_family = AF_INET6;

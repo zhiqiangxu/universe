@@ -266,11 +266,13 @@ EventManager::CB ClientServer::initial_message_wrapper(EventManager::CB::R r)
 
 bool ClientServer::add_session_task(int client, SessionTask task)
 {
+	//wait
 	if (_c2s.find(client) == _c2s.end()) {
 		_session_tasks[client].push_back(task);
 		return false;
 	}
 
+	//fire right away
 	task(client);
 	return true;
 }
