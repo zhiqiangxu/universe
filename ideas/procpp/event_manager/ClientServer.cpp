@@ -208,30 +208,13 @@ EventManager::EventCB ClientServer::_to_callbacks(Protocol& proto)
 
 					watch(client, EventManager::EventCB{
 						{
-							EventType::READ, EventManager::CB([this, &proto] (int client, string message) mutable {
-								
-								if (_is_child) {
-									if (recv_session_id(client, message)) {
+							EventType::READ, initial_message_wrapper(
 
-										watch(client, EventType::READ, EventManager::CB(
-											[&proto] (int client, string message) mutable {
-												proto.on_message(client, message);
-											}
-										));
-
-										if (message.length() > 0) proto.on_message(client, message);
-
-									}
-								} else {
-									watch(client, EventType::READ, EventManager::CB(
-										[&proto] (int client, string message) mutable {
-											proto.on_message(client, message);
-										}
-									));
-
+								[&proto] (int client, string message) mutable {
 									proto.on_message(client, message);
 								}
-							}),
+
+							),
 						},
 						{
 							EventType::CLOSE, EventManager::CB([&proto] (int client) {
@@ -245,4 +228,27 @@ EventManager::EventCB ClientServer::_to_callbacks(Protocol& proto)
 			})
 		}
 	};
+}
+
+EventManager::CB ClientServer::initial_message_wrapper(EventManager::CB::R r)
+{
+
+	return EventManager::CB([this, r] (int client, string message) {
+
+			if (_is_child) {
+				if (recv_session_id(client, message)) {
+
+					watch( client, EventType::READ, EventManager::CB( r ) );
+
+					if (message.length() > 0) r(client, message);
+
+				}
+			} else {
+				watch( client, EventType::READ, EventManager::CB( r ) );
+
+				r(client, message);
+			}
+
+	});
+
 }

@@ -62,7 +62,7 @@ void ProcessWorker<Proto>::on_connect(int client)
 
 	_server.watch(client, EventManager::EventCB{
 		{
-			EventType::READ, EventManager::CB([this, remote_fd] (int client, string message) {
+			EventType::READ, _server.initial_message_wrapper([this, remote_fd] (int client, string message) {
 				on_message(client, message, remote_fd);
 			}),
 		},

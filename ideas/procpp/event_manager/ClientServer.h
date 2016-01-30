@@ -18,6 +18,9 @@ public:
 	virtual bool set_parent(string host, uint16_t port) = 0;
 	virtual bool connect_parent() = 0;
 
+	//handle session_id
+	virtual EventManager::CB initial_message_wrapper(EventManager::CB::R r) = 0;
+
 };
 
 class ClientServer : public Client, public Server, public IClientServer, public Bufferable
@@ -38,6 +41,8 @@ public:
 	virtual bool set_parent(string sun_path) override;
 	virtual bool set_parent(string host, uint16_t port) override;
 	virtual bool connect_parent() override;
+
+	virtual EventManager::CB initial_message_wrapper(EventManager::CB::R r) override;
 
 private:
 	virtual EventManager::EventCB _to_callbacks(Protocol& proto) override;
