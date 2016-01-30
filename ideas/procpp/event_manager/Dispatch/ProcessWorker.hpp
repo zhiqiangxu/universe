@@ -116,13 +116,19 @@ void ProcessWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int
 	L.debug_log( "on_remote_connect client = " + to_string(client) + " remote_fd = " + to_string(remote_fd) + " result = " + Utils::enum_string(r) );
 
 	if (r == ConnectResult::OK) {
-		//L.debug_log("client " + to_string(client) + " set_stat CONNECTED");
-		this->set_state(client, IBaseWorker::ConnectState::CONNECTED);
 
-		_server.send_session_id(remote_fd, client);
+		_server.add_session_task(client, [remote_fd, this] (int client) {
 
-		//trigger on_message once in case buffered
-		if (this->has_buf(client)) on_message(client, "", remote_fd);
+			_server.send_session_id(remote_fd, client);
+
+			//L.debug_log("client " + to_string(client) + " set_stat CONNECTED");
+			this->set_state(client, IBaseWorker::ConnectState::CONNECTED);
+
+
+			//trigger on_message once in case buffered
+			if (has_buf(client)) on_message(client, get_buf(client), remote_fd);
+
+		});
 
 	} else {
 		if (this->get_state(client) == IBaseWorker::ConnectState::B4CONNECT)

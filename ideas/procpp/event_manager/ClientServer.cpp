@@ -29,6 +29,11 @@ bool ClientServer::unwatch(int fd, bool no_callback)
 			_c2s.erase(fd);
 		}
 
+		//只有is_child && recv_session_id成功前有内容
+		//但不排除_session_task中unwatch的可能性
+		//所以暂时不加条件  TODO 把可能性排除 加上条件
+		_session_tasks.erase(fd);
+
 		erase_buf(fd);
 
 		return true;
@@ -238,6 +243,12 @@ EventManager::CB ClientServer::initial_message_wrapper(EventManager::CB::R r)
 			if (_is_child) {
 				if (recv_session_id(client, message)) {
 
+					if (_session_tasks.find(client) != _session_tasks.end()) {
+						for (auto& task : _session_tasks[client] ) task(client);
+
+						_session_tasks.erase(client);
+					}
+
 					watch( client, EventType::READ, EventManager::CB( r ) );
 
 					if (message.length() > 0) r(client, message);
@@ -251,4 +262,15 @@ EventManager::CB ClientServer::initial_message_wrapper(EventManager::CB::R r)
 
 	});
 
+}
+
+bool ClientServer::add_session_task(int client, SessionTask task)
+{
+	if (_c2s.find(client) == _c2s.end()) {
+		_session_tasks[client].push_back(task);
+		return false;
+	}
+
+	task(client);
+	return true;
 }
