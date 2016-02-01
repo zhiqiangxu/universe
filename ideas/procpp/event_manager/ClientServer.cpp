@@ -29,6 +29,11 @@ bool ClientServer::unwatch(int fd, bool no_callback)
 			_c2s.erase(fd);
 		}
 
+		//只有is_child && recv_session_id成功前有内容
+		//但不排除_session_task中unwatch的可能性
+		//所以暂时不加条件  TODO 把可能性排除 加上条件
+		_session_tasks.erase(fd);
+
 		erase_buf(fd);
 
 		return true;
@@ -191,7 +196,7 @@ bool ClientServer::connect_parent()
 	return true;
 }
 
-EventManager::EventCB ClientServer::to_callbacks(Protocol& proto)
+EventManager::EventCB ClientServer::_to_callbacks(Protocol& proto)
 {
 	return EventManager::EventCB{
 		{
@@ -208,30 +213,13 @@ EventManager::EventCB ClientServer::to_callbacks(Protocol& proto)
 
 					watch(client, EventManager::EventCB{
 						{
-							EventType::READ, EventManager::CB([this, &proto] (int client, string message) mutable {
-								
-								if (_is_child) {
-									if (recv_session_id(client, message)) {
+							EventType::READ, initial_message_wrapper(
 
-										watch(client, EventType::READ, EventManager::CB(
-											[&proto] (int client, string message) mutable {
-												proto.on_message(client, message);
-											}
-										));
-
-										if (message.length() > 0) proto.on_message(client, message);
-
-									}
-								} else {
-									watch(client, EventType::READ, EventManager::CB(
-										[&proto] (int client, string message) mutable {
-											proto.on_message(client, message);
-										}
-									));
-
+								[&proto] (int client, string message) mutable {
 									proto.on_message(client, message);
 								}
-							}),
+
+							),
 						},
 						{
 							EventType::CLOSE, EventManager::CB([&proto] (int client) {
@@ -245,4 +233,46 @@ EventManager::EventCB ClientServer::to_callbacks(Protocol& proto)
 			})
 		}
 	};
+}
+
+EventManager::CB ClientServer::initial_message_wrapper(EventManager::CB::R r)
+{
+
+	return EventManager::CB([this, r] (int client, string message) {
+
+			if (_is_child) {
+				if (recv_session_id(client, message)) {
+
+					if (_session_tasks.find(client) != _session_tasks.end()) {
+						for (auto& task : _session_tasks[client] ) task(client);
+
+						_session_tasks.erase(client);
+					}
+
+					watch( client, EventType::READ, EventManager::CB( r ) );
+
+					if (message.length() > 0) r(client, message);
+
+				}
+			} else {
+				watch( client, EventType::READ, EventManager::CB( r ) );
+
+				r(client, message);
+			}
+
+	});
+
+}
+
+bool ClientServer::add_session_task(int client, SessionTask task)
+{
+	//wait
+	if (_c2s.find(client) == _c2s.end()) {
+		_session_tasks[client].push_back(task);
+		return false;
+	}
+
+	//fire right away
+	task(client);
+	return true;
 }

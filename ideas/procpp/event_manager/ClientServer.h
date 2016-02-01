@@ -6,6 +6,8 @@
 class IClientServer
 {
 public:
+	using SessionTask = function<void(int)>;
+
 	virtual bool get_session_id(int client, uint32_t* session_id) = 0;
 	//将session_id发送给worker
 	virtual bool send_session_id(int worker_fd, int client) = 0;
@@ -17,6 +19,10 @@ public:
 	virtual bool set_parent(string sun_path) = 0;
 	virtual bool set_parent(string host, uint16_t port) = 0;
 	virtual bool connect_parent() = 0;
+
+	//need to call recv_session_id first for worker
+	virtual EventManager::CB initial_message_wrapper(EventManager::CB::R r) = 0;
+	virtual bool add_session_task(int client, SessionTask task) = 0;
 
 };
 
@@ -39,15 +45,22 @@ public:
 	virtual bool set_parent(string host, uint16_t port) override;
 	virtual bool connect_parent() override;
 
+	virtual EventManager::CB initial_message_wrapper(EventManager::CB::R r) override;
+	virtual bool add_session_task(int client, SessionTask task) override;
+
 private:
-	virtual EventManager::EventCB to_callbacks(Protocol& proto) override;
+	virtual EventManager::EventCB _to_callbacks(Protocol& proto) override;
 
 	bool _is_child = false;
 
 	//session_id
-	unsigned int _session_id = 0;
+	uint32_t _session_id = 0;
 	map<int, uint32_t> _c2s;
 	map<uint32_t, int> _s2c;
+
+	//tasks that MUST be after recv_session_id succeeds
+	//empty if master
+	map< int, vector<SessionTask> > _session_tasks;
 
 	//used for child/parent communication
 	enum class AddressType

@@ -1,4 +1,6 @@
 #pragma once
+#include "StateMachine/Bufferable.h"
+#include "StateMachine/Stateful.h"
 
 class IStateBuffer
 {

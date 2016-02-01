@@ -1,8 +1,12 @@
-#include "Dispatch/ProxyWorker.h"
+#include "Dispatch/RemoteWorker.h"
 #include "ReactHandler.h"
 
+RemoteWorker::RemoteWorker(ClientServer& server, const AddrList l, uint16_t port) : ProxyWorker(server, l)
+{
+	_server.listen_for_child(port);
+}
 
-void ProxyWorker::on_connect(int client)
+void RemoteWorker::on_connect(int client)
 {
 	this->set_state(client, ConnectState::B4CONNECT);
 
@@ -37,7 +41,7 @@ void ProxyWorker::on_connect(int client)
 
 	_server.watch(client, EventManager::EventCB{
 		{
-			EventType::READ, EventManager::CB([this, remote_fd] (int client, string message) {
+			EventType::READ, _server.initial_message_wrapper([this, remote_fd] (int client, string message) {
 				on_message(client, message, remote_fd);
 			}),
 		},
@@ -53,21 +57,24 @@ void ProxyWorker::on_connect(int client)
 
 }
 
-
-
-void ProxyWorker::on_remote_connect(int remote_fd, ConnectResult r, int client)
+void RemoteWorker::on_remote_connect(int remote_fd, ConnectResult r, int client)
 {
-	//TODO these can go into IBaseWorker..
-
-	L.debug_log("on_remote_connect: "  + Utils::enum_string(r) + " client = " + to_string(client) + " remote_fd = " + to_string(remote_fd));
+	L.debug_log( "on_remote_connect client = " + to_string(client) + " remote_fd = " + to_string(remote_fd) + " result = " + Utils::enum_string(r) );
 
 	if (r == ConnectResult::OK) {
-		//L.debug_log("client " + to_string(client) + " set_stat CONNECTED");
-		this->set_state(client, ConnectState::CONNECTED);
+
+		_server.add_session_task(client, [remote_fd, this] (int client) {
+
+			_server.send_session_id(remote_fd, client);
+
+			//L.debug_log("client " + to_string(client) + " set_stat CONNECTED");
+			this->set_state(client, ConnectState::CONNECTED);
 
 
-		//trigger on_message once in case buffered
-		if (has_buf(client)) on_message(client, get_buf(client), remote_fd);
+			//trigger on_message once in case buffered
+			if (has_buf(client)) on_message(client, get_buf(client), remote_fd);
+
+		});
 
 	} else {
 		if (this->get_state(client) == ConnectState::B4CONNECT)
@@ -79,8 +86,3 @@ void ProxyWorker::on_remote_connect(int remote_fd, ConnectResult r, int client)
 	}
 
 }
-
-
-
-
-

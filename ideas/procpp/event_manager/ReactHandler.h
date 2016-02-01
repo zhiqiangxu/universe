@@ -7,6 +7,7 @@
 #define L ErrorHandler::get_instance()
 
 #include "EventManager.h"
+#include "EventHook.hpp"
 #include "Server.h"
 #include "ClientServer.h"
 #include "Client.h"
@@ -19,6 +20,9 @@
 #include "Dispatch/IBaseWorker.h"
 #include "Dispatch/ProcessWorker.h"
 #include "Dispatch/ProxyWorker.h"
+#include "Dispatch/RemoteWorker.h"
+#include "UProtocol/Echo.h"
+#include "Protocol/Echo.h"
 
 
 
