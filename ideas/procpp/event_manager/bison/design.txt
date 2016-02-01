@@ -1,0 +1,110 @@
+Protocol Socks
+{
+
+	states
+	{
+		GREETING
+		CONNECT
+		CONNECTING
+		CONNECTED
+	}
+
+	init_state = GREETING
+
+	flow GREETING
+	{
+		greeting_request_packet => greeting_response_packet => state CONNECT
+
+		greeting_response_packet = get_greeting_response_packet(greeting_request_packet)
+	}
+
+	flow CONNECT
+	{
+		connect_request_packet => state CONNECTING => connect_response_packet &
+
+
+	}
+
+	flow CONNECTING
+	{
+		close
+	}
+
+	flow CONNECTED
+	{
+		relay
+	}
+
+	record greeting_request_packet
+	{
+		uint8_t 0x05
+		uint8_t num_auth
+		uint8_t auth_methods[num_auth]
+	}
+
+	record greeting_response_packet
+	{
+		uint8_t 0x05
+		uint8_t auth_method
+	}
+
+	record connect_request_packet
+	{
+		uint8_t 0x05
+		command_code
+		uint8_t 0x00 : reserved
+		address_type
+		address(address_type)
+		uint16_t port
+	}
+
+	any command_code
+	{
+		uint8_t 0x01 : tcp_ip_stream_connection
+		uint8_t 0x02 : tcp_ip_port_binding
+		uint8_t 0x03 : udp_port
+	}
+
+	any address_type
+	{
+		uint8_t 0x01 : ipv4
+		uint8_t 0x03 : domain_name
+		uint8_t 0x04 : ipv6
+	}
+
+	case address(address_type r) r of
+	{
+		address_type.ipv4			=> uint8_t addr[4]
+		address_type.domain_name	=> domain_address
+		address_type.ipv16			=> uint8_t addr[16]
+	}
+
+	record domain_address
+	{
+		uint8_t length
+		uint8_t domain_name[length]
+	}
+
+	record connect_response_packet
+	{
+		uint8_t 0x05
+		request_status
+		uint8_t 0x00
+		address(address_type)
+		uint16_t port
+	}
+
+	any request_status
+	{
+		uint8_t 0x00 : request_granted
+		uint8_t 0x01 : general_failure
+		uint8_t 0x02 : connection_not_allowed
+		uint8_t 0x03 : network_unreachable
+		uint8_t 0x04 : host_unreachable
+		uint8_t 0x05 : connection_refused
+		uint8_t 0x06 : ttl_expired
+		uint8_t 0x07 : cmd_not_supported
+		uint8_t 0x08 : address_type_not_supported
+	}
+
+}
