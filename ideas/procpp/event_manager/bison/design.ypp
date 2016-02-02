@@ -1,0 +1,80 @@
+%{
+
+#include "ast.h"
+
+%}
+
+%union {
+	uint32_t d;
+	Node* node;
+}
+
+%token <d> NUMBER
+%token PROTOCOL STATES FLOW RECORD ANY CASE OF ASSOC_ARROW NAME TYPE
+
+%type <node> protocol statements states names flow type record any case field fields
+
+%%
+
+protocol:
+	PROTOCOL NAME '{' statements '}'	{ }
+
+statements:
+		states
+	| 	flow
+	| 	type
+;
+
+states: STATES '{' names '}' { }
+
+names:
+		NAME {}
+	| 	names NAME {}
+
+flow:
+	FLOW NAME '{' NAME ASSOC_ARROW NAME '}'		{}
+
+
+type:
+		record
+	| 	any
+	| 	case
+;
+
+record: RECORD NAME '{' fields '}'		{}
+
+fields:
+		field
+	| 	fields field
+;
+
+field:
+		TYPE NUMBER					{}
+	| 	TYPE NUMBER ':' NAME		{}
+	| TYPE NAME						{}
+	| TYPE NAME '[' NUMBER ']'		{}
+	| TYPE NAME '[' NAME ']'		{}
+	| NAME							{}
+	| NAME '(' NAME ')'				{}
+
+any:
+	ANY NAME '{' fields '}'			{}
+;
+
+case:
+	CASE NAME '(' NAME NAME ')' OF '{' NAME '.' NAME ASSOC_ARROW field '}'		{}
+
+
+%%
+
+extern "C"
+{
+	void yyerror(char *s, ...)
+	{
+		va_list ap;
+		va_start(ap, s);
+		fprintf(stderr, "%d: error: ", yylineno);
+		vfprintf(stderr, s, ap);
+		fprintf(stderr, "\n");
+	}
+}

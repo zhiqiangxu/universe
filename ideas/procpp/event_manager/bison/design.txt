@@ -9,30 +9,14 @@ Protocol Socks
 		CONNECTED
 	}
 
-	init_state = GREETING
-
 	flow GREETING
 	{
-		greeting_request_packet => greeting_response_packet => state CONNECT
-
-		greeting_response_packet = get_greeting_response_packet(greeting_request_packet)
+		greeting_request_packet => greeting_response_packet
 	}
 
 	flow CONNECT
 	{
-		connect_request_packet => state CONNECTING => connect_response_packet &
-
-
-	}
-
-	flow CONNECTING
-	{
-		close
-	}
-
-	flow CONNECTED
-	{
-		relay
+		connect_request_packet => connect_response_packet
 	}
 
 	record greeting_request_packet
@@ -72,7 +56,7 @@ Protocol Socks
 		uint8_t 0x04 : ipv6
 	}
 
-	case address(address_type r) r of
+	case address(address_type t) of
 	{
 		address_type.ipv4			=> uint8_t addr[4]
 		address_type.domain_name	=> domain_address
@@ -85,12 +69,12 @@ Protocol Socks
 		uint8_t domain_name[length]
 	}
 
-	record connect_response_packet
+	record connect_response_packet(address_type t)
 	{
 		uint8_t 0x05
 		request_status
 		uint8_t 0x00
-		address(address_type)
+		address(t)
 		uint16_t port
 	}
 
