@@ -38,7 +38,7 @@ Protocol Socks
 		command_code
 		uint8_t 0x00 : reserved
 		address_type
-		address(address_type)
+		address ( address_type )
 		uint16_t port
 	}
 
