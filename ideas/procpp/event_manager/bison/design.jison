@@ -146,6 +146,10 @@ field
 		{ $$ = {user_type:$1, name:$2}; }
 	| NAME
 		{ $$ = {user_type:$1}; }
+	| RECORD eol '{' eol fields eol '}'
+		{ $$ = { record:$5 }; }
+	| ANY eol '{' eol fields eol '}'
+		{ $$ = { any:$5 }; }
 	;
 
 any
