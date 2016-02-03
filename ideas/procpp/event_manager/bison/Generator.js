@@ -29,7 +29,71 @@ var map_insert = function(key, value, map)
 	map[key] = value;
 }
 
-var parse_request_struct = function (type_name, g)
+var calc_builtin_type_size = function(builtin_type_name)
+{
+	return parseInt(builtin_type_name.substr('uint'.length, builtin_type_name.indexOf('_')-'uint'.length));
+}
+
+var calc_field_fixed_size = function(field, g)
+{
+	if (field.type) {
+		if (field.n) {
+			if (isNaN(field.n)) return 0;
+
+			return field.n * calc_builtin_type_size(field.type);
+		}
+
+		return calc_builtin_type_size(field.type);
+	}
+
+	if (field.user_type) {
+		if (field.param) return 0;//case
+
+		return calc_type_fixed_size(field.user_type, g);
+	}
+
+	if (field.record) return calc_record_fixed_size(field.record, g);
+
+	if (field.any) return calc_any_fixed_size(field.any, g);
+
+	debug("this should not happen");
+}
+
+var calc_record_fixed_size = function(fields, g)
+{
+	var fixed_size = 0;
+
+	for (var i = 0; i < fields.length; i++) {
+		var size = calc_field_fixed_size(fields[i], g);
+		if (size > 0) fixed_size += size;
+		else break;
+	}
+
+	return fixed_size;
+}
+
+var calc_any_fixed_size = function(fields, g)
+{
+	var fixed_size = -1;
+
+	for (var i = 0; i < fields.length; i++) {
+		if (fixed_size < 0) {
+			fixed_size = calc_field_fixed_size(fields[i], g);
+
+			if (fixed_size == 0) break;
+
+			continue;
+		}
+		fixed_size = Math.min(calc_field_fixed_size(fields[i], g), fixed_size);
+
+		if (fixed_size == 0) break;
+	}
+
+	return fixed_size;
+}
+
+
+var calc_type_fixed_size = function (type_name, g)
 {
 	var node = g.type[type_name];
 
@@ -38,16 +102,25 @@ var parse_request_struct = function (type_name, g)
 		exit();
 	}
 
+	var fixed_size = 0;
+	var fields = node.def.fields;
 	switch (node.def.subtype) {
 		case 'record':
+			fixed_size = calc_record_fixed_size(fields, g);
 			break;
 		case 'any':
+			fixed_size = calc_any_fixed_size(fields, g);
 			break;
 		case 'case':
 			break;
 	}
 
+	return fixed_size;
+}
 
+var parse_request_struct = function (type_name, g)
+{
+	debug("fixed size of " + type_name + " is " + calc_type_fixed_size(type_name, g));
 }
 
 var parse_response_struct = function (type_name, g)
