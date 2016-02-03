@@ -20,6 +20,10 @@
 
 "=>" 					return '=>';
 
+"(" 					return '(';
+
+")" 					return ')';
+
 "{" 					return '{';
 
 "}" 					return '}';
@@ -27,6 +31,8 @@
 "[" 					return '[';
 
 "]" 					return ']';
+
+"." 					return '.';
 
 ":" 					return ':';
 
@@ -129,7 +135,14 @@ any
 	;
 
 case
-	: CASE NAME '(' NAME NAME ')' OF '{' NAME '.' NAME => field '}'
+	: case one_case
+		{ $1.push($2); $$ = $1; }
+	| one_case
+		{ $$ = [$1]; }
+	;
+
+one_case
+	: CASE NAME '(' NAME NAME ')' OF '{' NAME '.' NAME '=>' field '}'
 		{ $$ = {subtype:'case', name:$2, param_type:$4, param:$5,  }; }
 	;
 
