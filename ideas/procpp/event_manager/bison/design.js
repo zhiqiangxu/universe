@@ -72,87 +72,93 @@
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[8,14,16,21,32,33],$V1=[5,8],$V2=[1,40],$V3=[1,39],$V4=[5,8,27];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[7,39],$V1=[2,34],$V2=[1,7],$V3=[5,7,9,10,15,17,22,29,30,34,35,39],$V4=[2,33],$V5=[1,14],$V6=[1,15],$V7=[1,19],$V8=[1,20],$V9=[1,21],$Va=[9,15,17,22,34,35,39],$Vb=[5,39],$Vc=[5,29,39],$Vd=[5,9,39],$Ve=[1,61],$Vf=[1,60],$Vg=[9,39];
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"protocol":3,"PROTOCOL":4,"NAME":5,"{":6,"statements":7,"}":8,"EOF":9,"statement":10,"states":11,"flow":12,"type":13,"STATES":14,"names":15,"FLOW":16,"=>":17,"record":18,"any":19,"case":20,"RECORD":21,"params":22,"fields":23,"(":24,")":25,"field":26,"TYPE":27,"NUMBER":28,":":29,"[":30,"]":31,"ANY":32,"CASE":33,"OF":34,"cases":35,".":36,"$accept":0,"$end":1},
-terminals_: {2:"error",4:"PROTOCOL",5:"NAME",6:"{",8:"}",9:"EOF",14:"STATES",16:"FLOW",17:"=>",21:"RECORD",24:"(",25:")",27:"TYPE",28:"NUMBER",29:":",30:"[",31:"]",32:"ANY",33:"CASE",34:"OF",36:"."},
-productions_: [0,[3,6],[7,2],[7,0],[10,1],[10,1],[10,1],[11,4],[15,1],[15,2],[12,7],[13,1],[13,1],[13,1],[18,6],[22,0],[22,4],[23,1],[23,2],[26,2],[26,4],[26,2],[26,5],[26,5],[26,4],[26,1],[19,5],[20,10],[35,5],[35,6]],
+symbols_: {"error":2,"protocol":3,"PROTOCOL":4,"NAME":5,"eol":6,"{":7,"nodes":8,"}":9,"EOF":10,"node":11,"states":12,"flow":13,"type":14,"STATES":15,"names":16,"FLOW":17,"=>":18,"record":19,"any":20,"case":21,"RECORD":22,"fields":23,"params":24,"(":25,")":26,"field":27,"one_eol":28,"TYPE":29,"NUMBER":30,":":31,"[":32,"]":33,"ANY":34,"CASE":35,"OF":36,"cases":37,".":38,"EOL":39,"$accept":0,"$end":1},
+terminals_: {2:"error",4:"PROTOCOL",5:"NAME",7:"{",9:"}",10:"EOF",15:"STATES",17:"FLOW",18:"=>",22:"RECORD",25:"(",26:")",29:"TYPE",30:"NUMBER",31:":",32:"[",33:"]",34:"ANY",35:"CASE",36:"OF",38:".",39:"EOL"},
+productions_: [0,[3,10],[8,3],[8,1],[11,1],[11,1],[11,1],[12,7],[16,1],[16,3],[13,10],[13,9],[14,1],[14,1],[14,1],[19,8],[24,0],[24,4],[23,1],[23,3],[27,2],[27,4],[27,2],[27,5],[27,5],[27,4],[27,2],[27,1],[20,8],[21,10],[37,5],[37,3],[37,7],[6,1],[6,0],[28,2]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
- this.$ = $$[$0-2]; generator.eval(this.$); 
+ this.$ = { type:'protocol', name:$$[$0-8], nodes:$$[$0-4] }; generator.eval(this.$); 
 break;
-case 2: case 18:
- $$[$0-1].push($$[$0]); this.$ = $$[$0-1]; 
+case 2: case 19:
+ $$[$0-2].push($$[$0]); this.$ = $$[$0-2]; 
 break;
-case 3:
- this.$ = []; 
+case 3: case 8: case 18:
+ this.$ = [$$[$0]]; 
 break;
 case 4: case 5: case 6:
  this.$ = $$[$0]; 
 break;
 case 7:
- this.$ = {type:'states', names:$$[$0-1]}; 
-break;
-case 8: case 17:
- this.$ = [$$[$0]]; 
+ this.$ = {type:'states', names:$$[$0-2]}; 
 break;
 case 9:
- $$[$0-1].push($$[$0]);this.$ = $$[$0-1]; 
+ $$[$0-2].push($$[$0]);this.$ = $$[$0-2]; 
 break;
 case 10:
- this.$ = {type:'flow', state:$$[$0-5], request:$$[$0-3], response:$$[$0-1] }; 
+ this.$ = { type:'flow', state:$$[$0-8], request:$$[$0-4], response:$$[$0-2] }; 
 break;
-case 11: case 12: case 13:
+case 11:
+ this.$ = { type:'flow', request:$$[$0-4], response:$$[$0-2] } 
+break;
+case 12: case 13: case 14:
  this.$ = {type:'type', def:$$[$0]}; 
 break;
-case 14:
- this.$ = {subtype:'record', name:$$[$0-4], params: $$[$0-3], fields:$$[$0-1]}; 
-break;
 case 15:
- this.$ = null; 
+ this.$ = {subtype:'record', name:$$[$0-6], fields:$$[$0-2]}; 
 break;
 case 16:
+ this.$ = null; 
+break;
+case 17:
  this.$ = {type:$$[$0-2], arg:$$[$0-1]}; 
 break;
-case 19:
+case 20:
  this.$ = {type:$$[$0-1], value:$$[$0]}; 
 break;
-case 20:
+case 21:
  this.$ = {type:$$[$0-3], value:$$[$0-2], name:$$[$0]}; 
 break;
-case 21:
+case 22:
  this.$ = {type:$$[$0-1], name:$$[$0]}; 
 break;
-case 22: case 23:
+case 23: case 24:
  this.$ = {type:$$[$0-4], name:$$[$0-3], n:$$[$0-1]}; 
 break;
-case 24:
+case 25:
  this.$ = {user_type:$$[$0-3], 'param':$$[$0-1]}; 
 break;
-case 25:
- this.$ = {user_type:$$[$0]}; 
-break;
 case 26:
- this.$ = {subtype:'any', name:$$[$0-3], fields:$$[$0-1]}; 
+ this.$ = {user_type:$$[$0-1], name:$$[$0]}; 
 break;
 case 27:
- this.$ = {subtype:'case', name:$$[$0-8], param_type:$$[$0-6], param:$$[$0-5],  }; 
+ this.$ = {user_type:$$[$0]}; 
 break;
 case 28:
- this.$ = [ {type_name:$$[$0-4], field_name:$$[$0-2], mapped: $$[$0]} ]; 
+ this.$ = {subtype:'any', name:$$[$0-6], fields:$$[$0-2]}; 
 break;
 case 29:
- $$[$0-5].push( {type_name:$$[$0-4], field_name:$$[$0-2], mapped: $$[$0]} ); this.$ = $$[$0-5]; 
+ this.$ = {subtype:'case', name:$$[$0-8], params:$$[$0-7], cases:$$[$0-2] }; 
+break;
+case 30:
+ this.$ = [ {type_name:$$[$0-4], field_name:$$[$0-2], result_field: $$[$0]} ]; 
+break;
+case 31:
+ this.$ = [ {n:$$[$0-2], result_field:$$[$0]} ] 
+break;
+case 32:
+ $$[$0-6].push( {type_name:$$[$0-5], field_name:$$[$0-3], mapped: $$[$0-1]} ); this.$ = $$[$0-6]; 
 break;
 }
 },
-table: [{3:1,4:[1,2]},{1:[3]},{5:[1,3]},{6:[1,4]},o($V0,[2,3],{7:5}),{8:[1,6],10:7,11:8,12:9,13:10,14:[1,11],16:[1,12],18:13,19:14,20:15,21:[1,16],32:[1,17],33:[1,18]},{9:[1,19]},o($V0,[2,2]),o($V0,[2,4]),o($V0,[2,5]),o($V0,[2,6]),{6:[1,20]},{5:[1,21]},o($V0,[2,11]),o($V0,[2,12]),o($V0,[2,13]),{5:[1,22]},{5:[1,23]},{5:[1,24]},{1:[2,1]},{5:[1,26],15:25},{6:[1,27]},{6:[2,15],22:28,24:[1,29]},{6:[1,30]},{24:[1,31]},{5:[1,33],8:[1,32]},o($V1,[2,8]),{5:[1,34]},{6:[1,35]},{5:[1,36]},{5:$V2,23:37,26:38,27:$V3},{5:[1,41]},o($V0,[2,7]),o($V1,[2,9]),{17:[1,42]},{5:$V2,23:43,26:38,27:$V3},{5:[1,44]},{5:$V2,8:[1,45],26:46,27:$V3},o($V4,[2,17]),{5:[1,48],28:[1,47]},o($V4,[2,25],{24:[1,49]}),{5:[1,50]},{5:[1,51]},{5:$V2,8:[1,52],26:46,27:$V3},{25:[1,53]},o($V0,[2,26]),o($V4,[2,18]),o($V4,[2,19],{29:[1,54]}),o($V4,[2,21],{30:[1,55]}),{5:[1,56]},{25:[1,57]},{8:[1,58]},o($V0,[2,14]),{6:[2,16]},{5:[1,59]},{5:[1,61],28:[1,60]},{25:[1,62]},{34:[1,63]},o($V0,[2,10]),o($V4,[2,20]),{31:[1,64]},{31:[1,65]},o($V4,[2,24]),{6:[1,66]},o($V4,[2,22]),o($V4,[2,23]),{5:[1,68],35:67},{5:[1,70],8:[1,69]},{36:[1,71]},o($V0,[2,27]),{36:[1,72]},{5:[1,73]},{5:[1,74]},{17:[1,75]},{17:[1,76]},{5:$V2,26:77,27:$V3},{5:$V2,26:78,27:$V3},o($V1,[2,28]),o($V1,[2,29])],
-defaultActions: {19:[2,1],53:[2,16]},
+table: [{3:1,4:[1,2]},{1:[3]},{5:[1,3]},o($V0,$V1,{6:4,28:5}),{7:[1,6],39:$V2},o($V3,$V4),o([15,17,22,34,35,39],$V1,{28:5,6:8}),o($V3,[2,35]),{8:9,11:10,12:11,13:12,14:13,15:$V5,17:$V6,19:16,20:17,21:18,22:$V7,34:$V8,35:$V9,39:$V2},o($Va,$V1,{28:5,6:22}),o($Va,[2,3]),o($Va,[2,4]),o($Va,[2,5]),o($Va,[2,6]),o($V0,$V1,{28:5,6:23}),o($V0,$V1,{28:5,6:25,5:[1,24]}),o($Va,[2,12]),o($Va,[2,13]),o($Va,[2,14]),{5:[1,26]},{5:[1,27]},{5:[1,28]},{9:[1,29],11:30,12:11,13:12,14:13,15:$V5,17:$V6,19:16,20:17,21:18,22:$V7,34:$V8,35:$V9,39:$V2},{7:[1,31],39:$V2},o($V0,$V1,{28:5,6:32}),{7:[1,33],39:$V2},o($V0,$V1,{28:5,6:34}),o($V0,$V1,{28:5,6:35}),{24:36,25:[1,37],36:[2,16]},o([10,39],$V1,{28:5,6:38}),o($Va,[2,2]),o($Vb,$V1,{28:5,6:39}),{7:[1,40],39:$V2},o($Vb,$V1,{28:5,6:41}),{7:[1,42],39:$V2},{7:[1,43],39:$V2},{36:[1,44]},{5:[1,45]},{10:[1,46],39:$V2},{5:[1,48],16:47,39:$V2},o($Vb,$V1,{28:5,6:49}),{5:[1,50],39:$V2},o($Vc,$V1,{28:5,6:51}),o($Vc,$V1,{28:5,6:52}),o($V0,$V1,{28:5,6:53}),{5:[1,54]},{1:[2,1]},o($Vd,$V1,{28:5,6:55}),o($Vd,[2,8]),{5:[1,56],39:$V2},{18:[1,57]},{5:$Ve,23:58,27:59,29:$Vf,39:$V2},{5:$Ve,23:62,27:59,29:$Vf,39:$V2},{7:[1,63],39:$V2},{26:[1,64]},{5:[1,66],9:[1,65],39:$V2},{18:[1,67]},{5:[1,68]},o($Vg,$V1,{6:69,28:70}),o($Vg,[2,18]),{5:[1,72],30:[1,71]},o($Vg,[2,27],{5:[1,74],25:[1,73]}),o($Vg,$V1,{28:70,6:75}),o([5,30,39],$V1,{28:5,6:76}),{36:[2,17]},o($Va,[2,7]),o($Vd,[2,9]),{5:[1,77]},o($Vg,$V1,{28:5,6:78}),{9:[1,79],39:$V2},o($Vg,$V4,{27:80,5:$Ve,29:$Vf}),o($Vg,[2,20],{31:[1,81]}),o($Vg,[2,22],{32:[1,82]}),{5:[1,83]},o($Vg,[2,26]),{9:[1,84],39:$V2},{5:[1,86],30:[1,87],37:85,39:$V2},o($Vg,$V1,{28:5,6:88}),{9:[1,89],39:$V2},o($Va,[2,15]),o($Vg,[2,19]),{5:[1,90]},{5:[1,92],30:[1,91]},{26:[1,93]},o($Va,[2,28]),o($Vg,$V1,{6:94,28:95}),{38:[1,96]},{18:[1,97]},{9:[1,98],39:$V2},o($Va,[2,11]),o($Vg,[2,21]),{33:[1,99]},{33:[1,100]},o($Vg,[2,25]),{9:[1,101],39:$V2},o($Vg,$V4,{5:[1,102]}),{5:[1,103]},{5:$Ve,27:104,29:$Vf},o($Va,[2,10]),o($Vg,[2,23]),o($Vg,[2,24]),o($Va,[2,29]),{38:[1,105]},{18:[1,106]},o($Vg,[2,31]),{5:[1,107]},{5:$Ve,27:108,29:$Vf},{18:[1,109]},o($Vg,[2,30]),{5:$Ve,27:110,29:$Vf},o($Vg,[2,32])],
+defaultActions: {46:[2,1],64:[2,17]},
 parseError: function parseError(str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -629,54 +635,58 @@ options: {},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0:;
+case 0:return 39;
 break;
-case 1:return 4;
+case 1:;
 break;
-case 2:return 14;
+case 2:;
 break;
-case 3:return 16;
+case 3:return 4;
 break;
-case 4:return 21;
+case 4:return 15;
 break;
-case 5:return 32;
+case 5:return 17;
 break;
-case 6:return 33;
+case 6:return 22;
 break;
 case 7:return 34;
 break;
-case 8:return 17;
+case 8:return 35;
 break;
-case 9:return 24;
+case 9:return 36;
 break;
-case 10:return 25;
+case 10:return 18;
 break;
-case 11:return 6;
+case 11:return 25;
 break;
-case 12:return 8;
+case 12:return 26;
 break;
-case 13:return 30;
+case 13:return 7;
 break;
-case 14:return 31;
+case 14:return 9;
 break;
-case 15:return 36;
+case 15:return 32;
 break;
-case 16:return 29;
+case 16:return 33;
 break;
-case 17:return 27;
+case 17:return 38;
 break;
-case 18:return 28;
+case 18:return 31;
 break;
-case 19:return 28;
+case 19:return 29;
 break;
-case 20:return 5;
+case 20: yy_.yytext = parseInt(yy_.yytext); return 30; 
 break;
-case 21:return 9;
+case 21: yy_.yytext = parseInt(yy_.yytext); return 30; 
+break;
+case 22:return 5;
+break;
+case 23:return 10;
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:Protocol\b)/,/^(?:states\b)/,/^(?:flow\b)/,/^(?:record\b)/,/^(?:any\b)/,/^(?:case\b)/,/^(?:of\b)/,/^(?:=>)/,/^(?:\()/,/^(?:\))/,/^(?:\{)/,/^(?:\})/,/^(?:\[)/,/^(?:\])/,/^(?:\.)/,/^(?::)/,/^(?:uint[0-9]+_t\b)/,/^(?:0x[0-9A-F]+)/,/^(?:[0-9]+)/,/^(?:[_A-Za-z][_A-Za-z0-9]*)/,/^(?:$)/],
-conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],"inclusive":true}}
+rules: [/^(?:\n)/,/^(?:[^\S\n]+)/,/^(?:\/\/.*)/,/^(?:Protocol\b)/,/^(?:states\b)/,/^(?:flow\b)/,/^(?:record\b)/,/^(?:any\b)/,/^(?:case\b)/,/^(?:of\b)/,/^(?:=>)/,/^(?:\()/,/^(?:\))/,/^(?:\{)/,/^(?:\})/,/^(?:\[)/,/^(?:\])/,/^(?:\.)/,/^(?::)/,/^(?:uint[0-9]+_t\b)/,/^(?:0x[0-9A-F]+)/,/^(?:[0-9]+)/,/^(?:[_A-Za-z][_A-Za-z0-9]*)/,/^(?:$)/],
+conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],"inclusive":true}}
 });
 return lexer;
 })();

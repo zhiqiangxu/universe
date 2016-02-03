@@ -7,7 +7,10 @@ var generator = require("./Generator");
 
 %%
 
-\s+                   	;
+\n						return 'EOL';
+[^\S\n]+				;
+
+"//".*					;
 
 "Protocol"				return 'PROTOCOL';
 
@@ -43,9 +46,9 @@ var generator = require("./Generator");
 
 "uint"[0-9]+"_t"		return 'TYPE';
 
-"0x"[0-9A-F]+ 			return 'NUMBER';
+"0x"[0-9A-F]+ 			%{ yytext = parseInt(yytext); return 'NUMBER'; %}
 
-[0-9]+ 					return 'NUMBER';
+[0-9]+ 					%{ yytext = parseInt(yytext); return 'NUMBER'; %}
 
 [_A-Za-z][_A-Za-z0-9]* 	return 'NAME';
 
@@ -58,18 +61,18 @@ var generator = require("./Generator");
 %%
 
 protocol
-	: PROTOCOL NAME '{' statements '}' EOF
-		{ $$ = $4; generator.eval($$); }
+	: PROTOCOL NAME eol '{' eol nodes eol '}' eol EOF
+		{ $$ = { type:'protocol', name:$2, nodes:$6 }; generator.eval($$); }
 	;
 
-statements
-	: statements statement
-		{ $1.push($2); $$ = $1; }
-	|
-		{ $$ = []; }
+nodes
+	: nodes eol node
+		{ $1.push($3); $$ = $1; }
+	| node
+		{ $$ = [$1]; }
 	;
 
-statement
+node
 	: states
 		{ $$ = $1; }
 	| flow
@@ -79,20 +82,22 @@ statement
 	;
 
 states
-	: STATES '{' names '}'
-		{ $$ = {type:'states', names:$3}; }
+	: STATES eol '{' eol names eol '}'
+		{ $$ = {type:'states', names:$5}; }
 	;
 
 names
 	: NAME
 		{ $$ = [$1]; }
-	| names NAME
-		{ $1.push($2);$$ = $1; }
+	| names eol NAME
+		{ $1.push($3);$$ = $1; }
 	;
 
 flow
-	: FLOW NAME '{' NAME '=>' NAME '}'
-		{ $$ = {type:'flow', state:$2, request:$4, response:$6 }; }
+	: FLOW NAME eol '{' eol NAME '=>' NAME eol '}'
+		{ $$ = { type:'flow', state:$2, request:$6, response:$8 }; }
+	| FLOW eol '{' eol NAME '=>' NAME eol '}'
+		{ $$ = { type:'flow', request:$5, response:$7 } }
 	;
 
 
@@ -106,8 +111,8 @@ type
 	;
 
 record
-	: RECORD NAME params '{' fields '}'
-		{ $$ = {subtype:'record', name:$2, params: $3, fields:$5}; }
+	: RECORD NAME eol '{' eol fields eol '}'
+		{ $$ = {subtype:'record', name:$2, fields:$6}; }
 	;
 
 params
@@ -120,8 +125,8 @@ params
 fields
 	: field
 		{ $$ = [$1]; }
-	| fields field
-		{ $1.push($2); $$ = $1; }
+	| fields one_eol field
+		{ $1.push($3); $$ = $1; }
 ;
 
 field
@@ -137,25 +142,40 @@ field
 		{ $$ = {type:$1, name:$2, n:$4}; }
 	| NAME '(' NAME ')'
 		{ $$ = {user_type:$1, 'param':$3}; }
+	| NAME NAME
+		{ $$ = {user_type:$1, name:$2}; }
 	| NAME
 		{ $$ = {user_type:$1}; }
 	;
 
 any
-	: ANY NAME '{' fields '}'
-		{ $$ = {subtype:'any', name:$2, fields:$4}; }
+	: ANY NAME eol '{' eol fields eol '}'
+		{ $$ = {subtype:'any', name:$2, fields:$6}; }
 	;
 
 case
-	: CASE NAME '(' NAME NAME ')' OF '{' cases '}'
-		{ $$ = {subtype:'case', name:$2, param_type:$4, param:$5,  }; }
+	: CASE NAME params OF eol '{' eol cases eol '}'
+		{ $$ = {subtype:'case', name:$2, params:$3, cases:$8 }; }
 	;
 
 cases
 	: NAME '.' NAME '=>' field
-		{ $$ = [ {type_name:$1, field_name:$3, mapped: $5} ]; }
-	| cases NAME '.' NAME '=>' field
+		{ $$ = [ {type_name:$1, field_name:$3, result_field: $5} ]; }
+	| NUMBER '=>' field
+		{ $$ = [ {n:$1, result_field:$3} ] }
+	| cases one_eol NAME '.' NAME '=>' field
 		{ $1.push( {type_name:$2, field_name:$4, mapped: $6} ); $$ = $1; }
 	;
 
 
+eol
+	: one_eol
+		{}
+	|
+		{}
+	;
+
+one_eol
+	: eol EOL
+		{}
+	;

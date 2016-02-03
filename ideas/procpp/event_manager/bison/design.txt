@@ -69,12 +69,13 @@ Protocol Socks
 		uint8_t domain_name[length]
 	}
 
-	record connect_response_packet(address_type t)
+	record connect_response_packet
 	{
 		uint8_t 0x05
 		request_status
 		uint8_t 0x00
-		address(t)
+		address_type
+		address(address_type)
 		uint16_t port
 	}
 
