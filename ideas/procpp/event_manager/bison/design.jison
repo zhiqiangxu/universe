@@ -1,3 +1,6 @@
+%{
+var json = require('JSON');
+%}
 %lex
 
 %%
@@ -54,7 +57,7 @@
 
 protocol
 	: PROTOCOL NAME '{' statements '}' EOF
-		{ console.log($4); $$ = $4; }
+		{ console.log(json.stringify($4, null, 2)); $$ = $4; }
 	;
 
 statements
