@@ -1,5 +1,7 @@
 %{
-var json = require('JSON');
+
+var generator = require("./Generator");
+
 %}
 %lex
 
@@ -57,7 +59,7 @@ var json = require('JSON');
 
 protocol
 	: PROTOCOL NAME '{' statements '}' EOF
-		{ console.log(json.stringify($4, null, 2)); $$ = $4; }
+		{ $$ = $4; generator.eval($$); }
 	;
 
 statements
