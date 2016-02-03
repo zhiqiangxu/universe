@@ -101,8 +101,15 @@ type
 	;
 
 record
-	: RECORD NAME '{' fields '}'
-		{ $$ = {subtype:'record', name:$2, fields:$4}; }
+	: RECORD NAME params '{' fields '}'
+		{ $$ = {subtype:'record', name:$2, params: $3, fields:$5}; }
+	;
+
+params
+	:
+		{ $$ = null; }
+	| '(' NAME NAME ')'
+		{ $$ = {type:$2, arg:$3}; }
 	;
 
 fields
@@ -135,16 +142,15 @@ any
 	;
 
 case
-	: case one_case
-		{ $1.push($2); $$ = $1; }
-	| one_case
-		{ $$ = [$1]; }
-	;
-
-one_case
-	: CASE NAME '(' NAME NAME ')' OF '{' NAME '.' NAME '=>' field '}'
+	: CASE NAME '(' NAME NAME ')' OF '{' cases '}'
 		{ $$ = {subtype:'case', name:$2, param_type:$4, param:$5,  }; }
 	;
 
+cases
+	: NAME '.' NAME '=>' field
+		{ $$ = [ {type_name:$1, field_name:$3, mapped: $5} ]; }
+	| cases NAME '.' NAME '=>' field
+		{ $1.push( {type_name:$2, field_name:$4, mapped: $6} ); $$ = $1; }
+	;
 
 
