@@ -153,7 +153,7 @@ case 31:
  this.$ = [ {n:$$[$0-2], result_field:$$[$0]} ] 
 break;
 case 32:
- $$[$0-6].push( {type_name:$$[$0-5], field_name:$$[$0-3], mapped: $$[$0-1]} ); this.$ = $$[$0-6]; 
+ $$[$0-6].push( {type_name:$$[$0-4], field_name:$$[$0-2], result_field: $$[$0]} ); this.$ = $$[$0-6]; 
 break;
 }
 },

@@ -164,7 +164,7 @@ cases
 	| NUMBER '=>' field
 		{ $$ = [ {n:$1, result_field:$3} ] }
 	| cases one_eol NAME '.' NAME '=>' field
-		{ $1.push( {type_name:$2, field_name:$4, mapped: $6} ); $$ = $1; }
+		{ $1.push( {type_name:$3, field_name:$5, result_field: $7} ); $$ = $1; }
 	;
 
 
