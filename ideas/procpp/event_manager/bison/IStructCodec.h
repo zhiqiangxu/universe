@@ -11,18 +11,29 @@ enum class ParseResult
 class IStructCodec : public Bufferable
 {
 public:
-	virtual ParseResult on_message(int client, string message) = 0;
+	/* template can't be virtual, so commented...
 
+	virtual ParseResult on_message(int client, string message, ResultClass &r);
+	*/
 
 	virtual void on_close(int client) = 0;
+
+protected:
+	size_t _parsed_length = 0;
 };
 
 template <typename T>
 class IStateStructCodec : public Bufferable
 {
 public:
-	virtual ParseResult on_message(int client, string message, T state) = 0;
+	/* template can't be virtual, so commented...
+
+	virtual ParseResult on_message(int client, string message, T state, ResultClass &r);
+	*/
 
 	virtual void on_close(int client) = 0;
+
+protected:
+	size_t _parsed_length = 0;
 };
 

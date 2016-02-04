@@ -1,4 +1,8 @@
 var json = require('JSON');
+var swig = require('swig');
+
+
+var g;
 
 //it generates:
 //
@@ -34,7 +38,7 @@ var calc_builtin_type_size = function(builtin_type_name)
 	return parseInt(builtin_type_name.substr('uint'.length, builtin_type_name.indexOf('_')-'uint'.length));
 }
 
-var calc_field_fixed_size = function(field, g)
+var calc_field_fixed_size = function(field)
 {
 	if (field.type) {
 		if (field.n) {
@@ -49,22 +53,22 @@ var calc_field_fixed_size = function(field, g)
 	if (field.user_type) {
 		if (field.param) return 0;//case
 
-		return calc_type_fixed_size(field.user_type, g);
+		return calc_type_fixed_size(field.user_type);
 	}
 
-	if (field.record) return calc_record_fixed_size(field.record, g);
+	if (field.record) return calc_record_fixed_size(field.record);
 
-	if (field.any) return calc_any_fixed_size(field.any, g);
+	if (field.any) return calc_any_fixed_size(field.any);
 
 	debug("this should not happen");
 }
 
-var calc_record_fixed_size = function(fields, g)
+var calc_record_fixed_size = function(fields)
 {
 	var fixed_size = 0;
 
 	for (var i = 0; i < fields.length; i++) {
-		var size = calc_field_fixed_size(fields[i], g);
+		var size = calc_field_fixed_size(fields[i]);
 		if (size > 0) fixed_size += size;
 		else break;
 	}
@@ -72,19 +76,19 @@ var calc_record_fixed_size = function(fields, g)
 	return fixed_size;
 }
 
-var calc_any_fixed_size = function(fields, g)
+var calc_any_fixed_size = function(fields)
 {
 	var fixed_size = -1;
 
 	for (var i = 0; i < fields.length; i++) {
 		if (fixed_size < 0) {
-			fixed_size = calc_field_fixed_size(fields[i], g);
+			fixed_size = calc_field_fixed_size(fields[i]);
 
 			if (fixed_size == 0) break;
 
 			continue;
 		}
-		fixed_size = Math.min(calc_field_fixed_size(fields[i], g), fixed_size);
+		fixed_size = Math.min(calc_field_fixed_size(fields[i]), fixed_size);
 
 		if (fixed_size == 0) break;
 	}
@@ -93,7 +97,7 @@ var calc_any_fixed_size = function(fields, g)
 }
 
 
-var calc_type_fixed_size = function (type_name, g)
+var calc_type_fixed_size = function (type_name)
 {
 	var node = g.type[type_name];
 
@@ -106,10 +110,10 @@ var calc_type_fixed_size = function (type_name, g)
 	var fields = node.def.fields;
 	switch (node.def.subtype) {
 		case 'record':
-			fixed_size = calc_record_fixed_size(fields, g);
+			fixed_size = calc_record_fixed_size(fields);
 			break;
 		case 'any':
-			fixed_size = calc_any_fixed_size(fields, g);
+			fixed_size = calc_any_fixed_size(fields);
 			break;
 		case 'case':
 			break;
@@ -118,13 +122,15 @@ var calc_type_fixed_size = function (type_name, g)
 	return fixed_size;
 }
 
-var parse_request_struct = function (type_name, g)
+var parse_field = function (field)
 {
-	debug("fixed size of " + type_name + " is " + calc_type_fixed_size(type_name, g));
+	return swig.render('templates/field.cpp', { locals: { field : field, g : g } });
 }
 
-var parse_response_struct = function (type_name, g)
+var parse_struct = function (flow_state, type_name)
 {
+	debug("fixed size of " + type_name + " is " + calc_type_fixed_size(type_name));
+
 	var node = g.type[type_name];
 
 	if (!node) {
@@ -143,17 +149,17 @@ var parse_response_struct = function (type_name, g)
 
 }
 
-var parse_flow = function(flow_state, flow, g)
+var parse_flow = function(flow_state, flow)
 {
-	parse_request_struct(flow.request, g);
-	parse_response_struct(flow.response, g);
+	parse_struct(flow_state, flow.request);
+	parse_struct(flow_state, flow.response);
 }
 
 var eval = function (ast)
 {
 	//debug(ast);
 
-	var g = { protocol:ast.name };
+	g = { protocol:ast.name };
 
 	for (var i = 0; i < ast.nodes.length; i++) {
 		var node = ast.nodes[i];

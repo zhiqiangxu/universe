@@ -1,17 +1,6 @@
+#include "StructCodec.h"
 
-class ProtocolName : public IStructCodec
-{
-public:
-
-	virtual ParseResult on_message(int client, string message) override;
-
-
-	virtual void on_close(int client) override;
-
-};
-
-
-ParseResult ProtocolName::on_message(int client, string message)
+ParseResult {{ End }}::on_message(int client, string message, {{ ResultClass }} &r)
 {
 	append_buf(worker_client, message);
 
@@ -19,7 +8,9 @@ ParseResult ProtocolName::on_message(int client, string message)
 
 }
 
-void ProtocolName::on_close(int client)
+void {{ ProtocolName }}::on_close(int client)
 {
 	erase_buf(client);
 }
+
+
