@@ -88,7 +88,6 @@ var calc_field_n = function(field)
 	return field_to_class(field).calc_n();
 }
 
-
 exports.calc_builtin_type_size = calc_builtin_type_size;
 exports.calc_type_fixed_size = calc_type_fixed_size;
 exports.calc_record_fixed_size = calc_record_fixed_size;
