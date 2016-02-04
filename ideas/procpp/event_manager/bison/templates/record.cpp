@@ -1,7 +1,7 @@
 
 {% for field in fields %}
 
-auto ret = {{ parse_field(field) }}
+auto ret = {{ parse_field(field) }};
 switch (ret)
 {
 	case ParseResult::AGAIN:

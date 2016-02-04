@@ -1,8 +1,13 @@
 var json = require('JSON');
 var swig = require('swig');
+var common = require('./Common');
+var extend = require('util')._extend;
 
 
-var g;
+var locals = {};
+locals = extend(common, locals);
+
+var g = common.g;
 
 //it generates:
 //
@@ -33,103 +38,14 @@ var map_insert = function(key, value, map)
 	map[key] = value;
 }
 
-var calc_builtin_type_size = function(builtin_type_name)
-{
-	return parseInt(builtin_type_name.substr('uint'.length, builtin_type_name.indexOf('_')-'uint'.length));
-}
-
-var calc_field_fixed_size = function(field)
-{
-	if (field.type) {
-		if (field.n) {
-			if (isNaN(field.n)) return 0;
-
-			return field.n * calc_builtin_type_size(field.type);
-		}
-
-		return calc_builtin_type_size(field.type);
-	}
-
-	if (field.user_type) {
-		if (field.param) return 0;//case
-
-		return calc_type_fixed_size(field.user_type);
-	}
-
-	if (field.record) return calc_record_fixed_size(field.record);
-
-	if (field.any) return calc_any_fixed_size(field.any);
-
-	debug("this should not happen");
-}
-
-var calc_record_fixed_size = function(fields)
-{
-	var fixed_size = 0;
-
-	for (var i = 0; i < fields.length; i++) {
-		var size = calc_field_fixed_size(fields[i]);
-		if (size > 0) fixed_size += size;
-		else break;
-	}
-
-	return fixed_size;
-}
-
-var calc_any_fixed_size = function(fields)
-{
-	var fixed_size = -1;
-
-	for (var i = 0; i < fields.length; i++) {
-		if (fixed_size < 0) {
-			fixed_size = calc_field_fixed_size(fields[i]);
-
-			if (fixed_size == 0) break;
-
-			continue;
-		}
-		fixed_size = Math.min(calc_field_fixed_size(fields[i]), fixed_size);
-
-		if (fixed_size == 0) break;
-	}
-
-	return fixed_size;
-}
-
-
-var calc_type_fixed_size = function (type_name)
-{
-	var node = g.type[type_name];
-
-	if (!node) {
-		debug("No such type " + type_name);
-		exit();
-	}
-
-	var fixed_size = 0;
-	var fields = node.def.fields;
-	switch (node.def.subtype) {
-		case 'record':
-			fixed_size = calc_record_fixed_size(fields);
-			break;
-		case 'any':
-			fixed_size = calc_any_fixed_size(fields);
-			break;
-		case 'case':
-			break;
-	}
-
-	return fixed_size;
-}
-
 var parse_field = function (field)
 {
-	return swig.render('templates/field.cpp', { locals: { field : field, g : g } });
+	return swig.render('templates/field.cpp', { locals: extend({ field : field }, locals) });
 }
 
-var parse_struct = function (flow_state, type_name)
+var parse_struct = function (flow_state, type_name, end)
 {
-	debug("fixed size of " + type_name + " is " + calc_type_fixed_size(type_name));
+	debug("fixed size of " + type_name + " is " + common.calc_type_fixed_size(type_name));
 
 	var node = g.type[type_name];
 
@@ -151,15 +67,16 @@ var parse_struct = function (flow_state, type_name)
 
 var parse_flow = function(flow_state, flow)
 {
-	parse_struct(flow_state, flow.request);
-	parse_struct(flow_state, flow.response);
+	parse_struct(flow_state, flow.request, 'Server');
+	parse_struct(flow_state, flow.response, 'Client');
 }
 
 var eval = function (ast)
 {
 	//debug(ast);
 
-	g = { protocol:ast.name };
+	g.protocol = ast.name;
+	locals.g = g;
 
 	for (var i = 0; i < ast.nodes.length; i++) {
 		var node = ast.nodes[i];
@@ -214,8 +131,8 @@ var eval = function (ast)
 
 	debug(g);
 	for (var flow_state in g.flow) {
-		parse_flow(flow_state, g.flow[flow_state], g);
+		parse_flow(flow_state, g.flow[flow_state]);
 	}
-};
+}
 
 exports.eval = eval;
