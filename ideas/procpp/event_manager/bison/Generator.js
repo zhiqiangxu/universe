@@ -1,5 +1,5 @@
 var json = require('JSON');
-var swig = require('swig');
+//var swig = require('swig');
 var common = require('./Common');
 var extend = require('util')._extend;
 
