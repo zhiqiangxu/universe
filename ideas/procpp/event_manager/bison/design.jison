@@ -45,6 +45,8 @@ var generator = require("./Generator");
 ":" 					return ':';
 
 "uint"[0-9]+"_t"		return 'TYPE';
+"char"					return 'TYPE';
+"wchar_t"				return 'TYPE';
 
 "0x"[0-9A-F]+ 			%{ yytext = parseInt(yytext); return 'NUMBER'; %}
 
