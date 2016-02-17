@@ -16,6 +16,16 @@ public:
 	{
 		cout << "hello world nonconst" << endl;
 	}
+
+	//ilegal according to 
+	//http://stackoverflow.com/a/34828179
+	constexpr virtual int test() { return 0; };
+};
+
+class Derived : public Test
+{
+public:
+	constexpr virtual int test() { return 10; }
 };
 
 int main()
@@ -25,5 +35,9 @@ int main()
 	const Test t2;
 	t.hi();
 	t2.hi();
+
+
+	Test* d = new Derived;
+	cout << "t.test = " << d->test() << endl;
 	return 0;
 }

@@ -13,6 +13,8 @@
 #include <sys/socket.h>//getpeername
 #include <netdb.h>//getnameinfo
 #include <arpa/inet.h>//inet_pton
+#include <endian.h>    // __BYTE_ORDER
+#include <algorithm>   // std::reverse
 
 using namespace std;
 
@@ -209,7 +211,28 @@ public:
 		static const char * data[];
 	};
 
+	// http://stackoverflow.com/a/28364285
+	template <typename T>
+	T hton( T value, char* ptr=0 )
+	{
+		return
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		 ptr = reinterpret_cast<char*>(& value),
+		 std::reverse( ptr, ptr + sizeof(T) ),
+#endif
+		value;
+	}
 
+	template <typename T>
+	T htol( T value, char* ptr=0 )
+	{
+		return
+#if __BYTE_ORDER != __LITTLE_ENDIAN
+		 ptr = reinterpret_cast<char*>(& value),
+		 std::reverse( ptr, ptr + sizeof(T) ),
+#endif
+		value;
+	}
 
 };
 
