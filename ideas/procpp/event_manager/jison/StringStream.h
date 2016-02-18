@@ -8,14 +8,16 @@ public:
 	void restore(string& backup) { backup = move(_str); }
 
 	template <typename type>
-	bool read(type& value)
+	void read(type& value)
 	{
-		if (_str.length() - _offset < sizeof(type) ) return false;
-
 		memcpy(&value, _str.data() + _offset, sizeof(type));
 		_offset += sizeof(type);
+	}
 
-		return true;
+	//for optimal performance, size check is the responsibility of caller side
+	bool can_read(size_t size)
+	{
+		return size <= _str.length() - _offset;
 	}
 
 protected:
