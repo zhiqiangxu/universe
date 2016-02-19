@@ -45,6 +45,7 @@ var generator = require("./Generator");
 ":" 					return ':';
 
 "uint"[0-9]+"_t"		return 'TYPE';
+"int"[0-9]+"_t"			return 'TYPE';
 "char"					return 'TYPE';
 "wchar_t"				return 'TYPE';
 
@@ -142,8 +143,10 @@ field
 		{ $$ = {type:$1, name:$2, n:$4}; }
 	| TYPE NAME '[' NAME ']'
 		{ $$ = {type:$1, name:$2, n:$4}; }
+	| NAME NAME '(' NAME ')'
+		{ $$ = {user_type:$1, name:$2, param:$4}; }
 	| NAME '(' NAME ')'
-		{ $$ = {user_type:$1, 'param':$3}; }
+		{ $$ = {user_type:$1, param:$3}; }
 	| NAME NAME
 		{ $$ = {user_type:$1, name:$2}; }
 	| NAME
