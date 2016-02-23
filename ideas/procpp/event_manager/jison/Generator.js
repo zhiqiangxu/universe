@@ -13,6 +13,28 @@ var exit = function(msg)
 	process.exit();
 }
 
+var traversal = (function(obj, callback)
+{
+	function f(obj, callback) {
+		if (typeof(obj) == 'object') {
+			if (obj instanceof Array) {
+				for (var i in obj) {
+					f(obj[i], callback);
+					callback(obj[i]);
+				}
+			} else {
+				for (var k in obj) {
+					f(obj[k], callback);
+					callback(obj[k], k);
+				}
+
+			}
+		}
+	}
+
+	return f;
+})();
+
 var auto_anonymous_id = function()
 {
 	if (typeof this._auto_id == 'undefined') {
