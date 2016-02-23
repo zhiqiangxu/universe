@@ -108,7 +108,7 @@ var struct_record = function(struct)
 				var n = ret.value;
 				code += field_type + " " + field_name + "[" + n + "];\n";
 			} else {
-				code += "vector<" + field_type + ">* " + field_name + ";\n";//POD
+				code += "vector<" + field_type + "> " + field_name + ";\n";//POD
 			}
 
 		} else {
@@ -140,7 +140,7 @@ var struct_any = function(struct)
 	code	+= "private:					\n";
 	code 	+= "	int8_t _idx;\n";
 	code	+= "public:					\n";
-	code	+= "	union {\n";
+	code	+= "	struct {\n";
 
 	var fields = struct.fields ? struct.fields : struct.any;
 	for (var i = 0 ; i < fields; i++) {
@@ -163,16 +163,13 @@ var struct_any = function(struct)
 			if (ret.constant) {
 				var n = ret.value;
 				code += field_type + " " + field_name + "[" + n + "];\n";
-				code += field_type + " _" + i + "[" + n + "];\n";//alias
 			} else {
-				code += "vector<" + field_type + ">* " + field_name + ";\n";//POD
-				code += "vector<" + field_type + ">* _" + i + ";\n";//alias
+				code += "vector<" + field_type + "> " + field_name + ";\n";
 			}
 
 		} else {
 
-			code += field_type + " " + field_name + ";\n";//alias
-			code += field_type + " _" + i + ";\n";//alias
+			code += field_type + " " + field_name + ";\n";
 
 		}
 	}
@@ -198,7 +195,7 @@ var struct_case = function(struct)
 	var code = 'class ' + class_name + " {\n";
 	code	+= "public:					\n";
 	code 	+= "	int8_t _idx;\n";
-	code	+= "	union {\n";
+	code	+= "	struct {\n";
 
 	var cases = struct.cases;
 	for (var i = 0 ; i < cases; i++) {
@@ -221,16 +218,13 @@ var struct_case = function(struct)
 			if (ret.constant) {
 				var n = ret.value;
 				code += field_type + " " + field_name + "[" + n + "];\n";
-				code += field_type + " _" + i + "[" + n + "];\n";//alias
 			} else {
-				code += "vector<" + field_type + ">* " + field_name + ";\n";//POD
-				code += "vector<" + field_type + ">* _" + i + ";\n";//alias
+				code += "vector<" + field_type + "> " + field_name + ";\n";
 			}
 
 		} else {
 
-			code += field_type + " " + field_name + ";\n";//alias
-			code += field_type + " _" + i + ";\n";//alias
+			code += field_type + " " + field_name + ";\n";
 
 		}
 	}
