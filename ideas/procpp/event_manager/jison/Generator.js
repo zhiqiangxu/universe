@@ -1,6 +1,7 @@
 var json = require('JSON');
 var extend = require('util')._extend;
 
+var g = {};
 
 var debug = function (obj)
 {
@@ -19,13 +20,13 @@ var traversal = (function(obj, callback)
 		if (typeof(obj) == 'object') {
 			if (obj instanceof Array) {
 				for (var i in obj) {
-					f(obj[i], callback);
 					callback(obj[i]);
+					f(obj[i], callback);
 				}
 			} else {
 				for (var k in obj) {
-					f(obj[k], callback);
 					callback(obj[k], k);
+					f(obj[k], callback);
 				}
 
 			}
@@ -59,6 +60,12 @@ var get_all_annonymous = function(ast)
 {
 	var result = [];
 
+	traversal(ast, function(e, k){
+		if (k === 'anonymous') {
+			result.push(e);
+		}
+	});
+
 	return result;
 }
 
@@ -66,11 +73,48 @@ var get_all_annonymous_field = function(ast)
 {
 	var result = [];
 
+	traversal(ast, function(e, k){
+		if (k === undefined && e.anonymous) {
+			result.push(e);
+		}
+	});
+
+	return result;
+}
+
+var get_all_user_type = function(ast)
+{
+	var result = {};
+
+	traversal(ast, function(e, k){
+		if (k === undefined && e.def) {
+			if (result[e.def.name]) exit("duplicate name e.def.name");
+
+			result[e.def.name] = e.def.subtype;
+
+		}
+	});
+
 	return result;
 }
 
 var get_field_type = function(field)
 {
+	if (field.type) return 'type';
+
+	if (field.user_type) {
+		return g.user_type[field.user_type];
+	}
+
+	if (field.annonymous) {
+		if (field.annonymous.record) return 'record';
+
+		if (field.annonymous.any) return 'any';
+	}
+
+	debug(field);
+	exit("unknown type");
+
 }
 
 var resolve = function(exp, field)
@@ -338,6 +382,7 @@ var parse_case = function(struct)
 var eval = function (ast)
 {
 	debug(ast);
+	g.user_type = get_all_user_type(ast);
 
 	assign_auto_name_to_annonymous(ast);
 }
