@@ -1,6 +1,22 @@
 var json = require('JSON');
 var extend = require('util')._extend;
 
+//auto generate unique id for object
+//js无法获得object的内存地址，故只能通过闭包解决
+(function() {
+    var id = 0;
+
+    function generateId() { return id++; };
+
+    Object.prototype.id = function() {
+        var newId = generateId();
+
+        this.id = function() { return newId; };
+
+        return newId;
+    };
+})();
+
 var g = {};
 
 var debug = function (obj)
@@ -98,6 +114,24 @@ var get_all_user_type = function(ast)
 	return result;
 }
 
+var get_all_parent = function(ast)
+{
+	var result = {};
+
+	function p(obj, result) {
+		if (typeof(obj) == 'object') {
+			for(var k in obj) {
+				var e = obj[k];
+				if (typeof(e) == 'object') result[e.id()] = obj;
+			}
+		}
+	}
+
+	p(ast, result);
+
+	return result;
+}
+
 var get_field_type = function(field)
 {
 	if (field.type) return 'type';
@@ -117,8 +151,27 @@ var get_field_type = function(field)
 
 }
 
+//TODO 目前还不支持复杂表达式
 var resolve = function(exp, field)
 {
+	var result = {};
+	if (isNaN(exp)) {
+		result.constant = false;
+		var fields = g.object_parent[field.id()];
+		for (var i = 0; i < fields.length; i++) {
+			if (field == fields[i]) break;
+			if (exp == fields[i].name || exp == fields[i].user_type || exp == fields[i].type) {
+				result.value = field[i];
+			}
+		}
+
+	} else {
+		result.constant = true;
+		result.value = exp;
+	}
+
+
+	return result;
 }
 
 var assign_auto_name_to_annonymous = function(ast)
@@ -383,6 +436,7 @@ var eval = function (ast)
 {
 	debug(ast);
 	g.user_type = get_all_user_type(ast);
+	g.object_parent = get_all_parent(ast);
 
 	assign_auto_name_to_annonymous(ast);
 }

@@ -211,10 +211,13 @@ public:
 		static const char * data[];
 	};
 
+	//network byte order is big endian
 	// http://stackoverflow.com/a/28364285
 	template <typename T>
 	T hton( T value, char* ptr=0 )
 	{
+		if (sizeof(T) == 1) return v;
+
 		return
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		 ptr = reinterpret_cast<char*>(& value),
@@ -226,6 +229,8 @@ public:
 	template <typename T>
 	T htol( T value, char* ptr=0 )
 	{
+		if (sizeof(T) == 1) return v;
+
 		return
 #if __BYTE_ORDER != __LITTLE_ENDIAN
 		 ptr = reinterpret_cast<char*>(& value),

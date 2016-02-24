@@ -7,17 +7,29 @@ public:
 	IStringStream(string&& str) :_str(move(str)) {}
 	void restore(string& backup) { backup = move(_str); }
 
-	template <typename type>
-	void read(type& value)
+	template <typename plain_type>
+	bool read(plain_type& value, char endian)
 	{
-		memcpy(&value, _str.data() + _offset, sizeof(type));
-		_offset += sizeof(type);
+		if (sizeof(plain_type) > _str.length() - _offset) return false;
+
+		memcpy(&value, _str.data() + _offset, sizeof(plain_type));
+		_offset += sizeof(plain_type);
+
+		switch(endian) {
+			case 'N':
+				value = Utils::hton(value);
+				break;
+			case 'L':
+				value = Utils::htol(value);
+				break;
+		}
+
+		return true;
 	}
 
-	//for optimal performance, size check is the responsibility of caller side
-	bool can_read(size_t size)
+	void consume(string str)
 	{
-		return size <= _str.length() - _offset;
+	
 	}
 
 protected:
