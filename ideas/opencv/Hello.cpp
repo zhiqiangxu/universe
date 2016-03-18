@@ -7,12 +7,51 @@
 using namespace std;
 using namespace cv;
 
+void combine_contour(vector< Point>& c1, vector< Point>&c2)
+{
+	for (auto p : c2) c1.push_back(p);
+
+	vector< Point> hull;
+	convexHull(Mat(c1), hull, false);
+	c1 = hull;
+}
+
+void merge_contours(vector< vector< Point> >& contours)
+{
+	size_t i = 0;
+
+	while (i < contours.size() - 1) {
+		auto& c_i = contours[i];
+		auto& c_i_1 = contours[i+1];
+
+		auto r1 = boundingRect(Mat(c_i));
+		auto r2 = boundingRect(Mat(c_i_1));
+
+		auto area1 = r1.width * r1.height;
+		auto area2 = r2.width * r2.height;
+    	auto m=min(area1,area2);
+
+		auto r3 = r1 & r2;
+		auto area3 = r3.width * r3.height;
+
+		if (area3 > (m/5.)) {
+			//合并
+			combine_contour(c_i, c_i_1);
+			contours.erase(contours.begin() + (i+1));
+		}
+
+		i++;
+	}
+	for (size_t i = 0; i < contours.size(); i++) {
+	}
+}
 
 bool sort_contours(const vector< Point> &c1, const vector< Point> &c2)
 {
 	auto r1 = boundingRect(Mat(c1));
 	auto r2 = boundingRect(Mat(c2));
 
+	//从左到右
 	return r1.x < r2.x;
 }
 
@@ -60,7 +99,7 @@ Mat preprocessChar(Mat in){
     warpAffine(thresh_img, warpImage, transformMat, warpImage.size(), INTER_LINEAR, BORDER_CONSTANT, Scalar(0) );
 
     Mat out;
-    resize(warpImage, out, Size(20, 20) );
+    resize(warpImage, out, Size(15, 15) );
 	return out;
 
 
@@ -71,8 +110,8 @@ bool verifyRR(RotatedRect r)
 	auto w = r.size.width;
 	auto h = r.size.height;
 
-	return true;
-	if (w*h < 300) return false;
+    int m=max(w,h);
+	if (m < 30) return false;
 
 	return true;
 }
@@ -89,42 +128,47 @@ vector<Mat> segment(Mat in)
 	imshow("test", image);
 	waitKey(0);
 */
-	cout << "test2" << endl;
+	//cout << "test2" << endl;
 	//阀值
 	Mat img_threshold;
 	threshold(img_gray, img_threshold, 0, 255, CV_THRESH_OTSU+CV_THRESH_BINARY_INV);
-	cout << "test3" << endl;
+	//cout << "test3" << endl;
 	//轮廓
 	vector< vector< Point> > contours;
 	findContours(img_threshold, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
-	cout << "test4" << endl;
+	//cout << "test4" << endl;
 	//画轮廓
 	Mat result;
 	in.copyTo(result);
 	drawContours(result, contours, -1, Scalar(255,0,0), 1);
-	cout << "test5" << endl;
+	//cout << "test5" << endl;
 
 	imshow("test", result);
 	waitKey(0);
 
 	sort(contours.begin(), contours.end(), sort_contours);
+	merge_contours(contours);
 
 	auto itc= contours.begin();
 	while (itc!=contours.end()) {
 		//旋转
 		auto mr= minAreaRect(Mat(*itc));
 		if (verifyRR(mr)) {
+			auto boundingRect = mr.boundingRect();
+/*
 			auto rotmat= getRotationMatrix2D(mr.center, mr.angle, 1);
 			Mat img_rotated;
 			warpAffine(in, img_rotated, rotmat, in.size(), CV_INTER_CUBIC);
+*/
 /*
 			imshow("img_rotated", img_rotated);
 			waitKey(0);
 */
 			//裁剪
-			auto rect_size=mr.size;
+			auto rect_size=boundingRect.size();
 			Mat img_crop;
-			getRectSubPix(img_rotated, rect_size, mr.center, img_crop);
+			getRectSubPix(in, rect_size, mr.center, img_crop);
+
 
 /*
 			imshow("img_crop", img_crop);
@@ -160,8 +204,10 @@ void predict(CvSVM& svm)
 		m.convertTo(m, CV_32FC1);
 		auto response = (int)svm.predict(m);
 
-		cout << response << endl;
+		cout << response << " ";
 	}
+
+	cout << endl;
 }
 
 
@@ -176,8 +222,8 @@ void train()
 		ss << ".png";
 		auto img_path = ss.str();
 		auto image = imread( img_path, CV_LOAD_IMAGE_COLOR);
-		cout << img_path << endl;
-		cout << "test1" << endl;
+		//cout << img_path << endl;
+		//cout << "test1" << endl;
 
 		auto s = segment(image);
 		for (auto &ch : s) {
