@@ -1,14 +1,15 @@
 #include <string>
+#include <map>
 using namespace std;
 
-class IStringStream
+class IStreamReader
 {
 public:
-	IStringStream(string&& str) :_str(move(str)) {}
+	IStreamReader(string&& str) :_str(move(str)) {}
 	void restore(string& backup) { backup = move(_str); }
 
-	template <typename plain_type>
-	bool read(plain_type& value, char endian)
+	template <char endian, typename plain_type>
+	bool read_plain(plain_type& value)
 	{
 		if (sizeof(plain_type) > _str.length() - _offset) return false;
 
@@ -27,17 +28,30 @@ public:
 		return true;
 	}
 
-	void consume(string str)
+	template <typename plain_type>
+	bool read_plain(plain_type& value)
+	{
+
+		return true;
+	}
+
+	void read_string(string str)
 	{
 	
+	}
+
+	void read_regex(string r)
+	{
 	}
 
 protected:
 	string _str;
 	size_t _offset;
+
+	static map<string, regex> _r_cache;
 };
 
-class StringStream : public IStringStream
+class StreamReader : public IStreamReader
 {
 public:
 };
