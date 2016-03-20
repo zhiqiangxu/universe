@@ -17,10 +17,10 @@ public:
 
 		switch(endian) {
 			case 'N':
-				value = Utils::hton(value);
+				Utils::hton(value);
 				break;
 			case 'L':
-				value = Utils::htol(value);
+				Utils::htol(value);
 				break;
 		}
 

@@ -214,29 +214,25 @@ public:
 	//network byte order is big endian
 	// http://stackoverflow.com/a/28364285
 	template <typename T>
-	T hton( T value, char* ptr=0 )
+	void hton( T& value, char* ptr=0 )
 	{
-		if (sizeof(T) == 1) return v;
+		if (sizeof(T) == 1) return;
 
-		return
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		 ptr = reinterpret_cast<char*>(& value),
-		 std::reverse( ptr, ptr + sizeof(T) ),
+		 ptr = reinterpret_cast<char*>(& value);
+		 std::reverse( ptr, ptr + sizeof(T) );
 #endif
-		value;
 	}
 
 	template <typename T>
-	T htol( T value, char* ptr=0 )
+	void htol( T& value, char* ptr=0 )
 	{
-		if (sizeof(T) == 1) return v;
+		if (sizeof(T) == 1) return;
 
-		return
 #if __BYTE_ORDER != __LITTLE_ENDIAN
-		 ptr = reinterpret_cast<char*>(& value),
-		 std::reverse( ptr, ptr + sizeof(T) ),
+		 ptr = reinterpret_cast<char*>(& value);
+		 std::reverse( ptr, ptr + sizeof(T) );
 #endif
-		value;
 	}
 
 };
