@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "StateMachine/Bufferable.h"
+#include "StreamReader.h"
 
 class Server;
 
