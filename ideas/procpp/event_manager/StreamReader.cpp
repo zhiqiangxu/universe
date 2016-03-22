@@ -38,7 +38,7 @@ void StreamReader::read_up(const string& s, bool nullable, string* result)
 	throw ReaderException::AG;
 }
 
-void StreamReader::read_until(const string& s, string& result)
+void StreamReader::read_until(const string& s, string& result, bool eatup_final)
 {
 	auto init_offset = _offset;
 
@@ -50,6 +50,8 @@ void StreamReader::read_until(const string& s, string& result)
 		if (s.find(ch) == string::npos) _offset++;
 		else {
 			if (_offset != init_offset) result = _str.substr(init_offset, _offset - init_offset);
+
+			if (eatup_final) _offset++;
 
 			return;
 		}

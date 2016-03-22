@@ -62,9 +62,9 @@ public:
 	virtual void pread_size(size_t size, void* p) = 0;
 
 	//吃尽s
-	virtual void read_up(const string& s, bool nullable = true, string* result = nullptr) = 0;
+	virtual void read_up(const string& s, bool nullable, string* result) = 0;
 	//吃到s
-	virtual void read_until(const string& s, string& result) = 0;
+	virtual void read_until(const string& s, string& result, bool eatup_final) = 0;
 
 	virtual void fail_if(bool exp) = 0;
 
@@ -77,12 +77,14 @@ protected:
 class StreamReader : public IStreamReader
 {
 public:
+	using IStreamReader::IStreamReader;
+
 	virtual void read_size(size_t size, void* p) override;
 	virtual void pread_size(size_t size, void* p) override;
 
-	virtual void read_up(const string& s, bool nullable = true) override;
+	virtual void read_up(const string& s, bool nullable = true, string* result = nullptr) override;
 
-	virtual void read_until(const string& s, string& result) override;
+	virtual void read_until(const string& s, string& result, bool eatup_final = false) override;
 
 	virtual void fail_if(bool exp) override { if (exp) throw ReaderException::NG; }
 };

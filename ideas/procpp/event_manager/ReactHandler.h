@@ -23,6 +23,7 @@
 #include "Dispatch/RemoteWorker.h"
 #include "UProtocol/Echo.h"
 #include "Protocol/Echo.h"
+#include "Protocol/Http.h"
 
 
 
