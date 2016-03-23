@@ -36,9 +36,9 @@ void Http::on_message(int client, string message)
 		//HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
 		s.read_until("\r", r.http_version);
 
-		char rn[2];
-		s.read_size(sizeof(rn), rn);
-		s.fail_if(strncmp(rn, "\r\n", 2) != 0);
+		char crlf[2];
+		s.read_size(sizeof(crlf), crlf);
+		s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
 
 /*
        message-header = field-name ":" [ field-value ]
@@ -76,12 +76,12 @@ void Http::on_message(int client, string message)
 
 			if (header_name == "Content-Length") content_length = atoi(header_value.c_str());
 
-			s.read_size(sizeof(rn), rn);
-			s.fail_if(strncmp(rn, "\r\n", 2) != 0);
+			s.read_size(sizeof(crlf), crlf);
+			s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
 
 		}
-		s.read_size(sizeof(rn), rn);
-		s.fail_if(strncmp(rn, "\r\n", 2) != 0);
+		s.read_size(sizeof(crlf), crlf);
+		s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
 
 		if (content_length > 0) {
 			r.body.reserve(content_length);
