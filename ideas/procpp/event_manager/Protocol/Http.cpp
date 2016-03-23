@@ -26,6 +26,8 @@ void Http::on_message(int client, string message)
 
 	append_buf(client, message);
 
+	//L.debug_log(message);
+
 	StreamReader s(message);
 
 	HttpRequest r;
@@ -127,7 +129,8 @@ void Http::on_message(int client, string message)
 	auto output = resp.to_string();
 
 	_server.write(client, output.data(), output.length());
-	//_server.close(client);
+
+	if (r.headers.find(HttpToken::CONNECTION) != r.headers.end() && r.headers[HttpToken::CONNECTION] == "close") _server.close(client);
 
 }
 

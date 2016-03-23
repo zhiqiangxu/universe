@@ -9,6 +9,7 @@ class HttpToken
 {
 public:
 	static constexpr const char* CONTENT_LENGTH = "Content-Length";
+	static constexpr const char* CONNECTION = "Connection";
 };
 
 class IHttp
