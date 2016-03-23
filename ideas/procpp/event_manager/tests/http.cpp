@@ -5,9 +5,9 @@ int main()
 	ClientServer server;
 	Http proto(server);
 
-	using Hook = EventHookGlobal<Http::ON_REQUEST, HttpRequest&, int>;
-	auto id = Hook::get_instance().attach([&server](HttpRequest& r, int client) {
-		server.write(client, "additional content from hook\r\n", sizeof("additional content from hook\r\n"));
+	using Hook = EventHookGlobal<Http::ON_REQUEST, HttpRequest&, HttpResponse&>;
+	auto id = Hook::get_instance().attach([&server](HttpRequest& req, HttpResponse& resp) {
+		resp.body = "additional content from hook\r\n";
 	});
 
 

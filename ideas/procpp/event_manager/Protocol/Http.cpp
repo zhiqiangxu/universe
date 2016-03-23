@@ -2,6 +2,21 @@
 #include "ReactHandler.h"
 #include <strings.h>//strncasecmp
 
+string HttpResponse::to_string()
+{
+	string s = string(http_version) + " " + std::to_string(status_code) + " " + reason_phrase + "\r\n";
+	for (const auto& h : headers) {
+		s += h.first + ": " + h.second + "\r\n";
+	}
+	if (body.length() > 0 && headers.find(HttpToken::CONTENT_LENGTH) == headers.end()) {
+		s += string(HttpToken::CONTENT_LENGTH) + ": " + std::to_string(body.length()) + "\r\n";
+	}
+	s += "\r\n";
+	s += body;
+
+	return s;
+}
+
 void Http::on_connect(int client)
 {
 }
@@ -14,6 +29,7 @@ void Http::on_message(int client, string message)
 	StreamReader s(message);
 
 	HttpRequest r;
+	r.client = client;
 	try {
 
 		/*
@@ -103,15 +119,21 @@ void Http::on_message(int client, string message)
 		}
 	}
 
-	using Hook = EventHookGlobal<Http::ON_REQUEST, HttpRequest&, int>;
+	using Hook = EventHookGlobal<Http::ON_REQUEST, HttpRequest&, HttpResponse&>;
 
-	Hook::get_instance().fire(r, client);
+	HttpResponse resp;
+	Hook::get_instance().fire(r, resp);
 
-	_server.write(client, message.data(), message.length());
-	_server.close(client);
+	resp.body = message + resp.body;
+	auto output = resp.to_string();
+
+	_server.write(client, output.data(), output.length());
+	//_server.close(client);
 
 }
 
 void Http::on_close(int client)
 {
+	L.debug_log("client " + to_string(client) + " closed");
+	erase_buf(client);
 }
