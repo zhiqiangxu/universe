@@ -8,6 +8,10 @@ void Http::on_connect(int client)
 
 void Http::on_message(int client, string message)
 {
+	_server.write(client, "hello world!", sizeof("hello world!"));
+	_server.close(client);
+	return;
+
 	append_buf(client, message);
 
 	StreamReader r(message);
@@ -63,24 +67,10 @@ cout << "before header_name" << endl;
 cout << "after header_name:" << header_name << endl;
 
 			// LWS            = [CRLF] 1*( SP | HT )
+			//TODO 简化版，未严格对应
 			r.read_plain(next_char);
-			switch(next_char) {
-				case '\r':
-				{
-					r.read_plain(next_char);
-					r.fail_if(next_char != '\n');
-					r.read_up(" \t", false);
-					break;
-				}
-				case ' ':
-				case '\t':
-				{
-					r.read_up(" \t");
-					break;
-				}
-				default: r.fail_if(true);
-			
-			}
+			r.fail_if(next_char != ' ');
+
 
 cout << "after lws" << endl;
 
