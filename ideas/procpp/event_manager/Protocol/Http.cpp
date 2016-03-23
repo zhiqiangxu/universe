@@ -8,14 +8,12 @@ void Http::on_connect(int client)
 
 void Http::on_message(int client, string message)
 {
-	_server.write(client, "hello world!", sizeof("hello world!"));
-	_server.close(client);
-	return;
 
 	append_buf(client, message);
 
-	StreamReader r(message);
+	StreamReader s(message);
 
+	HttpRequest r;
 	try {
 
 		/*
@@ -28,22 +26,19 @@ void Http::on_message(int client, string message)
                         [ message-body ]
 		*/
 		// Request-Line   = Method SP Request-URI SP HTTP-Version CRLF
-		string method;
-		r.read_until(" ", method);
-		r.read_up(" ");
+		s.read_until(" ", r.method);
+		s.read_up(" ");
 
 		// Request-URI    = "*" | absoluteURI | abs_path | authority
-		string uri;
-		r.read_until(" ", uri);
-		r.read_up(" ");
+		s.read_until(" ", r.uri);
+		s.read_up(" ");
 
 		//HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
-		string http_version;
-		r.read_until("\r", http_version);
+		s.read_until("\r", r.http_version);
 
 		char rn[2];
-		r.read_size(sizeof(rn), rn);
-		r.fail_if(strncmp(rn, "\r\n", 2) != 0);
+		s.read_size(sizeof(rn), rn);
+		s.fail_if(strncmp(rn, "\r\n", 2) != 0);
 
 /*
        message-header = field-name ":" [ field-value ]
@@ -53,44 +48,45 @@ void Http::on_message(int client, string message)
                         and consisting of either *TEXT or combinations
                         of token, separators, and quoted-string>
 */
+		int content_length = -1;
 		while (true) {
 			char next_char;
-cout << "test1" << endl;
-			r.pread_plain(next_char);
-cout << "test2" << endl;
+			s.pread_plain(next_char);
 			if (next_char == '\r') break;
 
-cout << "before header_name" << endl;
 			string header_name;
-			r.read_until(":", header_name, true);
+			s.read_until(":", header_name, true);
 
-cout << "after header_name:" << header_name << endl;
 
 			// LWS            = [CRLF] 1*( SP | HT )
 			//TODO 简化版，未严格对应
-			r.read_plain(next_char);
-			r.fail_if(next_char != ' ');
+			s.read_plain(next_char);
+			s.fail_if(next_char != ' ');
 
 
-cout << "after lws" << endl;
 
 			//TODO support Transfer-Encoding
-			r.fail_if(header_name == "Transfer-Encoding");
+			s.fail_if(header_name == "Transfer-Encoding");
 
 			//field-content
 			//TODO 简化版，未严格对应
 			string header_value;
-			r.read_until("\r", header_value);
+			s.read_until("\r", header_value);
+			r.headers[header_name] = header_value;
 
-cout << "after header_value" << endl;
-			cout << header_name << ": " << header_value << endl;
+			if (header_name == "Content-Length") content_length = atoi(header_value.c_str());
 
-			r.read_size(sizeof(rn), rn);
-			r.fail_if(strncmp(rn, "\r\n", 2) != 0);
+			s.read_size(sizeof(rn), rn);
+			s.fail_if(strncmp(rn, "\r\n", 2) != 0);
 
 		}
-		r.read_size(sizeof(rn), rn);
-		r.fail_if(strncmp(rn, "\r\n", 2) != 0);
+		s.read_size(sizeof(rn), rn);
+		s.fail_if(strncmp(rn, "\r\n", 2) != 0);
+
+		if (content_length > 0) {
+			r.body.reserve(content_length);
+			s.read_size(content_length, &r.body[0]);
+		}
 
 	} catch (ReaderException e) {
 		switch (e) {
@@ -107,8 +103,13 @@ cout << "after header_value" << endl;
 		}
 	}
 
-	_server.write(client, "hello world!", sizeof("hello world!"));
+	using Hook = EventHookGlobal<Http::ON_REQUEST, HttpRequest&, int>;
+
+	Hook::get_instance().fire(r, client);
+
+	_server.write(client, message.data(), message.length());
 	_server.close(client);
+
 }
 
 void Http::on_close(int client)

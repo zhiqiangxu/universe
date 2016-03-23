@@ -16,7 +16,7 @@ socks: tests/socks.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
 http: tests/http.cpp $(SOURCES)
-	bash -lic 'rc $+ -valgrind'
+	bash -lic 'rc $+'
 
 echo_worker: tests/echo_worker.cpp $(SOURCES)
 	rm -f /tmp/react_handler.sock

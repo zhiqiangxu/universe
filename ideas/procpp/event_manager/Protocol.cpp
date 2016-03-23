@@ -34,7 +34,7 @@ bool Protocol::read_until(string& message, string separator, string& result, int
 
 string Protocol::read(int fd)
 {
-	string message("");
+	string message;
 	char buf[1024];
 
 	while (true) {
@@ -52,9 +52,7 @@ string Protocol::read(int fd)
 		}
 
 		// TODO 避免拷贝
-		string sbuf("");
-		sbuf.assign(buf, size);
-		message += sbuf;
+		message.append(buf, size);
 	}
 
 	return message;
