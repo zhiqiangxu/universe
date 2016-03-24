@@ -31,18 +31,27 @@ void merge_contours(vector< vector< Point> >& contours)
 		auto area2 = r2.width * r2.height;
     	auto m=min(area1,area2);
 
+		auto min_width = min(r1.width, r2.width);
+		auto r1_ = r1;
+		r1_.height = 1;
+		r1_.y = 1;
+		auto r2_ = r2;
+		r2_.height = 1;
+		r2_.y = 1;
+
 		auto r3 = r1 & r2;
 		auto area3 = r3.width * r3.height;
 
-		if (area3 > (m/5.)) {
+		auto r3_ = r1_ & r2_;
+
+		if ( (area3 > (m/5.)) || (r3_.x > (min_width/3.))) {
 			//合并
 			combine_contour(c_i, c_i_1);
 			contours.erase(contours.begin() + (i+1));
+		} else {
+			i++;
 		}
 
-		i++;
-	}
-	for (size_t i = 0; i < contours.size(); i++) {
 	}
 }
 
@@ -76,14 +85,20 @@ Mat histeq(Mat in)
 Mat preprocessChar(Mat in){
 	Mat grayResult;
 	cvtColor(in, grayResult, CV_BGR2GRAY);
-	blur(grayResult, grayResult, Size(3,3));
+	blur(grayResult, grayResult, Size(2,2));
 	grayResult=histeq(grayResult);
 
 	Mat thresh_img;
 	threshold(grayResult, thresh_img, 90, 255, CV_THRESH_BINARY_INV);
-	
+
+
 /*
-	imshow("thresh_img", thresh_img);
+	imshow("test", grayResult);
+	waitKey(0);
+*/
+
+/*
+	imshow("test", thresh_img);
 	waitKey(0);
 */
 
@@ -99,7 +114,7 @@ Mat preprocessChar(Mat in){
     warpAffine(thresh_img, warpImage, transformMat, warpImage.size(), INTER_LINEAR, BORDER_CONSTANT, Scalar(0) );
 
     Mat out;
-    resize(warpImage, out, Size(15, 15) );
+    resize(warpImage, out, Size(18, 18) );
 	return out;
 
 
@@ -111,7 +126,7 @@ bool verifyRR(RotatedRect r)
 	auto h = r.size.height;
 
     int m=max(w,h);
-	if (m < 30) return false;
+	if (m < 25) return false;
 
 	return true;
 }
@@ -124,19 +139,36 @@ vector<Mat> segment(Mat in)
 	Mat img_gray;
 	cvtColor(in, img_gray, CV_BGR2GRAY);
 	blur(img_gray, img_gray, Size(5,5));
+
 /*
-	imshow("test", image);
+	imshow("test", img_gray);
 	waitKey(0);
 */
 	//cout << "test2" << endl;
 	//阀值
 	Mat img_threshold;
 	threshold(img_gray, img_threshold, 0, 255, CV_THRESH_OTSU+CV_THRESH_BINARY_INV);
+/*
+	imshow("test", img_threshold);
+	waitKey(0);
+*/
+
 	//cout << "test3" << endl;
 	//轮廓
 	vector< vector< Point> > contours;
 	findContours(img_threshold, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 	//cout << "test4" << endl;
+
+	vector< vector< Point> > contours2;
+	for (auto& c:contours) {
+		auto mr= minAreaRect(Mat(c));
+		if (verifyRR(mr)) contours2.push_back(c);
+	}
+	contours = contours2;
+	//合并轮廓
+	sort(contours.begin(), contours.end(), sort_contours);
+	merge_contours(contours);
+
 	//画轮廓
 	Mat result;
 	in.copyTo(result);
@@ -146,46 +178,41 @@ vector<Mat> segment(Mat in)
 	imshow("test", result);
 	waitKey(0);
 
-	sort(contours.begin(), contours.end(), sort_contours);
-	merge_contours(contours);
-
 	auto itc= contours.begin();
 	while (itc!=contours.end()) {
 		//旋转
 		auto mr= minAreaRect(Mat(*itc));
-		if (verifyRR(mr)) {
-			auto boundingRect = mr.boundingRect();
+		auto boundingRect = mr.boundingRect();
 /*
-			auto rotmat= getRotationMatrix2D(mr.center, mr.angle, 1);
-			Mat img_rotated;
-			warpAffine(in, img_rotated, rotmat, in.size(), CV_INTER_CUBIC);
+		auto rotmat= getRotationMatrix2D(mr.center, mr.angle, 1);
+		Mat img_rotated;
+		warpAffine(in, img_rotated, rotmat, in.size(), CV_INTER_CUBIC);
 */
 /*
-			imshow("img_rotated", img_rotated);
-			waitKey(0);
+		imshow("img_rotated", img_rotated);
+		waitKey(0);
 */
-			//裁剪
-			auto rect_size=boundingRect.size();
-			Mat img_crop;
-			getRectSubPix(in, rect_size, mr.center, img_crop);
+		//裁剪
+		auto rect_size=boundingRect.size();
+		Mat img_crop;
+		getRectSubPix(in, rect_size, mr.center, img_crop);
 
 
 /*
-			imshow("img_crop", img_crop);
-			waitKey(0);
+		imshow("img_crop", img_crop);
+		waitKey(0);
 */
 
 
-			auto normal_crop = preprocessChar(img_crop);
-			s.push_back(normal_crop);
+		auto normal_crop = preprocessChar(img_crop);
+		s.push_back(normal_crop);
 /*
-			cout << "before show" << endl;
-			imshow("normal_crop", normal_crop);
-			waitKey(0);
-			cout << "after show" << endl;
+		cout << "before show" << endl;
+		imshow("normal_crop", normal_crop);
+		waitKey(0);
+		cout << "after show" << endl;
 */
 
-		}
 
 		itc++;
 	}
@@ -194,9 +221,10 @@ vector<Mat> segment(Mat in)
 	return s;
 }
 
-void predict(CvSVM& svm)
+void predict_img(CvSVM& svm, string img_path)
 {
-	auto image = imread("/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/input.png");
+	cout << "img: " << img_path << endl;
+	auto image = imread(img_path);
 	auto s = segment(image);
 
 	for (auto &ch : s) {
@@ -208,6 +236,15 @@ void predict(CvSVM& svm)
 	}
 
 	cout << endl;
+	waitKey(0);
+}
+
+void predict(CvSVM& svm)
+{
+	predict_img(svm, "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/input.png");
+	predict_img(svm, "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/input2.png");
+	predict_img(svm, "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/input3.png");
+	predict_img(svm, "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/input4.png");
 }
 
 
