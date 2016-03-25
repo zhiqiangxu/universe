@@ -1,1 +1,1 @@
-cd build && make && ./Hello
+cd build && make && ./Number

@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <stdlib.h>
 
 
 using namespace std;
@@ -89,7 +90,7 @@ Mat preprocessChar(Mat in){
 	grayResult=histeq(grayResult);
 
 	Mat thresh_img;
-	threshold(grayResult, thresh_img, 90, 255, CV_THRESH_BINARY_INV);
+	threshold(grayResult, thresh_img, 90, 255, /*CV_THRESH_OTSU+*/CV_THRESH_BINARY_INV);
 
 
 /*
@@ -115,6 +116,12 @@ Mat preprocessChar(Mat in){
 
     Mat out;
     resize(warpImage, out, Size(18, 18) );
+
+/*
+	imshow("test", out);
+	waitKey(0);
+*/
+
 	return out;
 
 
@@ -138,7 +145,7 @@ vector<Mat> segment(Mat in)
 	//灰度
 	Mat img_gray;
 	cvtColor(in, img_gray, CV_BGR2GRAY);
-	blur(img_gray, img_gray, Size(5,5));
+	//blur(img_gray, img_gray, Size(5,5));
 
 /*
 	imshow("test", img_gray);
@@ -153,6 +160,7 @@ vector<Mat> segment(Mat in)
 	waitKey(0);
 */
 
+	auto clone = img_threshold.clone();
 	//cout << "test3" << endl;
 	//轮廓
 	vector< vector< Point> > contours;
@@ -171,7 +179,7 @@ vector<Mat> segment(Mat in)
 
 	//画轮廓
 	Mat result;
-	in.copyTo(result);
+	clone.copyTo(result);
 	drawContours(result, contours, -1, Scalar(255,0,0), 1);
 	//cout << "test5" << endl;
 
@@ -181,8 +189,7 @@ vector<Mat> segment(Mat in)
 	auto itc= contours.begin();
 	while (itc!=contours.end()) {
 		//旋转
-		auto mr= minAreaRect(Mat(*itc));
-		auto boundingRect = mr.boundingRect();
+		auto rect = boundingRect(*itc);
 /*
 		auto rotmat= getRotationMatrix2D(mr.center, mr.angle, 1);
 		Mat img_rotated;
@@ -193,9 +200,8 @@ vector<Mat> segment(Mat in)
 		waitKey(0);
 */
 		//裁剪
-		auto rect_size=boundingRect.size();
 		Mat img_crop;
-		getRectSubPix(in, rect_size, mr.center, img_crop);
+		getRectSubPix(in, rect.size(), Point(rect.x + rect.width/2., rect.y + rect.height/2.), img_crop);
 
 
 /*
@@ -245,6 +251,11 @@ void predict(CvSVM& svm)
 	predict_img(svm, "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/input2.png");
 	predict_img(svm, "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/input3.png");
 	predict_img(svm, "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/input4.png");
+
+	for (int i = 1; i <= 6; i++) {
+		auto img_path = string("/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/new_data/t" + to_string(i) + ".png");
+		predict_img(svm, img_path);
+	}
 }
 
 
@@ -269,6 +280,28 @@ void train()
 			SVM_TrainingData.push_back(m);
 			SVM_Classes.push_back(i);
 		}
+	}
+
+	for (int i = 0; i <= 23; i++) {
+		stringstream ss;
+		ss << "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/new_data/";
+		ss << i;
+		ss << ".png";
+		auto img_path = ss.str();
+		auto image = imread( img_path, CV_LOAD_IMAGE_COLOR);
+		auto s = segment(image);
+		if (s.size() != 10) {
+			cout << "new_data segment fail" << endl;
+			exit(1);
+		}
+		int idx = 0;
+		for (auto &ch : s) {
+			auto m = ch.reshape(1, 1);
+			m.convertTo(m, CV_32FC1);
+			SVM_TrainingData.push_back(m);
+			SVM_Classes.push_back(idx++);
+		}
+
 	}
 
 	//Set SVM params
