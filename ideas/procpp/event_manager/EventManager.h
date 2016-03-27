@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include "Utils.h"
+#include "EventHook.hpp"
 
 
 using namespace std;
@@ -66,6 +67,15 @@ public:
 	virtual ssize_t sendto(int u_sock, const void *buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen) = 0;
 	virtual void start() = 0;
 	virtual size_t count() = 0;
+
+    template <typename T1, typename ... Args>
+    uint64_t on(function<void(Args...)> t2)
+    {
+        using Hook = EventHookGlobal<T1, Args...>;
+        auto id = Hook::get_instance().attach(t2);
+        return id;
+    }
+
 };
 
 class EventManager : public IEventManager
