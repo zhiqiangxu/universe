@@ -1,9 +1,11 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <stdlib.h>
 #include <vector>
+#include <arpa/inet.h>
 
 using namespace std;
 using namespace cv;
@@ -161,6 +163,55 @@ vector<Mat> segment(Mat in)
 	return s;
 }
 
+void train_nist(Mat& SVM_TrainingData, Mat& SVM_Classes)
+{
+	string img_file = "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/nist/train-images-idx3-ubyte";
+	string label_file = "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/nist/train-labels-idx1-ubyte";
+
+	ifstream ls(label_file, ios::in|ios::binary);
+	ifstream is(img_file, ios::in|ios::binary);
+
+	uint32_t l_magic_number;
+	uint32_t l_item_number;
+
+	ls.read(reinterpret_cast<char*>(&l_magic_number), sizeof(l_magic_number));
+	ls.read(reinterpret_cast<char*>(&l_item_number), sizeof(l_item_number));
+	l_magic_number = ntohl(l_magic_number);
+	l_item_number = ntohl(l_item_number);
+
+	uint32_t i_magic_number;
+	uint32_t i_item_number;
+	uint32_t i_rows;
+	uint32_t i_cols;
+
+	is.read(reinterpret_cast<char*>(&i_magic_number), sizeof(i_magic_number));
+	is.read(reinterpret_cast<char*>(&i_item_number), sizeof(i_item_number));
+	is.read(reinterpret_cast<char*>(&i_rows), sizeof(i_rows));
+	is.read(reinterpret_cast<char*>(&i_cols), sizeof(i_cols));
+	i_magic_number = ntohl(i_magic_number);
+	i_item_number = ntohl(i_item_number);
+	i_rows = ntohl(i_rows);
+	i_cols = ntohl(i_cols);
+
+	for (int i = 0; i < l_item_number; i++) {
+		cout << "i=" << i << endl;
+		uint8_t pixels[i_rows*i_cols];
+		is.read(reinterpret_cast<char*>(pixels), i_rows*i_cols);
+		int label = ls.get();
+		Mat data = preprocessChar(Mat(i_rows, i_cols, CV_8UC1, pixels).clone());
+		auto m = data.reshape(1, 1);
+		m.convertTo(m, CV_32FC1);
+
+		SVM_TrainingData.push_back(m);
+		SVM_Classes.push_back(label);
+	}
+
+	cout << "done" << endl;
+
+	ls.close();
+	is.close();
+}
+
 void train()
 {
 	Mat SVM_TrainingData;
@@ -197,6 +248,8 @@ void train()
 
 	}
 
+	train_nist(SVM_TrainingData, SVM_Classes);
+
 	//Set SVM params
     CvSVMParams SVM_params;
     SVM_params.svm_type = CvSVM::C_SVC;
@@ -209,8 +262,11 @@ void train()
     SVM_params.p = 0;
     SVM_params.term_crit = cvTermCriteria(CV_TERMCRIT_ITER, 1000, 0.01);
 
+	cout << "before train" << endl;
     //Train SVM
 	nSVM.train(SVM_TrainingData, SVM_Classes, Mat(), Mat(), SVM_params);
+
+	cout << "after train" << endl;
 }
 
 void predict_img(string img_path)
