@@ -1,4 +1,4 @@
-SOURCES = EventManager.cpp Scheduler.cpp Server.cpp Client.cpp ClientServer.cpp Server/Protocol/Global.cpp \
+SOURCES = EventManager.cpp Scheduler.cpp Server.cpp Client.cpp ClientServer.cpp HttpClientServer.cpp Server/Protocol/Global.cpp \
 		  Protocol.cpp StateMachine/Bufferable.cpp Protocol/Echo.cpp Protocol/Socks.cpp Protocol/EasyP2P.cpp Protocol/Http.cpp\
 		  Dispatch/IBaseWorker.cpp Dispatch/RemoteWorker.cpp Dispatch/ProxyWorker.cpp Utils.cpp Log/ErrorHandler.cpp \
 		  UProtocol/Echo.cpp StreamReader.cpp

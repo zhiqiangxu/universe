@@ -2,14 +2,13 @@
 
 int main()
 {
-	ClientServer server;
-	Http proto(server);
+	HttpClientServer server;
 
     server.on<Http::ON_REQUEST>(Utils::to_function([&server](HttpRequest& req, HttpResponse& resp) {
 		resp.body = "additional content from hook\r\n";
 	}));
 
-	server.listen(8082, proto);
+	server.listen(8082);
 	server.start();
 
 	return 0;
