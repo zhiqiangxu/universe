@@ -58,9 +58,9 @@ public:
 
                 PyEval_CallObject(callback, arg_list);
 
-                resp.body = "content from swig";
-
                 Py_DECREF(arg_list);
+                Py_DECREF(swig_req);
+                Py_DECREF(swig_resp);
             }));
         } else {
             exit(1);
