@@ -20,7 +20,9 @@ set(SRC EventManager.cpp
 		StreamReader.cpp
 		)
 set(PYTHON_SRC ${SRC} build/ReactHandler_python_wrap.cxx)
-add_library( _${PROJECT_NAME} SHARED ${PYTHON_SRC} )
+set(PHP_SRC ${SRC} build/ReactHandler_php_wrap.cxx)
+
+add_library( _${PROJECT_NAME} SHARED ${PHP_SRC} )
 set_target_properties( _${PROJECT_NAME} PROPERTIES PREFIX "" )
-include_directories(. /usr/include/python2.7)
+include_directories(. /usr/include/python2.7 /usr/include/php5 /usr/include/php5/main /usr/include/php5/TSRM /usr/include/php5/Zend /usr/include/php5/ext /usr/include/php5/ext/date/lib)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -g")

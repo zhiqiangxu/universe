@@ -71,3 +71,36 @@ public:
 
 #endif
 
+#ifdef SWIGPHP
+
+%extend HttpClientServer {
+
+    void on(char* event, int callback)
+    {
+        if (strcasecmp(event, "request") == 0) {
+            std::cout << "request" << std::endl;
+            //Py_XINCREF(callback);
+            self->on<Http::ON_REQUEST>(Utils::to_function([callback](HttpRequest& req, HttpResponse& resp) {
+
+/*
+                auto swig_req = SWIG_NewPointerObj(SWIG_as_voidptr(&req), SWIGTYPE_p_HttpRequest, 0);
+                auto swig_resp = SWIG_NewPointerObj(SWIG_as_voidptr(&resp), SWIGTYPE_p_HttpResponse, 0);
+                auto arg_list = Py_BuildValue("(OO)", swig_req, swig_resp);
+
+                PyEval_CallObject(callback, arg_list);
+
+                Py_DECREF(arg_list);
+                Py_DECREF(swig_req);
+                Py_DECREF(swig_resp);
+*/
+            }));
+
+        } else {
+            exit(1);
+        }
+    }
+
+}
+
+#endif
+
