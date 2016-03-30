@@ -19,8 +19,19 @@ set(SRC EventManager.cpp
 		UProtocol/Echo.cpp
 		StreamReader.cpp
 		)
-set(PYTHON_SRC ${SRC} build/ReactHandler_python_wrap.cxx)
-add_library( _${PROJECT_NAME} SHARED ${PYTHON_SRC} )
+set(LAN "php" CACHE STRING "target language")
+
+set(PYTHON_SRC ${SRC} build/python/ReactHandler_wrap.cxx)
+set(PHP_SRC ${SRC} build/php/ReactHandler_wrap.cpp)
+
+
+if (${LAN} STREQUAL "php")
+    include_directories(. /usr/include/php5 /usr/include/php5/main /usr/include/php5/TSRM /usr/include/php5/Zend /usr/include/php5/ext /usr/include/php5/ext/date/lib)
+    add_library( _${PROJECT_NAME} SHARED ${PHP_SRC} )
+elseif (${LAN} STREQUAL "python")
+    include_directories(. /usr/include/python2.7)
+    add_library( _${PROJECT_NAME} SHARED ${PYTHON_SRC} )
+endif()
+
 set_target_properties( _${PROJECT_NAME} PROPERTIES PREFIX "" )
-include_directories(. /usr/include/python2.7)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -g")
