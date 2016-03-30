@@ -3,7 +3,7 @@
 
 **mixin handler** offers two fundamental features:
  
-- a **generic** server framework that follows react pattern, written in c++；
+- a **generic** server framework that follows react pattern(similar to the famous swoole framework), written in c++；
 - you can use it in various scripting languages such as php/python and more；
 
 It is **generic** in that it can be used for all kinds of servers, such as socks server, http server, etc.
@@ -15,7 +15,7 @@ All you need to do to support another kind of server is to offer a class that ex
 
 ## Demo
 
-A  http server can be writen in php: 
+A `http` server can be writen in php: 
 
 ``` <?php
 require("ReactHandler.php");
@@ -60,9 +60,45 @@ int main()
 	HttpServer server;
 
     server.on<Http::ON_REQUEST>(Utils::to_function([&server](HttpRequest& request, HttpResponse& response) {
-		response.body = "additional content from hook\r\n";
+		response.body = "content from c++\r\n";
 	}));
 
+	server.listen(8082);
+	server.start();
+
+	return 0;
+}
+```
+
+The same is true for a `socks` server.
+
+In php:
+```
+<?php
+require("ReactHandler.php");
+
+$s=new SocksServer();
+$s->listen(8082);
+$s->start();
+```
+
+or in python:
+```
+import ReactHandler
+
+s = ReactHandler.SocksServer()
+s.listen(8082)
+s.start()
+
+```
+
+or in c++ directly:
+```
+#include "ReactHandler.h"
+
+int main()
+{
+	SocksServer server;
 	server.listen(8082);
 	server.start();
 
@@ -78,6 +114,8 @@ cd universe/ideas/procpp/mixin_handler
 
 python tests/test.py
 php tests/test.php # add build/php/_ReactHandler.so to php.ini manually
+python tests/socks.py
+php tests/socks.php
 ```
 
 ##Advanced feature

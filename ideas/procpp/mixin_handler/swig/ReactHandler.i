@@ -19,7 +19,13 @@ class HttpClientServer
 public:
     bool listen(uint16_t port, int domain = AF_INET);
     void start();
+};
 
+class SocksClientServer
+{
+public:
+    bool listen(uint16_t port, int domain = AF_INET);
+    void start();
 };
 
 class HttpRequest
@@ -80,6 +86,9 @@ public:
 
     };
 
+    class SocksServer : public SocksClientServer
+    {
+    };
 %}
 
 /*
