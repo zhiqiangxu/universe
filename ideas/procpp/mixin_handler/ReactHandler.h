@@ -11,6 +11,7 @@
 #include "Server.h"
 #include "ClientServer.h"
 #include "HttpClientServer.h"
+#include "SocksClientServer.h"
 #include "Client.h"
 #include "Protocol.h"
 #include "Log/ErrorHandler.h"

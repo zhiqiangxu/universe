@@ -5,6 +5,7 @@ set(SRC EventManager.cpp
 		Client.cpp
 		ClientServer.cpp
 		HttpClientServer.cpp
+		SocksClientServer.cpp
 		Server/Protocol/Global.cpp
 		Protocol.cpp
 		StateMachine/Bufferable.cpp

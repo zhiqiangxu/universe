@@ -1,11 +1,9 @@
-#include "ClientServer.h"
-#include "Protocol/Socks.h"
+#include "ReactHandler.h"
 
 int main()
 {
-	ClientServer server;
-	Socks proto(server);
-	server.listen(8082, proto);
+	SocksClientServer server;
+	server.listen(8082);
 	server.start();
 
 	return 0;
