@@ -1,5 +1,5 @@
 SOURCES = EventManager.cpp Scheduler.cpp Server.cpp Client.cpp ClientServer.cpp Codec/Base64.cpp SocksClientServer.cpp HttpClientServer.cpp Server/Protocol/Global.cpp \
-		  Protocol.cpp StateMachine/Bufferable.cpp Protocol/Echo.cpp Protocol/Socks.cpp Protocol/EasyP2P.cpp Protocol/Http.cpp\
+		  Protocol.cpp StateMachine/Bufferable.cpp Protocol/Echo.cpp Protocol/Socks.cpp Protocol/EasyP2P.cpp Protocol/Http.cpp Protocol/WebSocket.cpp \
 		  Dispatch/IBaseWorker.cpp Dispatch/RemoteWorker.cpp Dispatch/ProxyWorker.cpp Utils.cpp Log/ErrorHandler.cpp \
 		  UProtocol/Echo.cpp StreamReader.cpp
 
@@ -16,6 +16,9 @@ socks: tests/socks.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
 http: tests/http.cpp $(SOURCES)
+	bash -lic 'rc $+ -valgrind'
+
+websocket: tests/websocket.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
 echo_worker: tests/echo_worker.cpp $(SOURCES)
