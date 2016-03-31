@@ -125,7 +125,17 @@ void Http::on_message(int client, string message)
 
 			_server.write(client, output.data(), output.length());
 
-			if (r.headers.find(HttpToken::CONNECTION) != r.headers.end() && r.headers[HttpToken::CONNECTION] == "close") _server.close(client);
+			auto it = r.headers.find(HttpToken::CONNECTION);
+			//close if required
+			if (it != r.headers.end() && it->second == "close") {
+				_server.close(client);
+				return;
+			}
+			//default close if 1.0
+			if (it == r.headers.end() && r.http_version.substr(sizeof("HTTP/") - 1) == "1.0") {
+				_server.close(client);
+				return;
+			}
 
 		} while (!s.end());
 
