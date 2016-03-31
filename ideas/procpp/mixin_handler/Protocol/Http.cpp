@@ -8,9 +8,7 @@ string HttpResponse::to_string()
 	for (const auto& h : headers) {
 		s += h.first + ": " + h.second + "\r\n";
 	}
-	if (body.length() > 0 && headers.find(HttpToken::CONTENT_LENGTH) == headers.end()) {
-		s += string(HttpToken::CONTENT_LENGTH) + ": " + std::to_string(body.length()) + "\r\n";
-	}
+	s += string(HttpToken::CONTENT_LENGTH) + ": " + std::to_string(body.length()) + "\r\n";
 	s += "\r\n";
 	s += body;
 

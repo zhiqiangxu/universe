@@ -2,10 +2,10 @@
 #include "Protocol/Http.h"
 using namespace std;
 
-class WebSocketState
+enum class WebSocketState
 {
 	HANDSHAKE,
-	CONNECTED
+	OPEN
 };
 
 class IWebSocket
@@ -13,7 +13,7 @@ class IWebSocket
 public:
 };
 
-class WebSocket : public Http, public IWebSocket
+class WebSocket : public Http, public IWebSocket, public StateBuffer<WebSocketState>
 {
 public:
 

@@ -10,6 +10,8 @@ class HttpToken
 public:
 	static constexpr const char* CONTENT_LENGTH = "Content-Length";
 	static constexpr const char* CONNECTION = "Connection";
+	//used by websocket
+	static constexpr const char* SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
 };
 
 class HttpRequest

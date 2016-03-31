@@ -21,7 +21,7 @@ public:
 
 };
 
-class Protocol : public IProtocol, public Bufferable
+class Protocol : public IProtocol, public virtual Bufferable
 {
 public:
 	static string read(int fd);//fd为ET

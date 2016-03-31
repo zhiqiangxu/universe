@@ -14,6 +14,7 @@ set(SRC EventManager.cpp
 		Protocol/Socks.cpp
 		Protocol/EasyP2P.cpp
 		Protocol/Http.cpp
+		Protocol/WebSocket.cpp
 		Dispatch/IBaseWorker.cpp
 		Dispatch/RemoteWorker.cpp
 		Dispatch/ProxyWorker.cpp

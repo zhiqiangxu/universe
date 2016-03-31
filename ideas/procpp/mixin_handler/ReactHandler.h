@@ -27,6 +27,7 @@
 #include "UProtocol/Echo.h"
 #include "Protocol/Echo.h"
 #include "Protocol/Http.h"
+#include "Protocol/WebSocket.h"
 
 
 
