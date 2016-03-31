@@ -76,6 +76,13 @@ public:
         return id;
     }
 
+    template <typename T1, typename ... Args>
+	void fire(Args... args)
+	{
+		using Hook = EventHookGlobal<T1, Args...>;
+		Hook::get_instance().fire(args...);
+	}
+
 };
 
 class EventManager : public IEventManager

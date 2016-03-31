@@ -12,11 +12,6 @@ public:
 	static constexpr const char* CONNECTION = "Connection";
 };
 
-class IHttp
-{
-public:
-};
-
 class HttpRequest
 {
 public:
@@ -27,6 +22,14 @@ public:
 	map<string, string> headers;
 	string body;
 };
+
+class IHttp
+{
+public:
+	//reused by websocket
+	virtual HttpRequest parse_request(int client, StreamReader& s) = 0;
+};
+
 
 class HttpResponse
 {
@@ -54,4 +57,5 @@ public:
 	virtual void on_message(int client, string message) override;
 	virtual void on_close(int client) override;
 
+	virtual HttpRequest parse_request(int client, StreamReader& s) override;
 };

@@ -255,6 +255,8 @@ public:
     {
       return static_cast<typename function_traits<Function>::function>(lambda);
     }
+
+	string sha1(const string& data);
 };
 
 

@@ -13,6 +13,7 @@
 #include "HttpClientServer.h"
 #include "SocksClientServer.h"
 #include "Client.h"
+#include "Codec/Base64.h"
 #include "Protocol.h"
 #include "Log/ErrorHandler.h"
 #include "Utils.h"

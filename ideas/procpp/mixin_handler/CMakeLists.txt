@@ -4,6 +4,7 @@ set(SRC EventManager.cpp
 		Server.cpp
 		Client.cpp
 		ClientServer.cpp
+		Codec/Base64.cpp
 		HttpClientServer.cpp
 		SocksClientServer.cpp
 		Server/Protocol/Global.cpp
@@ -22,8 +23,10 @@ set(SRC EventManager.cpp
 		)
 set(LAN "php" CACHE STRING "target language")
 
+
 set(PYTHON_SRC ${SRC} build/python/ReactHandler_wrap.cxx)
 set(PHP_SRC ${SRC} build/php/ReactHandler_wrap.cpp)
+
 
 
 if (${LAN} STREQUAL "php")
@@ -33,6 +36,9 @@ elseif (${LAN} STREQUAL "python")
     include_directories(. /usr/include/python2.7)
     add_library( _${PROJECT_NAME} SHARED ${PYTHON_SRC} )
 endif()
+
+find_package(OpenSSL REQUIRED)
+target_link_libraries( _${PROJECT_NAME} ${OpenSSL_LIBS} )
 
 set_target_properties( _${PROJECT_NAME} PROPERTIES PREFIX "" )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -g")
