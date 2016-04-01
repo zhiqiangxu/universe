@@ -214,7 +214,7 @@ public:
 	//network byte order is big endian
 	// http://stackoverflow.com/a/28364285
 	template <typename T>
-	void hton( T& value, char* ptr=0 )
+	static void hton( T& value, char* ptr=0 )
 	{
 		if (sizeof(T) == 1) return;
 
@@ -225,7 +225,7 @@ public:
 	}
 
 	template <typename T>
-	void htol( T& value, char* ptr=0 )
+	static void htol( T& value, char* ptr=0 )
 	{
 		if (sizeof(T) == 1) return;
 
@@ -255,6 +255,8 @@ public:
     {
       return static_cast<typename function_traits<Function>::function>(lambda);
     }
+
+	static string sha1(const string& data);
 };
 
 

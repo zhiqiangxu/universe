@@ -10,6 +10,7 @@
 //fcntl
 #include <unistd.h>
 #include <fcntl.h>
+#include <openssl/sha.h>//SHA1
 
 
 
@@ -65,3 +66,10 @@ int Utils::nonblock_socket(int domain, int type, int protocol)
 	return s;
 }
 
+string Utils::sha1(const string& data)
+{
+	unsigned char h[SHA_DIGEST_LENGTH];
+	SHA1((unsigned char*)data.data(), data.length(), h);
+
+	return string((char*)h, SHA_DIGEST_LENGTH);
+}

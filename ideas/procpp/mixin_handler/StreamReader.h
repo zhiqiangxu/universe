@@ -68,6 +68,10 @@ public:
 
 	virtual void fail_if(bool exp) = 0;
 
+    //到头没?
+    virtual bool end() = 0;
+
+    virtual size_t offset() = 0;
 protected:
 	string& _str;
 	size_t _offset;
@@ -87,4 +91,8 @@ public:
 	virtual void read_until(const string& s, string& result, bool eatup_final = false) override;
 
 	virtual void fail_if(bool exp) override { if (exp) throw ReaderException::NG; }
+
+    virtual bool end() override { return _offset >= _str.length(); }
+
+    virtual size_t offset() override { return _offset; };
 };

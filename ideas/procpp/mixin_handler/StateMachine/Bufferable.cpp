@@ -1,7 +1,7 @@
 #include "StateMachine/Bufferable.h"
 
 
-bool Bufferable::need_buf(int id, string& message, bool cond)
+bool Bufferable::need_buf(int id, const string& message, bool cond)
 {
 	if (cond) {
 		_buf[id] = message;

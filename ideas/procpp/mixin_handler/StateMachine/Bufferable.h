@@ -7,7 +7,7 @@ class IBufferable
 {
 public:
 	/******buffer*******/
-	virtual bool need_buf(int id, string& message, bool cond) = 0;
+	virtual bool need_buf(int id, const string& message, bool cond) = 0;
 	virtual bool append_buf(int id, string& message) = 0;
 	virtual size_t count_buf() = 0;
 	virtual bool has_buf(int id) = 0;
@@ -22,7 +22,7 @@ public:
 class Bufferable : public IBufferable
 {
 public:
-	virtual bool need_buf(int id, string& message, bool cond) override;
+	virtual bool need_buf(int id, const string& message, bool cond) override;
 	virtual bool append_buf(int id, string& message) override;
 	virtual size_t count_buf() override;
 	virtual bool has_buf(int id) override;

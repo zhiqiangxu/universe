@@ -10,7 +10,7 @@ public:
 };
 
 template <typename State>
-class StateBuffer : public IStateBuffer, public Bufferable, public Stateful<State>
+class StateBuffer : public IStateBuffer, public virtual Bufferable, public Stateful<State>
 {
 public:
 	virtual void erase_state_buffer(int fd) override;

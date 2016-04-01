@@ -11,8 +11,10 @@
 #include "Server.h"
 #include "ClientServer.h"
 #include "HttpClientServer.h"
+#include "WebSocketClientServer.h"
 #include "SocksClientServer.h"
 #include "Client.h"
+#include "Codec/Base64.h"
 #include "Protocol.h"
 #include "Log/ErrorHandler.h"
 #include "Utils.h"
@@ -26,6 +28,7 @@
 #include "UProtocol/Echo.h"
 #include "Protocol/Echo.h"
 #include "Protocol/Http.h"
+#include "Protocol/WebSocket.h"
 
 
 
