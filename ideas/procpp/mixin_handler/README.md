@@ -15,7 +15,7 @@ All you need to do to support another kind of server is to offer a class that ex
 
 ## Demo
 
-A `http` server can be writen in php: 
+`http` server in php: 
 
 ``` <?php
 require("ReactHandler.php");
@@ -70,9 +70,64 @@ int main()
 }
 ```
 
-The same is true for a `socks` server.
+`websocket` server in php:
 
-In php:
+```
+<?php
+require("ReactHandler.php");
+class PhpCallback extends WebSocketCallback {
+    function run($m, $ws)
+    {
+        if ($m->opcode == WebSocket::OPCODE_TEXT_FRAME) $ws->send($m->client, $m->payload);
+    }
+}
+
+$callback = new PhpCallback();
+
+$s=new WebSocketServer();
+$s->on('message', $callback);
+$s->listen(8082);
+$s->start();
+```
+
+or in python:
+
+```
+import ReactHandler
+
+class PythonCallback(ReactHandler.WebSocketCallback):
+    def run(self, m, ws):
+            if m.opcode == ReactHandler.WebSocket.OPCODE_TEXT_FRAME:
+                ws.send(m.client, m.payload)
+
+callback = PythonCallback()
+
+s = ReactHandler.WebSocketServer()
+s.on('message', callback)
+s.listen(8082)
+s.start()
+
+```
+
+or in c++ directly:
+```
+#include "ReactHandler.h"
+
+int main()
+{
+	WebSocketServer s;
+
+	s.on<WebSocket::ON_MESSAGE>(Utils::to_function([](WebSocketMessage& m, WebSocket& ws) {
+        if (m.opcode == ws.OPCODE_TEXT_FRAME) ws.send(m.client, m.payload);
+	}));
+
+	s.listen(8082);
+	s.start();
+	return 0;
+}
+```
+
+`socks` server in php:
 ```
 <?php
 require("ReactHandler.php");
@@ -114,6 +169,8 @@ cd universe/ideas/procpp/mixin_handler
 
 python tests/test.py
 php tests/test.php # add build/php/_ReactHandler.so to php.ini manually
+python tests/ws.py
+php tests/ws.php
 python tests/socks.py
 php tests/socks.php
 ```
