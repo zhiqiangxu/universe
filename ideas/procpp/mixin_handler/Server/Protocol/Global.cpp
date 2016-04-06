@@ -10,7 +10,7 @@ void Global::on_message(int child, string message)
 {
 	L.debug_log("global on_message");
 
-	auto& server = static_cast<ClientServer&>(_server);
+	auto& server = dynamic_cast<ClientServer&>(_scheduler);
 
 	server.append_buf(child, message);
 

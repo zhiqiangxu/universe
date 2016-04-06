@@ -5,14 +5,14 @@ void EasyP2P::on_connect(int sock)
 {
 	Utils::SocketAddress addr;
 	if (!Utils::get_peer_name(sock, addr)) {
-		_server.close(sock);
+		_scheduler.close(sock);
 		return;
 	}
 
 	_sock_addrs[sock] = addr;
 
 	string hello = "Please type your nick name";
-	_server.write_line(sock, hello);
+	_scheduler.write_line(sock, hello);
 
 	set_state(sock, EasyP2PState::NICK);
 }
@@ -34,21 +34,21 @@ void EasyP2P::on_message(int sock, string message)
 			smatch m;
 			if (!regex_search(result, m, r)) {
 				string message = "Invalid nickname!";
-				_server.write_line(sock, message);
+				_scheduler.write_line(sock, message);
 				return;
 			}
 
 			auto nick = m[1];
 			if (_n2s.find(nick) != _n2s.end()) {
 				string message = "ALready exist!";
-				_server.write_line(sock, message);
+				_scheduler.write_line(sock, message);
 				return;
 			}
 
 			_n2s[nick] = sock;
 			_s2n[sock] = nick;
-			_server.write_line(sock, "Nickname OK!");
-			_server.write_line(sock, "You can type cmd now!");
+			_scheduler.write_line(sock, "Nickname OK!");
+			_scheduler.write_line(sock, "You can type cmd now!");
 			set_state(sock, EasyP2PState::CMD);
 
 			break;
@@ -72,7 +72,7 @@ void EasyP2P::on_message(int sock, string message)
 						smatch m;
 						if (!regex_search(result, m, r)) {
 							L.debug_log(result + " not match");
-							_server.close(sock);
+							_scheduler.close(sock);
 							return;
 						}
 
@@ -84,7 +84,7 @@ void EasyP2P::on_message(int sock, string message)
 						smatch m;
 						if (!regex_search(result, m, r)) {
 							L.debug_log(result + " not match");
-							_server.close(sock);
+							_scheduler.close(sock);
 							return;
 						}
 
@@ -106,7 +106,7 @@ void EasyP2P::on_list(int sock)
 	L.debug_log("on_list");
 
 	for (const auto& r : _n2s) {
-		_server.write_line(sock, r.first);
+		_scheduler.write_line(sock, r.first);
 	}
 
 }
@@ -116,14 +116,14 @@ void EasyP2P::on_info(int sock, string target)
 	L.debug_log("on_info " + target);
 
 	if (_n2s.find(target) == _n2s.end()) {
-		_server.write_line(sock, target + " not exists!");
+		_scheduler.write_line(sock, target + " not exists!");
 		return;
 	}
 
 	auto target_sock = _n2s[target];
 	auto name_info = _get_name_info(target_sock);
 
-	_server.write_line(sock, name_info);
+	_scheduler.write_line(sock, name_info);
 	L.debug_log("on_info " + target);
 }
 
@@ -132,15 +132,15 @@ void EasyP2P::on_connect_target(int sock, string target)
 	L.debug_log("on_connect " + target);
 
 	if (_n2s.find(target) == _n2s.end()) {
-		_server.write_line(sock, target + " not exists!");
+		_scheduler.write_line(sock, target + " not exists!");
 		return;
 	}
 
 	auto target_sock = _n2s[target];
 	auto name_info = _get_name_info(sock);
-	_server.write_line(target_sock, "/connect " + name_info);
+	_scheduler.write_line(target_sock, "/connect " + name_info);
 
-	_server.write_line(sock, "ok");
+	_scheduler.write_line(sock, "ok");
 
 }
 

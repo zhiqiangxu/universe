@@ -163,6 +163,7 @@ int main()
 
 ### Try out
 ```
+#install swig-3.0.8 cmake openssl g++-5.2.1 manually
 git clone https://github.com/zhiqiangxu/universe
 cd universe/ideas/procpp/mixin_handler
 ./build.sh

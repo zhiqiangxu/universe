@@ -5,7 +5,7 @@
 #include "Utils.h"
 using namespace std;
 
-class Server;
+class Scheduler;
 
 class IUProtocol
 {
@@ -23,10 +23,10 @@ public:
 
 	/*未实现on_message，是抽象类*/
 
-	UProtocol(Server& server, uint64_t buffer_size = 1024*1024/*1M*/) : _server(server), _buffer_size(buffer_size) {}
+	UProtocol(Scheduler& scheduler, uint64_t buffer_size = 1024*1024/*1M*/) : _scheduler(scheduler), _buffer_size(buffer_size) {}
 
 protected:
-	Server& _server;
+	Scheduler& _scheduler;
 	ssize_t _buffer_size;
 };
 

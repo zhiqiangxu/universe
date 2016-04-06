@@ -117,21 +117,21 @@ void Http::on_message(int client, string message)
 			offset = s.offset();
 
 			HttpResponse resp;
-			_server.fire<Http::ON_REQUEST, decltype(r)&, decltype(resp)&>(r, resp);
+			_scheduler.fire<Http::ON_REQUEST, decltype(r)&, decltype(resp)&>(r, resp);
 
 			auto output = resp.to_string();
 
-			_server.write(client, output.data(), output.length());
+			_scheduler.write(client, output.data(), output.length());
 
 			auto it = r.headers.find(HttpToken::CONNECTION);
 			//close if required
 			if (it != r.headers.end() && it->second == "close") {
-				_server.close(client);
+				_scheduler.close(client);
 				return;
 			}
 			//default close if 1.0
 			if (it == r.headers.end() && r.http_version.substr(sizeof("HTTP/") - 1) == "1.0") {
-				_server.close(client);
+				_scheduler.close(client);
 				return;
 			}
 
@@ -146,7 +146,7 @@ void Http::on_message(int client, string message)
 			}
 			case ReaderException::NG:
 			{
-				_server.close(client);
+				_scheduler.close(client);
 				return;
 			}
 		}

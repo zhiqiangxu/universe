@@ -29,7 +29,7 @@ void WebSocket::on_message(int client, string message)
 
 				auto output = resp.to_string();
 
-				_server.write(client, output.data(), output.length());
+				_scheduler.write(client, output.data(), output.length());
 
 				set_state(client, WebSocketState::OPEN);
 
@@ -44,7 +44,7 @@ void WebSocket::on_message(int client, string message)
 					}
 					case ReaderException::NG:
 					{
-						_server.close(client);
+						_scheduler.close(client);
 						return;
 					}
 				}
@@ -126,7 +126,7 @@ PARSE_MESSAGE:
 
 				offset = s.offset();
 
-				_server.fire<WebSocket::ON_MESSAGE, decltype(m)&, WebSocket&>(m, *this);
+				_scheduler.fire<WebSocket::ON_MESSAGE, decltype(m)&, WebSocket&>(m, *this);
 				switch (m.opcode) {
 					case OPCODE_TEXT_FRAME:
 					case OPCODE_BINARY_FRAME:
@@ -165,7 +165,7 @@ PARSE_MESSAGE:
 					}
 					case ReaderException::NG:
 					{
-						_server.close(client);
+						_scheduler.close(client);
 						return;
 					}
 				}
@@ -187,7 +187,7 @@ bool WebSocket::close(int client, uint16_t code, const char* reason)
 	payload += reason;
 
 	send(client, payload, OPCODE_CONNECTION_CLOSE);
-	return _server.close(client);
+	return _scheduler.close(client);
 }
 
 bool WebSocket::pong(int client, const string& payload)
@@ -219,7 +219,7 @@ bool WebSocket::send(int client, const string& payload, uint8_t opcode, bool fin
 	}
 	out += payload;
 
-	_server.write(client, out.data(), out.length());
+	_scheduler.write(client, out.data(), out.length());
 
 	return true;
 }
