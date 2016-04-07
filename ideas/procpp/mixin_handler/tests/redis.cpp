@@ -11,7 +11,10 @@ int main()
 	Redis proto(c);
 
 	c.connect("localhost", 6379, [](int fd, ConnectResult r) {
+		cout << "test" << endl;
 		cout << Utils::enum_string(r) << endl;
 	}, true);
+
+	c.start();
 	return 0;
 }
