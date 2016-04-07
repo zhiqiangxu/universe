@@ -28,7 +28,33 @@ namespace P
 		public:
 			virtual void pipeline() = 0;
 			virtual void exec() = 0;
-			virtual void cmd_set(string key, string value, int* ex, int* px, NXXX* nxxx, RedisCB cb) = 0;
+			virtual void cmd_set(string key, string value, RedisCB cb, int* p_ex, int* p_px, NXXX* p_nxxx) = 0;
+
+		protected:
+			//bulk string
+			virtual string resp_encode(string* p_bulk_string) = 0;
+			virtual string resp_encode(const string& bulk_string) = 0;
+			//integer
+			virtual string resp_encode(uint64_t n) = 0;
+
+			template<typename T1, typename... Tn>
+			string create_cmd(T1 arg1, Tn... args)
+			{
+				auto n = 1 + sizeof...(Tn);
+
+				string cmd = "*" + to_string(n) + "\r\n" + resp_encode_elements(arg1, args...);
+
+				return cmd;
+			}
+
+			template<typename T1, typename... Tn>
+			string resp_encode_elements(T1 arg1, Tn... args)
+			{
+				auto result = resp_encode(arg1);
+				result += resp_encode_elements(args...);
+
+				return result;
+			}
 		};
 
 		class Redis : public ::Protocol, public IRedis
@@ -47,9 +73,13 @@ namespace P
 
 			virtual void pipeline() override {};
 			virtual void exec() override {};
-			virtual void cmd_set(string key, string value, int* ex, int* px, NXXX* nxxx, RedisCB cb);
+			virtual void cmd_set(string key, string value, RedisCB cb, int* p_ex = nullptr, int* p_px = nullptr, NXXX* p_nxxx = nullptr) override;
 
 		protected:
+			virtual string resp_encode(string* p_bulk_string) override;
+			virtual string resp_encode(const string& bulk_string) override;
+			virtual string resp_encode(uint64_t n) override;
+
 			queue<RedisCB> _callbacks;
 			int _fd;
 		};
