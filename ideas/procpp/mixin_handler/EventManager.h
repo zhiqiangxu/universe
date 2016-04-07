@@ -45,10 +45,14 @@ public:
 			U(NR nr) : _nr(nr) {}
 			U(R r) : _r(r) {}
 			U(C c) : _c(c) {}
+			// for read
 			void operator()(int fd) { _nr(fd); }
 			void operator()(int fd, string message) { _r(fd, message); }
+			// for connect
 			void operator()(int fd, ConnectResult r) { _c(fd, r); }
 			bool want_message() { return _r ? true : false; }
+			// TODO check it
+			bool is_connect() { return _c ? true : false; }
 	};
 	using EventCB = map<EventType, CB>;
 
@@ -90,6 +94,9 @@ class EventManager : public IEventManager
 public:
 	EventManager();
 	virtual ~EventManager() { _destroy(); };
+
+	//convenient method
+	EventCB to_ecb(CB::C connect_callback);
 
 	virtual bool watch(int fd, EventType event, CB callback) override;//TODO re_watch
     //TODO finish reading:

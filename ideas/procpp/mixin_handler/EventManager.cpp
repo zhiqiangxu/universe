@@ -26,6 +26,15 @@ EventManager::EventManager()
 	}
 }
 
+EventManager::EventCB EventManager::to_ecb(EventManager::CB::C connect_callback)
+{
+	return EventCB{
+			{
+				EventType::CONNECT, CB(connect_callback)
+			}
+		};
+}
+
 bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 {
 	auto ecb_iter = _fds.find(fd);

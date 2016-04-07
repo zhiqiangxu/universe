@@ -9,3 +9,5 @@ find ./swig -maxdepth 1 -mindepth 1 -not -name ReactHandler.i -exec mv '{}' buil
 export CXX=/usr/bin/g++-5
 pushd build/php && cmake -DLAN:STRING=php ../.. && make && popd
 pushd build/python && cmake -DLAN:STRING=python ../.. && make && popd
+mkdir -p build/native
+pushd build/native && cmake -DLAN:STRING=native ../.. && make && popd

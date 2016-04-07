@@ -16,6 +16,7 @@ set(SRC EventManager.cpp
 		Protocol/EasyP2P.cpp
 		Protocol/Http.cpp
 		Protocol/WebSocket.cpp
+		Protocol/Client/Redis.cpp
 		Dispatch/IBaseWorker.cpp
 		Dispatch/RemoteWorker.cpp
 		Dispatch/ProxyWorker.cpp
@@ -28,6 +29,7 @@ set(LAN "php" CACHE STRING "target language")
 
 set(PYTHON_SRC ${SRC} build/python/ReactHandler_wrap.cxx)
 set(PHP_SRC ${SRC} build/php/ReactHandler_wrap.cpp)
+set(NATIVE_SRC ${SRC} tests/redis.cpp)
 
 
 
@@ -37,6 +39,9 @@ if (${LAN} STREQUAL "php")
 elseif (${LAN} STREQUAL "python")
     include_directories(. /usr/include/python2.7)
     add_library( _${PROJECT_NAME} SHARED ${PYTHON_SRC} )
+elseif (${LAN} STREQUAL "native")
+    include_directories(.)
+    add_executable( _${PROJECT_NAME} ${NATIVE_SRC})
 endif()
 
 find_package(OpenSSL REQUIRED)

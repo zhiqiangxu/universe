@@ -42,7 +42,16 @@ int Client::connect(string address, uint16_t port, EventManager::EventCB callbac
 		}
 	}
 
+	if (callbacks.find(EventType::CONNECT) != callbacks.end()) {
+		callbacks[EventType::CONNECT](-1, ConnectResult::NG);
+	}
+
 	return -1;
+}
+
+int Client::connect(string address, uint16_t port, EventManager::CB::C connect_callback)
+{
+	return connect(address, port, to_ecb(connect_callback));
 }
 
 int Client::connect(const string sun_path, EventManager::EventCB callbacks)
@@ -95,7 +104,7 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 	}
 
 	if (callbacks.find(EventType::CONNECT) != callbacks.end()) {
-		callbacks[EventType::CONNECT](s);
+		callbacks[EventType::CONNECT](s, ConnectResult::OK);
 		callbacks.erase(EventType::CONNECT);
 	}
 
@@ -197,6 +206,11 @@ CONNECT_FAIL:
 	return s;
 }
 
+int Client::connect(string address, uint16_t port, EventManager::CB::C connect_callback, bool async)
+{
+	return connect(address, port, to_ecb(connect_callback), async);
+}
+
 int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd)
 {
 	auto s = Utils::nonblock_socket(addr->sa_family, SOCK_STREAM, 0);
@@ -233,3 +247,18 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 	return s;
 }
 
+EventManager::EventCB Client::_to_callbacks(Protocol& proto)
+{
+	return EventManager::EventCB{
+		{
+			EventType::READ, EventManager::CB([&proto, this] (int fd, string message) mutable {
+				proto.on_message(fd, message);
+			})
+		},
+		{
+			EventType::CLOSE, EventManager::CB([&proto, this] (int fd) mutable {
+				proto.on_close(fd);
+			})
+		},
+	};
+}
