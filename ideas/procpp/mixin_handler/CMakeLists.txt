@@ -45,7 +45,7 @@ elseif (${LAN} STREQUAL "native")
 endif()
 
 find_package(OpenSSL REQUIRED)
-target_link_libraries( _${PROJECT_NAME} ${OpenSSL_LIBS} )
+target_link_libraries( _${PROJECT_NAME} ${OPENSSL_LIBRARIES} )
 
 
 set_target_properties( _${PROJECT_NAME} PROPERTIES PREFIX "" )
