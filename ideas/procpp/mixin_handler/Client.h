@@ -60,7 +60,8 @@ public:
 	virtual int connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd) override;
 
 
+	virtual EventManager::EventCB to_callbacks(Protocol& proto);
+
 private:
-	virtual EventManager::EventCB _to_callbacks(Protocol& proto);
 };
 

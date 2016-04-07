@@ -247,7 +247,7 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 	return s;
 }
 
-EventManager::EventCB Client::_to_callbacks(Protocol& proto)
+EventManager::EventCB Client::to_callbacks(Protocol& proto)
 {
 	return EventManager::EventCB{
 		{
