@@ -28,17 +28,21 @@ namespace P
 		public:
 			virtual void pipeline() = 0;
 			virtual void exec() = 0;
-			virtual void cmd_set(string key, string value, RedisCB cb, int* p_ex, int* p_px, NXXX* p_nxxx) = 0;
+			//commands
+			virtual void set(string key, string value, RedisCB cb, int* p_ex, int* p_px, NXXX* p_nxxx) = 0;
 
 		protected:
+			virtual RedisReply parse_response(StreamReader& s) = 0;
+
 			//bulk string
 			virtual string resp_encode(string* p_bulk_string) = 0;
+			virtual string resp_encode(char* p_bulk_string) = 0;
 			virtual string resp_encode(const string& bulk_string) = 0;
 			//integer
 			virtual string resp_encode(uint64_t n) = 0;
 
 			template<typename T1, typename... Tn>
-			string create_cmd(T1 arg1, Tn... args)
+			static string create_cmd(T1 arg1, Tn... args)
 			{
 				auto n = 1 + sizeof...(Tn);
 
@@ -48,7 +52,7 @@ namespace P
 			}
 
 			template<typename T1, typename... Tn>
-			string resp_encode_elements(T1 arg1, Tn... args)
+			static string resp_encode_elements(T1 arg1, Tn... args)
 			{
 				auto result = resp_encode(arg1);
 				result += resp_encode_elements(args...);
@@ -73,10 +77,13 @@ namespace P
 
 			virtual void pipeline() override {};
 			virtual void exec() override {};
-			virtual void cmd_set(string key, string value, RedisCB cb, int* p_ex = nullptr, int* p_px = nullptr, NXXX* p_nxxx = nullptr) override;
+			virtual void set(string key, string value, RedisCB cb, int* p_ex = nullptr, int* p_px = nullptr, NXXX* p_nxxx = nullptr) override;
 
 		protected:
+			virtual RedisReply parse_response(StreamReader& s) override;
+
 			virtual string resp_encode(string* p_bulk_string) override;
+			virtual string resp_encode(char* p_bulk_string) override;
 			virtual string resp_encode(const string& bulk_string) override;
 			virtual string resp_encode(uint64_t n) override;
 

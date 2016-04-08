@@ -16,6 +16,10 @@ int main()
 		if (r == ConnectResult::OK) {
 			proto.on_connect(fd);
 			c.watch(fd, c.to_callbacks(proto));
+
+			proto.set("key", "value", [](RedisReply& r) {
+				cout << "responsed" << endl;
+			});
 		}
 	}, true);
 
