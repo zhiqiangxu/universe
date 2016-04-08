@@ -42,7 +42,7 @@ namespace P
 			virtual string resp_encode(uint64_t n) = 0;
 
 			template<typename T1, typename... Tn>
-			static string create_cmd(T1 arg1, Tn... args)
+			string create_cmd(T1 arg1, Tn... args)
 			{
 				auto n = 1 + sizeof...(Tn);
 
@@ -52,12 +52,16 @@ namespace P
 			}
 
 			template<typename T1, typename... Tn>
-			static string resp_encode_elements(T1 arg1, Tn... args)
+			string resp_encode_elements(T1 arg1, Tn... args)
 			{
 				auto result = resp_encode(arg1);
-				result += resp_encode_elements(args...);
+				if (sizeof...(Tn) > 0) result += resp_encode_elements(args...);
 
 				return result;
+			}
+			string resp_encode_elements()
+			{
+				return "";
 			}
 		};
 

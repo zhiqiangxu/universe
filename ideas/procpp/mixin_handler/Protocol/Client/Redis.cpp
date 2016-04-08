@@ -2,8 +2,12 @@
 #include "ReactHandler.h"
 #include <assert.h>
 #include <string.h>//strlen
+#include <stdlib.h>//atol
 
 using namespace P::Client;
+
+template<>
+const char* Utils::enum_strings<NXXX>::data[] = {"NX", "XX"};
 
 void Redis::on_connect(int client)
 {
@@ -19,12 +23,16 @@ void Redis::on_message(int client, string message)
 	size_t offset = 0;
 
 	try {
-		auto r = parse_response(s);
-		offset = s.offset();
+		do {
 
-		auto cb = _callbacks.front();
-		_callbacks.pop();
-		cb(r);
+			auto r = parse_response(s);
+			offset = s.offset();
+
+			auto cb = _callbacks.front();
+			_callbacks.pop();
+			cb(r);
+
+		} while (!s.end());
 
 	} catch (ReaderException e) {
 		//TODO error handle
@@ -55,29 +63,49 @@ RedisReply Redis::parse_response(StreamReader& s)
 
 	switch(next_byte) {
 		case '+':
-		{
-			s.read_until("\r", r.reply, true);
-			s.read_plain(next_byte);
-			s.fail_if(next_byte != '\r');
-			break;
-		}
 		case '-':
-		{
-			s.read_until("\r", r.reply, true);
-			s.read_plain(next_byte);
-			s.fail_if(next_byte != '\r');
-			break;
-		}
 		case ':':
 		{
+			s.read_until("\r", r.reply, true);
+			s.read_plain(next_byte);
+			s.fail_if(next_byte != '\n');
 			break;
 		}
 		case '$':
 		{
+			string length_string;
+			s.read_until("\r", length_string, true);
+			s.read_plain(next_byte);
+			s.fail_if(next_byte != '\n');
+			auto length = atol(length_string.c_str());
+
+			if (length >= 0) {
+				if (length > 0) {
+					r.reply.reserve(length);
+					s.read_size(length, &r.reply[0]);
+				}
+
+				char crlf[2];
+				s.read_size(sizeof(crlf), crlf);
+				s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
+			} else {
+				r.type = ' ';
+			}
 			break;
 		}
 		case '*':
 		{
+			string length_string;
+			s.read_until("\r", length_string, true);
+			s.read_plain(next_byte);
+			s.fail_if(next_byte != '\n');
+			auto length = atol(length_string.c_str());
+
+			if (length > 0) {
+				for (long i = 0; i < length; i++) {
+					r.elements.push_back(parse_response(s));
+				}
+			}
 			break;
 		}
 	}
@@ -132,7 +160,7 @@ string Redis::resp_encode(string* p_bulk_string)
 	} else return "$-1\r\n";//Null Bulk String
 }
 
-string resp_encode(char* p_bulk_string)
+string Redis::resp_encode(char* p_bulk_string)
 {
 	auto len = strlen(p_bulk_string);
 	return "$" + to_string(len) + "\r\n" + string(p_bulk_string, len) + "\r\n";
