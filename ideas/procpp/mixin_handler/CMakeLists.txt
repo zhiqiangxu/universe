@@ -4,6 +4,8 @@ set(SRC EventManager.cpp
 		Server.cpp
 		Client.cpp
 		ClientServer.cpp
+		Codec/Utf8.cpp
+		DataStructure/Trie.cpp
 		Codec/Base64.cpp
 		HttpClientServer.cpp
 		WebSocketClientServer.cpp
