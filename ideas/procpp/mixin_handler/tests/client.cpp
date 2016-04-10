@@ -9,7 +9,7 @@ int main()
 
 	client.connect("localhost", 8081, EventManager::EventCB{
 		{
-			EventType::CONNECT, EventManager::CB([] (int fd) {
+			EventType::CONNECT, EventManager::CB([] (int fd, ConnectResult r) {
 				cout << "[connect]" << endl;
 				write(fd, "connect", strlen("connect"));
 			})

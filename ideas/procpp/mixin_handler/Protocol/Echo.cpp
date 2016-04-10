@@ -11,7 +11,7 @@ void Echo::on_message(int fd, string message)
 {
 	cout << "[read " + to_string(fd) + "]" << endl;
 	cout << message;
-	write(fd, message.data(), message.length());
+	auto ignored = write(fd, message.data(), message.length());
 }
 
 void Echo::on_close(int fd)

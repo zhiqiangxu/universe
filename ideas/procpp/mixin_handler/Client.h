@@ -1,5 +1,6 @@
 #pragma once
 #include "Scheduler.h"
+#include "Protocol.h"
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
 #include <string>
@@ -16,7 +17,9 @@ public:
 
 	/*********IP PORT*********/
 	virtual int connect(string address, uint16_t port, EventManager::EventCB callbacks) = 0;
+	virtual int connect(string address, uint16_t port, EventManager::CB::C connect_callback) = 0;
 	virtual int connect(string address, uint16_t port, EventManager::EventCB callbacks, bool async) = 0;
+	virtual int connect(string address, uint16_t port, EventManager::CB::C connect_callback, bool async) = 0;
 
 	/********sun path************/
 	virtual int connect(const string sun_path, EventManager::EventCB callbacks) = 0;
@@ -43,7 +46,9 @@ public:
 	/* 没有async参数的都是同步 */
 
 	virtual int connect(string address, uint16_t port, EventManager::EventCB callbacks) override;
+	virtual int connect(string address, uint16_t port, EventManager::CB::C connect_callback) override;
 	virtual int connect(string address, uint16_t port, EventManager::EventCB callbacks, bool async) override;
+	virtual int connect(string address, uint16_t port, EventManager::CB::C connect_callback, bool async) override;
 
 	virtual int connect(const string sun_path, EventManager::EventCB callbacks) override;
 	virtual int connect(const struct sockaddr_un* addr, EventManager::EventCB callbacks, bool async) override;
@@ -54,6 +59,8 @@ public:
 
 	virtual int connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd) override;
 
+
+	virtual EventManager::EventCB to_callbacks(Protocol& proto);
 
 private:
 };

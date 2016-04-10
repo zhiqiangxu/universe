@@ -15,6 +15,7 @@
 #include <arpa/inet.h>//inet_pton
 #include <endian.h>    // __BYTE_ORDER
 #include <algorithm>   // std::reverse
+#include <chrono>//chrono::system_clock::now
 
 using namespace std;
 
@@ -40,6 +41,11 @@ public:
 		time_t seconds_num = static_cast<time_t>(sec);
 		tv.tv_sec = seconds_num;
 		tv.tv_nsec = (sec - seconds_num) * 1000000000/*9...*/;
+	}
+
+	static auto now()
+	{
+		return chrono::system_clock::now();
 	}
 
 	static struct sockaddr_un addr_sun(string sun_path)
@@ -257,6 +263,8 @@ public:
     }
 
 	static string sha1(const string& data);
+
+	static string rand_string(size_t length);
 };
 
 

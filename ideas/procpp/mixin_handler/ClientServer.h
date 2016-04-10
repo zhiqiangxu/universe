@@ -2,6 +2,8 @@
 
 #include "Server.h"
 #include "Client.h"
+#include "Server/Protocol/Global.h"
+
 
 class IClientServer
 {

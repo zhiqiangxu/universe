@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <openssl/sha.h>//SHA1
+#include <stdlib.h>//rand
 
 
 
@@ -72,4 +73,16 @@ string Utils::sha1(const string& data)
 	SHA1((unsigned char*)data.data(), data.length(), h);
 
 	return string((char*)h, SHA_DIGEST_LENGTH);
+}
+
+string Utils::rand_string(size_t length)
+{
+    static string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    string result;
+    result.resize(length);
+
+    for (size_t i = 0; i < length; i++)
+        result[i] = charset[rand() % charset.length()];
+
+    return result;
 }

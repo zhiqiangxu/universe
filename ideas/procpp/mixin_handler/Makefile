@@ -1,5 +1,6 @@
 SOURCES = EventManager.cpp Scheduler.cpp Server.cpp Client.cpp ClientServer.cpp Codec/Base64.cpp SocksClientServer.cpp WebSocketClientServer.cpp \
-		  HttpClientServer.cpp Server/Protocol/Global.cpp \
+		  HttpClientServer.cpp Server/Protocol/Global.cpp Protocol/Client/Redis.cpp \
+		  Codec/Utf8.cpp DataStructure/Trie.cpp \
 		  Protocol.cpp StateMachine/Bufferable.cpp Protocol/Echo.cpp Protocol/Socks.cpp Protocol/EasyP2P.cpp Protocol/Http.cpp Protocol/WebSocket.cpp \
 		  Dispatch/IBaseWorker.cpp Dispatch/RemoteWorker.cpp Dispatch/ProxyWorker.cpp Utils.cpp Log/ErrorHandler.cpp \
 		  UProtocol/Echo.cpp StreamReader.cpp
@@ -16,11 +17,17 @@ client: tests/client.cpp $(SOURCES)
 socks: tests/socks.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
+redis: tests/redis.cpp $(SOURCES)
+	bash -lic 'rc $+ -valgrind'
+
 http: tests/http.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
 websocket: tests/websocket.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
+
+trie: tests/utf8.cpp $(SOURCES)
+	bash -lic 'rc $+'
 
 echo_worker: tests/echo_worker.cpp $(SOURCES)
 	rm -f /tmp/react_handler.sock

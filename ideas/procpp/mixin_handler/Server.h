@@ -5,7 +5,6 @@
 #include <linux/un.h>//struct sockaddr_un
 #include "Protocol.h"
 #include "UProtocol.h"
-#include "Server/Protocol/Global.h"
 
 class IServer
 {
