@@ -1,7 +1,7 @@
 #include "DataStructure/Trie.h"
 #include "Codec/Utf8.h"
 
-Trie::Trie(vector<string>&& keywords)
+Trie::Trie(const vector<string>& keywords)
 {
 	for (auto& keyword : keywords) {
 		if (keyword.length() == 0) continue;
@@ -26,7 +26,7 @@ Trie::Trie(vector<string>&& keywords)
 	}
 }
 
-vector<string> Trie::search(const string& text)
+vector<string> Trie::search(const string& text, bool no_overlap)
 {
 	map<string, bool> result;
 	size_t offset = 0;
@@ -37,17 +37,28 @@ vector<string> Trie::search(const string& text)
 		auto node = &_root;
 		auto next_offset = offset;
 
+		string longest_value;
+		size_t longest_offset;
 		do {
 			node = node->get_next(ch);
 			if (node) {
 				if (node->get_value()) {
-					result[*(node->get_value())] = true;
+					if (no_overlap) {
+						longest_value = *(node->get_value());
+						longest_offset = next_offset;
+					}
+					else result[*(node->get_value())] = true;
 				}
 
 				if (!Utf8::decode_char(text, ch, next_offset)) break;
 
 			} else break;
 		} while (true);
+
+		if (longest_value.length()/*implied no_overlap*/) {
+			result[longest_value] = true;
+			offset = longest_offset;
+		}
 	}
 
 	vector<string> ret;

@@ -10,9 +10,9 @@ class Trie
 public:
 
 	
-	Trie(vector<string>&& keywords);
+	Trie(const vector<string>& keywords);
 
-	vector<string> search(const string& text);
+	vector<string> search(const string& text, bool no_overlap = true);
 
 protected:
 

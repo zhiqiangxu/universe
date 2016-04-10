@@ -176,11 +176,11 @@ public:
     array_init(return_value);
 
     for (size_t i = 0; i < $1.size(); i++) {
-        add_next_index_string(return_value, $1.c_str(), 1);
+        add_next_index_string(return_value, $1.at(i).c_str(), 1);
     }
 }
 
-%typemap(in) vector<string>    (vector<string> vec)
+%typemap(in) vector<string>&    (vector<string> vec)
 {
     zval** data;
     HashTable* hash;
@@ -213,7 +213,7 @@ public:
         if (!is_str) zval_dtor(&temp);
     }
 
-    $1 = vec;
+    $1 = &vec;
 }
 
 #endif
@@ -221,15 +221,15 @@ public:
 class Trie
 {
 public:
-	Trie(vector<string>&& keywords);
+	Trie(const vector<string>& keywords);
 
-	vector<string> search(const string& text);
+	vector<string> search(const string& text, bool no_overlap = true);
 
 };
 
 #ifdef SWIGPHP
 
-%clear vector<string>
+%clear vector<string>;
 
 #endif
 

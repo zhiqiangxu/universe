@@ -6,7 +6,13 @@ for ($i = 0; $i < 1000; $i++) {
     $keywords[] = uniqid();
 }
 
-$trie = new Trie($keywords);
 $s = str_repeat('中国人abc isn cd', 100);
 
-var_dump($trie->search($s));
+for ($i = 0; $i < 100; $i++) {
+	$time = microtime(true);
+
+	$trie = new Trie($keywords);
+	var_dump($trie->search($s));
+
+	echo "tooks " . (microtime(true) - $time) . "\r\n";
+}

@@ -98,8 +98,8 @@ $keywords = ['中国', '国人', 'ab', 'bc', 'cd'];
 for ($i = 0; $i < 1000; $i++) {
     $keywords[] = uniqid();
 }
-$time = microtime(true);
 $s = str_repeat('中国人abc isn cd', 100);
+$time = microtime(true);
 var_dump(doGenerateHighlight($keywords, $s));
 //var_dump(doGenerateHighlight($keywords, $s));
 //var_dump(doGenerateHighlight($keywords, $s));
