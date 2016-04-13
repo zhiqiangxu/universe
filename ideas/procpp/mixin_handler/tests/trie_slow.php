@@ -2,7 +2,7 @@
 
 function doGenerateHighlight(Array &$keywords, $content, $caseInsensitive = false)
 {
-$time = microtime(true);
+	$time = microtime(true);
     $exp = '/'
     . implode('|', array_map('preg_quote', $keywords))
     . '/' . ($caseInsensitive ? 'i' : '');
@@ -94,10 +94,14 @@ class Trie
     }
 }
 
-$keywords = ['中国', '国人', 'ab', 'bc', 'cd'];
+$keywords = ['中国', '中国人', 'ab', 'bc', 'cd'];
 for ($i = 0; $i < 1000; $i++) {
     $keywords[] = uniqid();
 }
+usort($keywords, function($a, $b) {
+	return mb_strlen($b) - mb_strlen($a);
+});
+
 $s = str_repeat('中国人abc isn cd', 100);
 
 for ($i = 0; $i < 100; $i++) {

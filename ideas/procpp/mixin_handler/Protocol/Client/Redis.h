@@ -30,6 +30,7 @@ namespace P
 			virtual void exec() = 0;
 			//commands
 			virtual void set(string key, string value, RedisCB cb, int* p_ex, int* p_px, NXXX* p_nxxx) = 0;
+			virtual void get(string key, RedisCB cb) = 0;
 
 		protected:
 			virtual RedisReply parse_response(StreamReader& s) = 0;
@@ -82,6 +83,7 @@ namespace P
 			virtual void pipeline() override {};
 			virtual void exec() override {};
 			virtual void set(string key, string value, RedisCB cb, int* p_ex = nullptr, int* p_px = nullptr, NXXX* p_nxxx = nullptr) override;
+			virtual void get(string key, RedisCB cb) override;
 
 		protected:
 			virtual RedisReply parse_response(StreamReader& s) override;

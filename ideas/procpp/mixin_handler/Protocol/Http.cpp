@@ -92,7 +92,7 @@ HttpRequest Http::parse_request(int client, StreamReader& s)
 	s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
 
 	if (content_length > 0) {
-		r.body.reserve(content_length);
+		r.body.resize(content_length);
 		s.read_size(content_length, &r.body[0]);
 	}
 

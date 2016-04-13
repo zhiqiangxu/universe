@@ -81,7 +81,7 @@ RedisReply Redis::parse_response(StreamReader& s)
 
 			if (length >= 0) {
 				if (length > 0) {
-					r.reply.reserve(length);
+					r.reply.resize(length);
 					s.read_size(length, &r.reply[0]);
 				}
 
@@ -145,6 +145,15 @@ void Redis::set(string key, string value, RedisCB cb, int* p_ex, int* p_px, NXXX
 		}
 	}
 	
+
+	_scheduler.write(_fd, cmd_string.data(), cmd_string.length());
+
+	_callbacks.push(cb);
+}
+
+void Redis::get(string key, RedisCB cb)
+{
+	auto cmd_string = create_cmd("GET", key);
 
 	_scheduler.write(_fd, cmd_string.data(), cmd_string.length());
 

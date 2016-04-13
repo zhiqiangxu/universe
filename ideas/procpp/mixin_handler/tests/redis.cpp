@@ -19,8 +19,8 @@ int main()
 			proto.on_connect(fd);
 			c.watch(fd, c.to_callbacks(proto));
 
-			proto.set("key", "value", [](RedisReply& r) {
-				cout << "responsed" << endl;
+			proto.get("key", [](RedisReply& r) {
+				cout << "value = " << r.reply << endl;
 			});
 		}
 	}, true);

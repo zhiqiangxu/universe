@@ -1,7 +1,7 @@
 <?php
 require(__DIR__ . "/../build/php/ReactHandler.php");
 
-$keywords = ['中国', '国人', 'ab', 'bc', 'cd'];
+$keywords = ['中国', '中国人', 'ab', 'bc', 'cd'];
 for ($i = 0; $i < 1000; $i++) {
     $keywords[] = uniqid();
 }
