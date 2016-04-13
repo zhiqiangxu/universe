@@ -14,6 +14,8 @@ namespace P
 			
 			string reply;
 			vector<struct RedisReply> elements;
+
+			bool is_nil() { return type == ' '; }
 		};
 
 		using RedisCB = function<void(RedisReply&)>;

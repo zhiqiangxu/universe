@@ -20,7 +20,7 @@ int main()
 			c.watch(fd, c.to_callbacks(proto));
 
 			proto.get("key", [](RedisReply& r) {
-				cout << "value = " << r.reply << endl;
+				cout << "value = " << r.reply << (r.is_nil() ? " (nil)" : "") << endl;
 			});
 		}
 	}, true);

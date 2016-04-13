@@ -92,6 +92,9 @@ public:
 class EventManager : public IEventManager
 {
 public:
+
+	class ON_FORK {};
+
 	EventManager();
 	virtual ~EventManager() { _destroy(); };
 

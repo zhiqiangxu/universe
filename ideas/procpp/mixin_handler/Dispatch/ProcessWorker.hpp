@@ -139,6 +139,8 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 
 		if (pid) {
 		} else {
+
+			worker_server.fire<EventManager::ON_FORK>();
 			worker_server.set_parent(_parent_sockaddr.sun_path);/* not master, so it should receive session id */
 
 			worker_server.start();
@@ -159,6 +161,7 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 
 		if (pid) {
 		} else {
+			worker_server.fire<EventManager::ON_FORK>();
 			worker_server.set_parent(_parent_sockaddr.sun_path);/* not master, so it should receive session id */
 
 			worker_server.start();

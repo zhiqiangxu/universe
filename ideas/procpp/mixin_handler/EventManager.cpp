@@ -24,6 +24,21 @@ EventManager::EventManager()
 		perror("epoll_create");
 		throw runtime_error("epoll_create");
 	}
+
+	//use a different epoll fd after fork
+	this->on<EventManager::ON_FORK>(Utils::to_function([this]() {
+		::close(_epoll_fd);
+
+		_epoll_fd = epoll_create(1024);
+		if (_epoll_fd == -1) {
+			perror("epoll_create");
+			throw runtime_error("epoll_create");
+		}
+
+		for (const auto& r : _fds) {
+			if (!_epoll_update(r.first, EPOLL_CTL_ADD)) throw runtime_error("_epoll_update");
+		}
+	}));
 }
 
 EventManager::EventCB EventManager::to_ecb(EventManager::CB::C connect_callback)
