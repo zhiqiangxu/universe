@@ -31,7 +31,7 @@ trie: tests/utf8.cpp $(SOURCES)
 
 echo_worker: tests/echo_worker.cpp $(SOURCES)
 	rm -f /tmp/react_handler.sock
-	bash -lic 'rc $+ -valgrind'
+	bash -lic 'rc $+ -keep'
 
 socks_worker: tests/socks_worker.cpp $(SOURCES)
 	rm -f /tmp/react_handler.sock

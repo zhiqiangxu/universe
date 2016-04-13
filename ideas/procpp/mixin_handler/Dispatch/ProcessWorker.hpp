@@ -2,6 +2,8 @@
 #include "ReactHandler.h"
 #include <stdlib.h>//exit
 #include <unistd.h>//unlink
+#include <sys/types.h>
+#include <sys/wait.h>//wait
 
 
 
@@ -109,6 +111,19 @@ void ProcessWorker<Proto>::_set_path(string child_sun_path, string parent_sun_pa
 template <typename Proto>
 void ProcessWorker<Proto>::_listen_then_fork(int n)
 {
+	auto pm_pid = fork();
+	if (pm_pid == -1) L.error_exit("fork");
+	if (pm_pid) {
+		auto ok = _server.listen_for_child(_parent_sockaddr.sun_path);
+
+		if (!ok) L.error_exit("listen child sock failed");
+
+		return;
+	}
+
+	//process manager
+
+
 	if (n == ProcessWorker::NUMBER_CORES) n = Utils::get_cpu_cores();
 
 	ClientServer worker_server;
@@ -117,7 +132,6 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 
 
 	if (!ok) L.error_exit("listen child sock failed");
-
 
 	for (int i = 0; i < n; i++) {
 		auto pid = fork();
@@ -134,9 +148,26 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 		}
 	}
 
-	ok = _server.listen_for_child(_parent_sockaddr.sun_path);
 
-	if (!ok) L.error_exit("listen parent sock failed");
+	//restart child
+	int status;
+	pid_t child;
+	while ((child = waitpid(-1, &status, 0)) > 0)
+	{
+		auto pid = fork();
+		if (pid == -1) L.error_exit("fork");
+
+		if (pid) {
+		} else {
+			worker_server.set_parent(_parent_sockaddr.sun_path);/* not master, so it should receive session id */
+
+			worker_server.start();
+
+			// child should never return
+			exit(0);
+		}
+	}
+
 }
 
 template <typename Proto>
