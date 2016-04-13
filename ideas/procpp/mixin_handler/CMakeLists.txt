@@ -31,7 +31,7 @@ set(LAN "php" CACHE STRING "target language")
 
 set(PYTHON_SRC ${SRC} build/python/ReactHandler_wrap.cxx)
 set(PHP_SRC ${SRC} build/php/ReactHandler_wrap.cpp)
-set(NATIVE_SRC ${SRC} tests/redis.cpp)
+set(NATIVE_SRC ${SRC} tests/echo_worker.cpp)
 
 
 

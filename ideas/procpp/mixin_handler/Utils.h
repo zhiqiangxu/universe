@@ -16,6 +16,8 @@
 #include <endian.h>    // __BYTE_ORDER
 #include <algorithm>   // std::reverse
 #include <chrono>//chrono::system_clock::now
+#include <sys/types.h>//getpid
+#include <unistd.h>
 
 using namespace std;
 
@@ -34,6 +36,11 @@ public:
 		}
 
 		return n;
+	}
+
+	static pid_t getpid()
+	{
+		return ::getpid();
 	}
 
 	static void to_timespec(float sec, struct timespec& tv)

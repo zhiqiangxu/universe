@@ -197,7 +197,7 @@ void EventManager::start()
 			auto has_callback = _fds.find(_current_fd) != _fds.end();
 			if (!has_callback) {
 				//可能是某个回调unwatch或者close了该fd
-				cout << Utils::RED("waited fd has no callback " + to_string(_current_fd)) << endl;
+				cout << Utils::RED("waited fd has no callback " + to_string(_current_fd) + " pid = " + to_string(Utils::getpid())) << endl;
 				continue;
 			}
 
