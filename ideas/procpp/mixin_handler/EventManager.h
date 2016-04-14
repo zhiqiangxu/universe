@@ -72,6 +72,7 @@ public:
 	virtual void start() = 0;
 	virtual size_t count() = 0;
 
+	//TODO this should be per instance instead of global
     template <typename T1, typename ... Args>
     uint64_t on(function<void(Args...)> t2)
     {
@@ -79,6 +80,12 @@ public:
         auto id = Hook::get_instance().attach(t2);
         return id;
     }
+
+	void detach(uint64_t id)
+	{
+		using Hook = EventHookGlobal<T1, Args...>;
+		Hook::get_instance().detach(id);
+	}
 
     template <typename T1, typename ... Args>
 	void fire(Args... args)
