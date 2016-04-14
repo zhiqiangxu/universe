@@ -1,4 +1,7 @@
 project( ReactHandler )
+
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 set(SRC EventManager.cpp
 		Scheduler.cpp
 		Server.cpp
@@ -37,11 +40,14 @@ set(NATIVE_SRC ${SRC} tests/log.cpp)
 
 include_directories(.)
 if (${LAN} STREQUAL "php")
-    include_directories(/usr/include/php5 /usr/include/php5/main /usr/include/php5/TSRM /usr/include/php5/Zend /usr/include/php5/ext /usr/include/php5/ext/date/lib)
+    find_package(PHP5 REQUIRED)
+    include_directories(${PHP5_INCLUDE_PATH})
+
     add_library( _${PROJECT_NAME} SHARED ${PHP_SRC} )
 elseif (${LAN} STREQUAL "python")
     find_package(PythonLibs REQUIRED)
     include_directories(${PYTHON_INCLUDE_DIRS})
+
     add_library( _${PROJECT_NAME} SHARED ${PYTHON_SRC} )
 elseif (${LAN} STREQUAL "native")
     add_executable( _${PROJECT_NAME} ${NATIVE_SRC})
