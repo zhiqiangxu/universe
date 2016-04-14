@@ -179,24 +179,24 @@ public:
 	static void set_keepalive(int socketfd, int keepidle = 3600, int keepinterval = 60, int keepcount = 5);
 	static int nonblock_socket(int domain, int type, int protocol);
 
-	static bool file_exists(string path)
+	static bool file_exists(const string& path)
 	{
 		struct stat buffer;
 		return stat (path.c_str(), &buffer) == 0;
 	}
 
 	//https://en.wikipedia.org/wiki/ANSI_escape_code
-	static string RED(string s)
+	static string RED(const string& s)
 	{
 		return "\033[1;31m" + s + "\033[0m";
 	}
 
-	static string GREEN(string s)
+	static string GREEN(const string& s)
 	{
 		return "\033[1;32m" + s + "\033[0m";
 	}
 
-	static string YELLOW(string s)
+	static string YELLOW(const string& s)
 	{
 		return "\033[1;33m" + s + "\033[0m";
 	}

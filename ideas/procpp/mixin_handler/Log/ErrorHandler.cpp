@@ -14,23 +14,23 @@ ErrorHandler& ErrorHandler::get_instance()
 }
 
 
-void ErrorHandler::error_log(const string message)
+void ErrorHandler::error_log(const string& message)
 {
 	perror(message.c_str());
 }
 
-void ErrorHandler::error_exit(const string message)
+void ErrorHandler::error_exit(const string& message)
 {
 	perror(message.c_str());
 	exit(1);
 }
 
-void ErrorHandler::debug_log(const string message)
+void ErrorHandler::debug_log(const string& message)
 {
 	cout << Utils::YELLOW(message) << endl;
 }
 
-void ErrorHandler::info_log(const string message)
+void ErrorHandler::info_log(const string& message)
 {
 	cout << Utils::GREEN(message) << endl;
 }
