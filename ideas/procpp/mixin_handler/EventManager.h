@@ -81,6 +81,7 @@ public:
         return id;
     }
 
+    template <typename T1, typename ... Args>
 	void detach(uint64_t id)
 	{
 		using Hook = EventHookGlobal<T1, Args...>;

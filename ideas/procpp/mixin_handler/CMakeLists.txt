@@ -35,14 +35,14 @@ set(NATIVE_SRC ${SRC} tests/log.cpp)
 
 
 
+include_directories(.)
 if (${LAN} STREQUAL "php")
-    include_directories(. /usr/include/php5 /usr/include/php5/main /usr/include/php5/TSRM /usr/include/php5/Zend /usr/include/php5/ext /usr/include/php5/ext/date/lib)
+    include_directories(/usr/include/php5 /usr/include/php5/main /usr/include/php5/TSRM /usr/include/php5/Zend /usr/include/php5/ext /usr/include/php5/ext/date/lib)
     add_library( _${PROJECT_NAME} SHARED ${PHP_SRC} )
 elseif (${LAN} STREQUAL "python")
-    include_directories(. /usr/include/python2.7)
+    include_directories(/usr/include/python2.7)
     add_library( _${PROJECT_NAME} SHARED ${PYTHON_SRC} )
 elseif (${LAN} STREQUAL "native")
-    include_directories(.)
     add_executable( _${PROJECT_NAME} ${NATIVE_SRC})
 endif()
 
