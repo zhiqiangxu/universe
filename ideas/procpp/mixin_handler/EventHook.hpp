@@ -9,11 +9,11 @@ using namespace std;
 /**************************************************************************/
 /*******************EventHook START***********************************/
 /**************************************************************************/
-template <typename group, typename event_name, typename ... Args>
+template <typename event_name, typename ... Args>
 class EventHook
 {
 	using CB_TYPE = function<void(Args...)>;
-	using SELF_TYPE = EventHook<group, event_name, Args...>;
+	using SELF_TYPE = EventHook<event_name, Args...>;
 
 	uint64_t _id;
 	map<uint64_t, CB_TYPE> _callbacks;
@@ -21,17 +21,20 @@ class EventHook
 	bool _firing = false;
 
 	//declare
-	static SELF_TYPE* S_instance;
+	using MAP_TYPE = map<uintptr_t, SELF_TYPE>;
+	static MAP_TYPE S_instances;
+
+protected:
 
 	EventHook() {}
 
 public:
 
-	static SELF_TYPE& get_instance()
+	static SELF_TYPE& get_instance(uintptr_t group)
 	{
-		if (S_instance == nullptr) S_instance = new EventHook;
+		if (S_instances.find(group) == S_instances.end()) S_instances.insert(typename MAP_TYPE::value_type(group, EventHook()));
 
-		return *S_instance;
+		return S_instances.find(group)->second;
 	}
 
 	template<typename CB>
@@ -64,8 +67,8 @@ public:
 };
 
 //define
-template <typename group, typename ev, typename ... Args>
-EventHook<group, ev, Args...>* EventHook<group, ev, Args...>::S_instance;
+template <typename ev, typename ... Args>
+map<uintptr_t, EventHook<ev, Args...>> EventHook<ev, Args...>::S_instances;
 
 /**************************************************************************/
 /*******************EventHook END******************************************/

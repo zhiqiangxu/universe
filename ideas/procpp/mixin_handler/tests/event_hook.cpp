@@ -6,17 +6,19 @@ using namespace std;
 int main()
 {
 
-	using HookGroup = EventHook<int, int, int, int>;
+	using HookGroup = EventHook<int, int, int>;
 
-	auto id1 = HookGroup::get_instance().attach([](int a, int b) {
+	auto id1 = HookGroup::get_instance(1).attach([](int a, int b) {
 		cout << "1 a = " << a << " b = " << b << endl;
 	});
-	HookGroup::get_instance().attach([](int a, int b) {
+	HookGroup::get_instance(1).attach([](int a, int b) {
 		cout << "2 a = " << a << " b = " << b << endl;
 	});
 
-	HookGroup::get_instance().detach(id1);
-	HookGroup::get_instance().fire(1, 2);
+	HookGroup::get_instance(1).detach(id1);
+	HookGroup::get_instance(1).fire(1, 2);
+
+	cout << "-----------------" << endl;
 
 	using Hook = EventHookGlobal<int, int, int>;
 

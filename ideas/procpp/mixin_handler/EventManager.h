@@ -72,27 +72,26 @@ public:
 	virtual void start() = 0;
 	virtual size_t count() = 0;
 
-	//TODO this should be per instance instead of global
     template <typename T1, typename ... Args>
     uint64_t on(function<void(Args...)> t2)
     {
-        using Hook = EventHookGlobal<T1, Args...>;
-        auto id = Hook::get_instance().attach(t2);
+        using Hook = EventHook<T1, Args...>;
+        auto id = Hook::get_instance((uintptr_t)this).attach(t2);
         return id;
     }
 
     template <typename T1, typename ... Args>
 	void detach(uint64_t id)
 	{
-		using Hook = EventHookGlobal<T1, Args...>;
-		Hook::get_instance().detach(id);
+		using Hook = EventHook<T1, Args...>;
+		Hook::get_instance((uintptr_t)this).detach(id);
 	}
 
     template <typename T1, typename ... Args>
 	void fire(Args... args)
 	{
-		using Hook = EventHookGlobal<T1, Args...>;
-		Hook::get_instance().fire(args...);
+		using Hook = EventHook<T1, Args...>;
+		Hook::get_instance((uintptr_t)this).fire(args...);
 	}
 
 };
