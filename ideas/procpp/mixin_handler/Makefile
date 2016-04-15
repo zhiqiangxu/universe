@@ -5,10 +5,10 @@ SOURCES = EventManager.cpp Scheduler.cpp Server.cpp Client.cpp ClientServer.cpp 
 		  Dispatch/IBaseWorker.cpp Dispatch/RemoteWorker.cpp Dispatch/ProxyWorker.cpp Utils.cpp Log/ErrorHandler.cpp \
 		  UProtocol/Echo.cpp StreamReader.cpp
 
-test: tests/test.cpp $(SOURCES)
+watch_stdin: tests/watch_stdin.cpp $(SOURCES)
 	bash -lic 'rc $+ '
 
-server: tests/server.cpp $(SOURCES)
+schedule: tests/schedule.cpp $(SOURCES)
 	bash -lic 'rc $+ '
 
 client: tests/client.cpp $(SOURCES)
@@ -26,7 +26,7 @@ http: tests/http.cpp $(SOURCES)
 websocket: tests/websocket.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
-trie: tests/utf8.cpp $(SOURCES)
+trie: tests/trie.cpp $(SOURCES)
 	bash -lic 'rc $+'
 
 echo_worker: tests/echo_worker.cpp $(SOURCES)
@@ -53,7 +53,7 @@ unix_server: tests/unix_server.cpp $(SOURCES)
 udp_server: tests/udp_server.cpp $(SOURCES)
 	bash -lic 'rc $+ '
 
-p2p: tests/easyp2p.cpp $(SOURCES)
+easyp2p: tests/easyp2p.cpp $(SOURCES)
 	bash -lic 'rc $+ -valgrind'
 
 pool: tests/pool.cpp ThreadPool.cpp

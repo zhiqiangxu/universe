@@ -29,34 +29,70 @@ set(SRC EventManager.cpp
 		Utils.cpp Log/ErrorHandler.cpp
 		UProtocol/Echo.cpp
 		StreamReader.cpp
+		ThreadPool.cpp
+		Memory/SharedMemory.cpp
 		)
 set(LAN "php" CACHE STRING "target language")
 
 
 set(PYTHON_SRC ${SRC} build/python/ReactHandler_wrap.cxx)
 set(PHP_SRC ${SRC} build/php/ReactHandler_wrap.cpp)
-set(NATIVE_SRC ${SRC} tests/log.cpp)
 
 
 
 include_directories(.)
-if (${LAN} STREQUAL "php")
-    find_package(PHP5 REQUIRED)
-    include_directories(${PHP5_INCLUDE_PATH})
+find_package(OpenSSL REQUIRED)
 
-    add_library( _${PROJECT_NAME} SHARED ${PHP_SRC} )
-elseif (${LAN} STREQUAL "python")
-    find_package(PythonLibs REQUIRED)
-    include_directories(${PYTHON_INCLUDE_DIRS})
+if (${LAN} STREQUAL "native")
+	set( TEST
+			watch_stdin
+			schedule
+			client
+			socks
+			redis
+			http
+			websocket
+			trie
+			echo_worker
+			socks_worker
+			proxy_worker
+			remote_worker
+			worker
+			unix_server
+			udp_server
+			easyp2p
+			pool
+			allocator
+			event_hook
+		)
 
-    add_library( _${PROJECT_NAME} SHARED ${PYTHON_SRC} )
-elseif (${LAN} STREQUAL "native")
-    add_executable( _${PROJECT_NAME} ${NATIVE_SRC})
+	list(LENGTH TEST count)
+	set(index 0)
+	while (index LESS count)
+
+		list(GET TEST ${index} target)
+		math(EXPR index "${index}+1")
+
+    	add_executable( ${target} ${SRC} "tests/${target}.cpp" )
+		target_link_libraries( ${target} ${OPENSSL_LIBRARIES} pthread )
+	endwhile()
+
+else()
+	if (${LAN} STREQUAL "php")
+		find_package(PHP5 REQUIRED)
+		include_directories(${PHP5_INCLUDE_PATH})
+
+		add_library( _${PROJECT_NAME} SHARED ${PHP_SRC} )
+	elseif (${LAN} STREQUAL "python")
+		find_package(PythonLibs REQUIRED)
+		include_directories(${PYTHON_INCLUDE_DIRS})
+
+		add_library( _${PROJECT_NAME} SHARED ${PYTHON_SRC} )
+	endif()
+
+	target_link_libraries( _${PROJECT_NAME} ${OPENSSL_LIBRARIES} pthread )
+	set_target_properties( _${PROJECT_NAME} PROPERTIES PREFIX "" )
+
 endif()
 
-find_package(OpenSSL REQUIRED)
-target_link_libraries( _${PROJECT_NAME} ${OPENSSL_LIBRARIES} )
-
-
-set_target_properties( _${PROJECT_NAME} PROPERTIES PREFIX "" )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -g -O3")

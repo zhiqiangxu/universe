@@ -32,6 +32,8 @@
 #include "Protocol/Client/Redis.h"
 #include "Codec/Utf8.h"
 #include "DataStructure/Trie.h"
+#include "Memory/SharedMemory.h"
+#include "ThreadPool.h"
 
 
 
