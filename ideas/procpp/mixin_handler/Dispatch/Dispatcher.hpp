@@ -34,7 +34,7 @@ class Dispatcher<DispatchMode::Process, Proto>
 public:
 	template<typename... Args>
 	Dispatcher( Args&&... args ) : _worker(std::forward<Args>(args)...) {};
-	EventManager::EventCB to_callbacks() { _worker.get_server().to_callbacks(_worker); }
+	EventManager::EventCB to_callbacks() { return _worker.get_server().to_callbacks(_worker); }
 
 protected:
 	ProcessWorker<Proto> _worker;
@@ -58,7 +58,7 @@ class Dispatcher<DispatchMode::Proxy, Proto>
 public:
 	template<typename... Args>
 	Dispatcher( Args&&... args ) : _worker(std::forward<Args>(args)...) {};
-	EventManager::EventCB to_callbacks() { _worker.get_server().to_callbacks(_worker); }
+	EventManager::EventCB to_callbacks() { return _worker.get_server().to_callbacks(_worker); }
 
 protected:
 	ProxyWorker _worker;

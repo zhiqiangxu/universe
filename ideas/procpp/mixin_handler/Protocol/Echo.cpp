@@ -11,7 +11,8 @@ void Echo::on_message(int fd, string message)
 {
 	cout << "[read " + to_string(fd) + "]" << endl;
 	cout << message;
-	auto ignored = write(fd, message.data(), message.length());
+	//trick from http://stackoverflow.com/a/31909713
+	auto ignored [[gnu::unused]] = write(fd, message.data(), message.length());
 }
 
 void Echo::on_close(int fd)
