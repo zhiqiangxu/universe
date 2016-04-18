@@ -196,7 +196,7 @@ bool ClientServer::connect_parent()
 	return true;
 }
 
-EventManager::EventCB ClientServer::_to_callbacks(Protocol& proto)
+EventManager::EventCB ClientServer::to_callbacks(Protocol& proto)
 {
 	return EventManager::EventCB{
 		{

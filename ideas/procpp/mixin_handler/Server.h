@@ -6,6 +6,8 @@
 #include "Protocol.h"
 #include "UProtocol.h"
 
+class IBaseWorker;
+
 class IServer
 {
 public:
@@ -63,10 +65,10 @@ public:
 
 
 
-private:
-	virtual EventManager::EventCB _to_callbacks(Protocol& proto);
-	virtual EventManager::EventCB _to_callbacks(UProtocol& proto);
-	virtual EventManager::EventCB _to_callbacks_u(EventManager::CB cb);
+	virtual EventManager::EventCB to_callbacks(IBaseWorker& worker);
+	virtual EventManager::EventCB to_callbacks(Protocol& proto);
+	virtual EventManager::EventCB to_callbacks(UProtocol& proto);
+	virtual EventManager::EventCB to_callbacks_u(EventManager::CB cb);
 
 
 };

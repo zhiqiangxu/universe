@@ -34,6 +34,7 @@
 #include "DataStructure/Trie.h"
 #include "Memory/SharedMemory.h"
 #include "ThreadPool.h"
+#include "Dispatch/Dispatcher.hpp"
 
 
 

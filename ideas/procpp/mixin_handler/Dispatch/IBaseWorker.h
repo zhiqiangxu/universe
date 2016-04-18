@@ -19,6 +19,8 @@ class IBaseWorker : public StateBuffer<ConnectState>
 public:
 	IBaseWorker(ClientServer& server) : _server(server) {}
 
+	ClientServer& get_server() { return _server; }
+
 	virtual void on_connect(int client) = 0;
 	virtual void on_message(int client, string message, int remote_fd);
 	virtual void on_close(int client, int remote_fd);

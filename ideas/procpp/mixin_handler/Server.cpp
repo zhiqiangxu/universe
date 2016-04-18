@@ -12,7 +12,7 @@ using namespace std;
 
 bool Server::listen(uint16_t port, Protocol& proto, int domain)
 {
-	return listen(port, _to_callbacks(proto), domain);
+	return listen(port, to_callbacks(proto), domain);
 }
 
 bool Server::listen(uint16_t port, EventManager::EventCB callbacks, int domain)
@@ -36,7 +36,7 @@ bool Server::listen(uint16_t port, EventManager::EventCB callbacks, int domain)
 
 bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, Protocol& proto)
 {
-	return listen(addr, addrlen, _to_callbacks(proto));
+	return listen(addr, addrlen, to_callbacks(proto));
 }
 
 bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, EventManager::EventCB callbacks, int type)
@@ -62,7 +62,7 @@ bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, EventManager
 
 bool Server::listen(string sun_path, Protocol& proto)
 {
-	return listen(sun_path, _to_callbacks(proto));
+	return listen(sun_path, to_callbacks(proto));
 }
 
 bool Server::listen(string sun_path, EventManager::EventCB callbacks)
@@ -97,8 +97,18 @@ int Server::accept(int socketfd, struct sockaddr *addr, socklen_t *addrlen)
 }
 
 
+EventManager::EventCB Server::to_callbacks(IBaseWorker& worker)
+{
+	return EventManager::EventCB{
+		{
+			EventType::READ, EventManager::CB([&worker] (int fd) {
+				worker.handle(fd);
+			})
+		}
+	};
+}
 
-EventManager::EventCB Server::_to_callbacks(Protocol& proto)
+EventManager::EventCB Server::to_callbacks(Protocol& proto)
 {
 	return EventManager::EventCB{
 		{
@@ -143,17 +153,17 @@ bool Server::listen_u(const struct sockaddr *addr, socklen_t addrlen, EventManag
 
 bool Server::listen_u(const struct sockaddr *addr, socklen_t addrlen, UProtocol& proto)
 {
-	return listen_u(addr, addrlen, _to_callbacks(proto));
+	return listen_u(addr, addrlen, to_callbacks(proto));
 }
 
 bool Server::listen_u(uint16_t port, UProtocol& proto, int domain)
 {
-	return listen_u(port, _to_callbacks(proto), domain);
+	return listen_u(port, to_callbacks(proto), domain);
 }
 
 bool Server::listen_u(uint16_t port, EventManager::CB cb, int domain)
 {
-	return listen_u(port, _to_callbacks_u(cb), domain);
+	return listen_u(port, to_callbacks_u(cb), domain);
 }
 
 bool Server::listen_u(uint16_t port, EventManager::EventCB callbacks, int domain)
@@ -186,10 +196,10 @@ bool Server::listen_u(string sun_path, EventManager::CB cb)
 {
 	auto serveraddr = Utils::addr_sun(sun_path);
 
-	return listen_u(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), _to_callbacks_u(cb));
+	return listen_u(reinterpret_cast<const struct sockaddr*>(&serveraddr), sizeof(serveraddr), to_callbacks_u(cb));
 }
 
-EventManager::EventCB Server::_to_callbacks(UProtocol& proto)
+EventManager::EventCB Server::to_callbacks(UProtocol& proto)
 {
 	auto buffer_size = proto.get_buffer_size();
 	auto buffer = new char[buffer_size];
@@ -224,7 +234,7 @@ EventManager::EventCB Server::_to_callbacks(UProtocol& proto)
 	};
 }
 
-EventManager::EventCB Server::_to_callbacks_u(EventManager::CB cb)
+EventManager::EventCB Server::to_callbacks_u(EventManager::CB cb)
 {
 	return EventManager::EventCB{
 		{

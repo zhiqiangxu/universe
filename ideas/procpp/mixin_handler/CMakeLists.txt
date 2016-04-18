@@ -45,6 +45,7 @@ find_package(OpenSSL REQUIRED)
 
 if (${LAN} STREQUAL "native")
 	set( TEST
+			dispatcher
 			watch_stdin
 			schedule
 			client
@@ -95,4 +96,4 @@ else()
 
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -g -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -g -O0")

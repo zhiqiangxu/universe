@@ -50,8 +50,8 @@ public:
 	virtual EventManager::CB initial_message_wrapper(EventManager::CB::R r) override;
 	virtual bool add_session_task(int client, SessionTask task) override;
 
-private:
-	virtual EventManager::EventCB _to_callbacks(Protocol& proto) override;
+	using Server::to_callbacks;
+	virtual EventManager::EventCB to_callbacks(Protocol& proto) override;
 
 	bool _is_child = false;
 
