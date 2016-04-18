@@ -40,14 +40,21 @@ public:
 	template<typename CB>
 	uint64_t  attach(CB&& cb)
 	{
+
 		auto id = _id++;
 		_callbacks[id] = cb;
+
+		//Utils::print_types<event_name, Args...>();
+		//cout << "[attach] ncallbacks = " + to_string(_callbacks.size()) << endl;
 
 		return id;
 	}
 
 	void fire(Args... args)
 	{
+		//Utils::print_types<event_name, Args...>();
+		//cout << "[fire] ncallbacks = " + to_string(_callbacks.size()) << endl;
+
 		_firing = true;
 		for (auto& it : _callbacks)
 			it.second(args...);
@@ -64,6 +71,7 @@ public:
 		if (_firing) _cancel_id.push_back(id);
 		else _callbacks.erase(id);
 	}
+
 };
 
 //define

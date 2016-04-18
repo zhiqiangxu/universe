@@ -248,6 +248,23 @@ public:
 #endif
 	}
 
+	template <typename T, typename... R>
+	static void print_types()
+	{
+		cout << typeid(T).name() << endl;
+		if (sizeof...(R) > 0) print_types<R...>();
+	}
+
+	/**
+	 *  It a SFINAE trick. If sizeof...(B) is true, enable_if::type will be void.
+	 *  Otherwise, enable_if will not have any member named type, and template argument substitution will fail.
+	 **/
+	template <typename... T>
+	static typename std::enable_if<sizeof...(T) == 0>::type print_types()
+	{
+	}
+
+
     //hacks from http://meh.schizofreni.co/programming/magic/2013/01/23/function-pointer-from-lambda.html
 
     template <typename Function>
