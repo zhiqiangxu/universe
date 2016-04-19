@@ -20,7 +20,7 @@ ProcessWorker<Proto>::ProcessWorker(ClientServer& server, int n, string child_su
 template <typename Proto>
 void ProcessWorker<Proto>::on_connect(int client)
 {
-	L.debug_log("on_connect client = " + to_string(client));
+	//L.debug_log("on_connect client = " + to_string(client));
 
 	this->set_state(client, ConnectState::B4CONNECT);
 
@@ -70,7 +70,7 @@ void ProcessWorker<Proto>::on_connect(int client)
 template <typename Proto>
 void ProcessWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int client)
 {
-	L.debug_log( "on_remote_connect client = " + to_string(client) + " remote_fd = " + to_string(remote_fd) + " result = " + Utils::enum_string(r) );
+	//L.debug_log( "on_remote_connect client = " + to_string(client) + " remote_fd = " + to_string(remote_fd) + " result = " + Utils::enum_string(r) );
 
 	if (r == ConnectResult::OK) {
 
