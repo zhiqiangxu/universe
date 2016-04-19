@@ -126,9 +126,8 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 
 	if (n == ProcessWorker::NUMBER_CORES) n = Utils::get_cpu_cores();
 
-	ClientServer worker_server;
-	Proto proto(worker_server);
-	auto ok = worker_server.listen( reinterpret_cast<const struct sockaddr*>(&_child_sockaddr), sizeof(_child_sockaddr), proto );
+	Proto proto(_server);
+	auto ok = _server.listen( reinterpret_cast<const struct sockaddr*>(&_child_sockaddr), sizeof(_child_sockaddr), proto );
 
 
 	if (!ok) L.error_exit("listen child sock failed");
@@ -140,10 +139,10 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 		if (pid) {
 		} else {
 
-			worker_server.fire<EventManager::ON_FORK>();
-			worker_server.set_parent(_parent_sockaddr.sun_path);/* not master, so it should receive session id */
+			_server.fire<EventManager::ON_FORK>();
+			_server.set_parent(_parent_sockaddr.sun_path);/* not master, so it should receive session id */
 
-			worker_server.start();
+			_server.start();
 
 			// child should never return
 			exit(0);
@@ -161,10 +160,10 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 
 		if (pid) {
 		} else {
-			worker_server.fire<EventManager::ON_FORK>();
-			worker_server.set_parent(_parent_sockaddr.sun_path);/* not master, so it should receive session id */
+			_server.fire<EventManager::ON_FORK>();
+			_server.set_parent(_parent_sockaddr.sun_path);/* not master, so it should receive session id */
 
-			worker_server.start();
+			_server.start();
 
 			// child should never return
 			exit(0);
