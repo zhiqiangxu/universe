@@ -15,7 +15,7 @@ public:
 
 	/****事件系****/
 	virtual void on_connect(int client) {};
-	virtual void on_message(int client, string message) = 0;
+	virtual void on_message(int client, string message/*TODO avoid copy*/) = 0;
 	virtual void on_close(int client) {};
 
 

@@ -12,8 +12,16 @@
 #include <fcntl.h>
 #include <openssl/sha.h>//SHA1
 #include <stdlib.h>//rand
+#include <stdio.h>//snprintf
+
+template<>
+const char* Utils::enum_strings<Encoding>::data[] = {"Utf8", "Utf16LE", "Utf16BE", "Utf32LE", "Utf32BE"};
 
 
+string GUID::to_string()
+{
+	return Utils::string2hex((char*)uuid, sizeof(uuid));
+}
 
 string Utils::get_name_info(const SocketAddress& addr)
 {
@@ -85,4 +93,33 @@ string Utils::rand_string(size_t length)
         result[i] = charset[rand() % charset.length()];
 
     return result;
+}
+
+string Utils::string2hex(const string& s, bool space)
+{
+	string result;
+	char buf[2];
+
+	for (size_t i = 0; i < s.length(); i++) {
+		sprintf(buf, "%02X", s[i]);
+		result.append(buf, 2);
+		if (space) result += ' ';
+	}
+
+	return result;
+}
+
+string Utils::string2hex(const char* s, size_t length, bool space)
+{
+	string result;
+	char buf[3];
+
+	for (size_t i = 0; i < length; i++) {
+		snprintf(buf, sizeof(buf), "%02X", s[i]);//snprintf will always append \0 to buf
+		result.append(buf, 2);
+		if (space) result += ' ';
+	}
+
+
+	return result;
 }

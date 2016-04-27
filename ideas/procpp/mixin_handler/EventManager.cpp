@@ -157,11 +157,13 @@ bool EventManager::_destroy()
 	return true;
 }
 
-ssize_t EventManager::write(int fd, const void *buf, size_t count)
+ssize_t EventManager::write(int fd, const void *buf, size_t count, int* p_errno)
 {
 	auto ret = ::write(fd, buf, count);
 	if (ret == -1) {
 		if (errno == EPIPE) close(fd);
+
+		if (p_errno) *p_errno = errno;
 	}
 
 	return ret;
@@ -199,120 +201,131 @@ void EventManager::start()
 		auto ret = epoll_wait(_epoll_fd, events, kMaxEvents, timeout);
 		//cout << "ret " << ret << endl;
 
-		if (ret == -1) {
-			if (errno != EINTR) {
-				//error handle
-				L.error_exit("epoll_wait");
-			}
+		handle_events(ret, events);
+	}
+}
+
+void EventManager::handle_events(int ret, const struct epoll_event* events)
+{
+	if (ret == -1) {
+		if (errno != EINTR) {
+			//error handle
+			L.error_exit("epoll_wait");
+		}
+		return;
+	}
+
+	for (int i = 0; i < ret; i++) {
+		_current_fd = events[i].data.fd;
+		auto has_callback = _fds.find(_current_fd) != _fds.end();
+		if (!has_callback) {
+			//可能是某个回调unwatch或者close了该fd
+			cout << Utils::RED("waited fd has no callback " + to_string(_current_fd) + " pid = " + to_string(Utils::getpid())) << endl;
 			continue;
 		}
 
-		for (int i = 0; i < ret; i++) {
-			_current_fd = events[i].data.fd;
-			auto has_callback = _fds.find(_current_fd) != _fds.end();
-			if (!has_callback) {
-				//可能是某个回调unwatch或者close了该fd
-				cout << Utils::RED("waited fd has no callback " + to_string(_current_fd) + " pid = " + to_string(Utils::getpid())) << endl;
-				continue;
+		auto flags = events[i].events;
+
+		_current_cb = _fds[_current_fd];
+		if (_current_cb.find(EventType::CONNECT) != _current_cb.end()) {
+			auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::CONNECT];
+			if (flags & (EPOLLERR|EPOLLHUP)) {
+				goto CONNECT_NG;
 			}
 
-			auto flags = events[i].events;
-
-			_current_cb = _fds[_current_fd];
-			if (_current_cb.find(EventType::CONNECT) != _current_cb.end()) {
-				auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::CONNECT];
-				if (flags & (EPOLLERR|EPOLLHUP)) {
+			if (flags & EPOLLOUT) {
+				int result;
+				socklen_t result_len = sizeof(result);
+				if (getsockopt(_current_fd, SOL_SOCKET, SO_ERROR, &result, &result_len) < 0) {
 					goto CONNECT_NG;
 				}
 
-				if (flags & EPOLLOUT) {
-					int result;
-					socklen_t result_len = sizeof(result);
-					if (getsockopt(_current_fd, SOL_SOCKET, SO_ERROR, &result, &result_len) < 0) {
-						goto CONNECT_NG;
-					}
-
-					if (result != 0) {
-						goto CONNECT_NG;
-					} else {
-						goto CONNECT_OK;
-					}
+				if (result != 0) {
+					goto CONNECT_NG;
+				} else {
+					goto CONNECT_OK;
 				}
+			}
 
 CONNECT_NG:
 
-				/*******实现要求*******
-				 **********************
-				 **** 1.只回调一次 ****
-				***** 2.fd占住(所以不能close) ********
-				***********************
-				**/
-				_fds[_current_fd].erase(EventType::CONNECT);
-				_current_cb.erase(EventType::CONNECT);
-				unwatch(_current_fd);
-				f(_current_fd, ConnectResult::NG);
-				continue;
+			/*******实现要求*******
+			 **********************
+			 **** 1.只回调一次 ****
+			***** 2.fd占住(所以不能close) ********
+			***********************
+			**/
+			_fds[_current_fd].erase(EventType::CONNECT);
+			_current_cb.erase(EventType::CONNECT);
+			unwatch(_current_fd);
+			f(_current_fd, ConnectResult::NG);
+			continue;
 
 CONNECT_OK:
-				//回调前就删除
-				_fds[_current_fd].erase(EventType::CONNECT);
-				_current_cb.erase(EventType::CONNECT);
-				f(_current_fd, ConnectResult::OK);
-			}
-
-			if (flags & EPOLLIN) {
-				if (_current_cb.find(EventType::READ) != _current_cb.end()) {
-					auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::READ];
-					if (f.want_message()) {
-						f(_current_fd, Protocol::read(_current_fd));
-					} else {
-						f(_current_fd);
-					}
-				} else {
-					//error handle
-				}
-			}
-			if (flags & EPOLLOUT) {
-				if (_current_cb.find(EventType::WRITE) != _current_cb.end()) {
-
-					auto f = _current_cb[EventType::WRITE];
-					f(_current_fd);
-
-				}
-			}
-
-			if (flags & EPOLLERR) {
-				if (_current_cb.find(EventType::ERROR) != _current_cb.end()) {
-
-					auto f = _current_cb[EventType::ERROR];
-					f(_current_fd);
-
-				} else {
-					cout << Utils::RED("EPOLLERR no handler") << endl;
-				}
-			}
-
-			if (flags & (EPOLLRDHUP | EPOLLHUP)) {
-				if (_current_cb.find(EventType::CLOSE) != _current_cb.end()) {
-
-					auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::CLOSE];
-					if (unwatch(_current_fd)) _add_close_fd(_current_fd);
-					f(_current_fd);//TODO make it possible to transfer state and buffer when close
-
-				} else {
-					if (unwatch(_current_fd)) _add_close_fd(_current_fd);
-				}
-			}
-
+			//回调前就删除
+			_fds[_current_fd].erase(EventType::CONNECT);
+			_current_cb.erase(EventType::CONNECT);
+			f(_current_fd, ConnectResult::OK);
 		}
 
-		_current_fd = -1;
-
-		for (auto fd : _close_fds) {
-			::close(fd);
+		if (flags & EPOLLIN) {
+			if (_current_cb.find(EventType::READ) != _current_cb.end()) {
+				auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::READ];
+				if (f.want_message()) {
+					f(_current_fd, Protocol::read(_current_fd));
+				} else {
+					f(_current_fd);
+				}
+			} else {
+				L.error_log("fd " + to_string(_current_fd) + " has no read handler");
+				//error handle
+			}
 		}
-		_close_fds.clear();
+		if (flags & EPOLLOUT) {
+			if (_current_cb.find(EventType::WRITE) != _current_cb.end()) {
+
+				auto f = _current_cb[EventType::WRITE];
+				f(_current_fd);
+
+			}
+		}
+
+		if (flags & EPOLLERR) {
+			if (_current_cb.find(EventType::ERROR) != _current_cb.end()) {
+
+				auto f = _current_cb[EventType::ERROR];
+				f(_current_fd);
+
+			} else {
+				cout << Utils::RED("EPOLLERR no handler") << endl;
+			}
+		}
+
+		if (flags & (EPOLLRDHUP | EPOLLHUP)) {
+			if (_current_cb.find(EventType::CLOSE) != _current_cb.end()) {
+
+				auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::CLOSE];
+				if (unwatch(_current_fd)) _add_close_fd(_current_fd);
+				f(_current_fd);//TODO make it possible to transfer state and buffer when close
+
+			} else {
+				//no close handler registered, try to unwatch + close
+				if (unwatch(_current_fd)) _add_close_fd(_current_fd);
+				else {
+					L.error_log("failed when try to unwatch closed fd " + to_string(_current_fd));
+				}
+			}
+		}
+
 	}
+
+	_current_fd = -1;
+
+	for (auto fd : _close_fds) {
+		::close(fd);
+	}
+	_close_fds.clear();
+
 }
 
 size_t EventManager::count()

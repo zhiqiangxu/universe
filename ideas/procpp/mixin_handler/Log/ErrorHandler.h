@@ -2,6 +2,14 @@
 #include <string>
 using namespace std;
 
+#define DEBUG(exp, message) {\
+	if (!(exp)) L.error_exit(message); \
+}
+
+
+#define L ErrorHandler::get_instance()
+
+
 class IErrorHandler
 {
 public:

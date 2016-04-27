@@ -1,4 +1,3 @@
-#include "Protocol/Http.h"
 #include "ReactHandler.h"
 #include <strings.h>//strncasecmp
 
@@ -117,7 +116,7 @@ void Http::on_message(int client, string message)
 			offset = s.offset();
 
 			HttpResponse resp;
-			_scheduler.fire<Http::ON_REQUEST, decltype(r)&, decltype(resp)&>(r, resp);
+			_scheduler.fire<ON_REQUEST, decltype(r)&, decltype(resp)&>(r, resp);
 
 			auto output = resp.to_string();
 

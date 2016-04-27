@@ -1,4 +1,3 @@
-#include "ClientServer.h"
 #include "ReactHandler.h"
 
 ClientServer::~ClientServer()
@@ -10,7 +9,9 @@ int ClientServer::accept(int socketfd, struct sockaddr *addr, socklen_t *addrlen
 {
 	auto client = Server::accept(socketfd, addr, addrlen);
 
-	if (!_is_child) {
+
+	//若client == -1则为惊群或者已读完，此时不需要自增
+	if (client != -1 && !_is_child) {
 		auto session_id = ++_session_id;
 		_c2s[client] = session_id;
 		_s2c[session_id] = client;

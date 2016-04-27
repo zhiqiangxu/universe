@@ -62,8 +62,6 @@ public:
 		_firing = false;
 
 		for (auto id : _cancel_id) _callbacks.erase(id);
-
-		_callbacks.clear();
 	}
 
 	void detach(uint64_t id)

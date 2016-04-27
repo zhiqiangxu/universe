@@ -1,4 +1,4 @@
-#include "Client.h"
+#include "ReactHandler.h"
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
@@ -7,7 +7,8 @@ int main()
 {
 	Client client;
 
-	client.connect("localhost", 8081, EventManager::EventCB{
+
+	client.connect("localhost", 8082, EventManager::EventCB{
 		{
 			EventType::CONNECT, EventManager::CB([] (int fd, ConnectResult r) {
 				cout << "[connect]" << endl;
@@ -23,8 +24,17 @@ int main()
 			})
 		},
 		{
-			EventType::CLOSE, EventManager::CB([] (int fd) {
+			EventType::CLOSE, EventManager::CB([&client] (int fd) {
 				cout << "[closed]" << endl;
+
+				/*get_peer_name will fail after closed by peer*/
+				Utils::SocketAddress addr;
+				if (Utils::get_peer_name(fd, addr)) {
+					cout << "getpeername ok" << endl;
+				} else {
+					L.error_log("getpeername ng");
+				}
+
 			})
 		}
 

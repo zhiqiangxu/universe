@@ -1,4 +1,3 @@
-#include "Server/Protocol/Global.h"
 #include "ReactHandler.h"
 
 void Global::on_connect(int child)

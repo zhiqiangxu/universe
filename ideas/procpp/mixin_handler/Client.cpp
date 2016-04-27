@@ -1,9 +1,10 @@
-#include "Client.h"
 #include <strings.h>//bzero
 #include <netdb.h>//getaddrinfo
 #include <unistd.h>//close
 #include <linux/un.h>//struct sockaddr_un
 #include <iostream>
+#include <sys/epoll.h>//epoll_wait
+#include <sys/select.h>//select
 #include "ReactHandler.h"
 using namespace std;
 
@@ -67,7 +68,7 @@ int Client::connect(const struct sockaddr_un* addr, EventManager::EventCB callba
 
 int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async)
 {
-	return connect(reinterpret_cast<const struct sockaddr*>(addr), addrlen, EventManager::EventCB{
+	return connect(addr, addrlen, EventManager::EventCB{
 		{
 			EventType::CONNECT, EventManager::CB([this, callbacks, sa_family=addr->sa_family] (int remote_fd, ConnectResult r) mutable {
 				auto f = callbacks[EventType::CONNECT];
@@ -92,23 +93,65 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 
 }
 
-int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks)
+//同步实现口
+int Client::connect(const struct sockaddr* addr, socklen_t addrlen, int timeout)
 {
 	auto s = socket(addr->sa_family, SOCK_STREAM, 0);
 	if (s == -1) L.error_exit("socket");
 
-	if (::connect(s, addr, addrlen) == -1) {
-		::close(s);
-		L.error_log("connect");
-		return -1;
-	}
+	if (timeout > 0) {
+		//SO_SNDTIMEO会影响所有发包操作，所以用异步socket来实现timeout
+		Utils::set_nonblock(s);
+		auto status = ::connect(s, addr, addrlen);
+		if (status == -1 && errno != EINPROGRESS) {
+			L.error_log("connect");
+			goto FAILURE;
+		}
 
-	if (callbacks.find(EventType::CONNECT) != callbacks.end()) {
-		callbacks[EventType::CONNECT](s, ConnectResult::OK);
-		callbacks.erase(EventType::CONNECT);
+		fd_set wset;
+		FD_ZERO(&wset);
+		FD_SET(s, &wset);
+
+		auto tv = Utils::to_timeval(timeout);
+		status = select(s+1, nullptr, &wset, nullptr, &tv);
+
+		if (status != 1) {
+			if (status == -1) L.error_log("select");
+
+			goto FAILURE;
+		}
+
+		return s;
+	}
+	else {
+		if (::connect(s, addr, addrlen) == -1) {
+			L.error_log("connect");
+			goto FAILURE;
+		}
 	}
 
 	if (addr->sa_family != AF_UNIX) Utils::set_keepalive(s);
+
+	return s;
+
+FAILURE:
+	::close(s);
+	return -1;
+
+
+}
+
+int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks)
+{
+
+	auto s = connect(addr, addrlen);
+
+	if (callbacks.find(EventType::CONNECT) != callbacks.end()) {
+		callbacks[EventType::CONNECT](s, s > 0 ? ConnectResult::OK : ConnectResult::NG);
+		callbacks.erase(EventType::CONNECT);
+	}
+
+	if (s < 0) return s;
 
 	//刚注册的fd，如果有事件，不会遗漏
 	if (callbacks.size()) watch(s, move(callbacks));
@@ -245,6 +288,40 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 	}
 
 	return s;
+}
+
+int Client::wait(int milliseconds, const vector<GUID>& requests)
+{
+	auto now = Utils::now();
+
+	const int kMaxEvents = 32;
+	struct epoll_event events[kMaxEvents];
+
+	map<GUID, bool> request_map;
+	for (auto& uuid : requests) {
+		request_map[uuid] = true;
+	}
+
+	auto id = on<Client::ON_PACKET_OK>(Utils::to_function([&request_map](GUID& uuid){
+		request_map.erase(uuid);
+	}));
+
+	while (true) {
+		int timeout = milliseconds - chrono::duration_cast<chrono::milliseconds>(Utils::now() - now).count();
+		if (timeout < 0) break;
+
+		//cout << "epoll_wait" << endl;
+		auto ret = epoll_wait(_epoll_fd, events, kMaxEvents, timeout);
+		//cout << "ret " << ret << endl;
+
+		handle_events(ret, events);
+
+		if (request_map.size() == 0) break;
+	}
+
+	detach<Client::ON_PACKET_OK, GUID&>(id);
+
+	return requests.size() - request_map.size();
 }
 
 EventManager::EventCB Client::to_callbacks(Protocol& proto)

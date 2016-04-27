@@ -1,8 +1,7 @@
 #pragma once
 #include "UProtocol.h"
 
-namespace U
-{
+namespace U {
 	class IEcho
 	{
 	};

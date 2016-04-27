@@ -2,8 +2,7 @@
 #include "ReactHandler.h"
 
 
-namespace U
-{
+namespace U {
 
 	void Echo::on_message(int u_sock, string message, Utils::SocketAddress addr, socklen_t addrlen)
 	{

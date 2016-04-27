@@ -1,4 +1,3 @@
-#include "Protocol.h"
 #include <algorithm>//max
 #include <unistd.h>//read
 #include <string.h>//memcpy

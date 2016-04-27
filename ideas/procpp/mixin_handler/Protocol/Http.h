@@ -45,6 +45,8 @@ public:
 	static constexpr const char* http_version = "HTTP/1.1";
 
 	virtual string to_string();
+
+	virtual ~HttpResponse() {}
 };
 
 class Http : public Protocol, public IHttp

@@ -43,6 +43,7 @@ public:
 	//event tags
 	class ON_MESSAGE {};
 
+	virtual ~WebSocket() {}
 
 	using Http::Http;
 

@@ -1,8 +1,7 @@
 #pragma once
 #include "ReactHandler.h"
 
-namespace Protocol::Client
-{
+namespace Protocol::Client {
 
 	class IEasyP2P
 	{

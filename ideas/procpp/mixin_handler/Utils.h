@@ -18,10 +18,39 @@
 #include <chrono>//chrono::system_clock::now
 #include <sys/types.h>//getpid
 #include <unistd.h>
+#include <uuid/uuid.h>//uuid_t
+#include <sys/select.h>//timeval
 
 using namespace std;
 
 //put various static method here
+
+enum class Endian
+{
+	Big,
+	Little
+};
+
+enum class Encoding
+{
+	Utf8,
+	Utf16LE,
+	Utf16BE,
+	Utf32LE,
+	Utf32BE,
+};
+
+class GUID
+{
+	uuid_t uuid;
+public:
+	GUID() {};//uninitialized GUID
+	GUID(const uuid_t& uuid) { uuid_copy(this->uuid, uuid); }
+	GUID(const GUID& other) { uuid_copy(this->uuid, other.uuid); }
+	void generate() { uuid_generate(uuid); }
+	string to_string();
+	bool operator<(const GUID& other) const/*const is a MUST: http://stackoverflow.com/questions/4421706/operator-overloading*/ { return uuid_compare(uuid, other.uuid) < 0; }
+};
 
 class Utils
 {
@@ -50,12 +79,21 @@ public:
 		tv.tv_nsec = (sec - seconds_num) * 1000000000/*9...*/;
 	}
 
+	static struct timeval to_timeval(int milliseconds)
+	{
+		struct timeval v;
+		v.tv_sec = milliseconds/1000;
+		v.tv_usec = (milliseconds % 1000) * 1000;
+
+		return v;
+	}
+
 	static auto now()
 	{
 		return chrono::system_clock::now();
 	}
 
-	static struct sockaddr_un addr_sun(string sun_path)
+	static struct sockaddr_un addr_sun(const string& sun_path)
 	{
 		struct sockaddr_un serveraddr;
 		::bzero(&serveraddr, sizeof(serveraddr));
@@ -127,12 +165,12 @@ public:
 		return -1;
 	}
 
-	static ssize_t addr_size(SocketAddress& addr)
+	static ssize_t addr_size(const SocketAddress& addr)
 	{
 		return addr_size(addr.in6.sin6_family);
 	}
 
-	static SocketAddress to_addr(string sun_path)
+	static SocketAddress to_addr(const string& sun_path)
 	{
 		SocketAddress addr;
 		bzero(addr);
@@ -141,7 +179,7 @@ public:
 		return addr;
 	}
 
-	static SocketAddress to_addr(string ip, uint16_t port)
+	static SocketAddress to_addr(const string& ip, uint16_t port)
 	{
 		SocketAddress addr;
 		bzero(addr);
@@ -248,6 +286,54 @@ public:
 #endif
 	}
 
+	static bool is_big_endian()
+	{
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		return false;
+#else
+		return true;
+#endif
+	}
+
+	static bool is_little_endian()
+	{
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		return true;
+#else
+		return false;
+#endif
+	}
+
+	static Endian get_endian()
+	{
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		return Endian::Little;
+#else
+		return Endian::Big;
+#endif
+	}
+
+	static Endian get_opposite_endian()
+	{
+#if __BYTE_ORDER != __LITTLE_ENDIAN
+		return Endian::Little;
+#else
+		return Endian::Big;
+#endif
+	}
+
+	template <typename T>
+	static void swap_endian( T& value )
+	{
+		if (sizeof(T) == 1) return;
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		Utils::hton(value);
+#else
+		Utils::htol(value);
+#endif
+	}
+
 	template <typename T, typename... R>
 	static void print_types()
 	{
@@ -289,6 +375,9 @@ public:
 	static string sha1(const string& data);
 
 	static string rand_string(size_t length);
+
+	static string string2hex(const string& s, bool space = false);
+	static string string2hex(const char* s, size_t length, bool space = false);
 };
 
 

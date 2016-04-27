@@ -1,0 +1,21 @@
+#include "ReactHandler.h"
+using namespace std;
+
+
+int main()
+{
+	// new style
+	C::Soa c("localhost", 8082);
+
+
+	GUID request_id;
+	c.cmd<P::Client::Soa, P::Client::Soa::packet_type::JSON>(request_id, Utils::to_function([&request_id](string& json) {
+		cout << "uuid = " << request_id.to_string() << " json = " << json << endl;
+	}), string("[1,2,3]"));
+
+	L.debug_log("before wait");
+	c.wait(1500, vector<GUID>({request_id}));
+	L.debug_log("after wait");
+
+	return 0;
+}
