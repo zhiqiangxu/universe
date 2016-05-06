@@ -8,6 +8,10 @@
 #include <vector>
 using namespace std;
 
+namespace P { namespace Client {
+	class Base;
+}}
+
 class IClient
 {
 public:
@@ -71,7 +75,7 @@ public:
 
 	virtual int wait(int milliseconds, const vector<GUID>& requests) override;
 
-	virtual EventManager::EventCB to_callbacks(Protocol& proto);
+	virtual EventManager::EventCB to_callbacks(P::Client::Base& proto);
 
 private:
 };

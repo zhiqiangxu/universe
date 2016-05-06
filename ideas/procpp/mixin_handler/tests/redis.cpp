@@ -9,7 +9,7 @@ int main()
 {
 
 	// really old style
-	Client c;
+	ClientServer c;
 	c.connect("localhost", 6379, [&c](int fd, ConnectResult r) {
 		if (r == ConnectResult::OK) {
 			auto p_proto = new Redis(c);

@@ -324,7 +324,7 @@ int Client::wait(int milliseconds, const vector<GUID>& requests)
 	return requests.size() - request_map.size();
 }
 
-EventManager::EventCB Client::to_callbacks(Protocol& proto)
+EventManager::EventCB Client::to_callbacks(P::Client::Base& proto)
 {
 	return EventManager::EventCB{
 		{

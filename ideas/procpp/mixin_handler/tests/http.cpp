@@ -5,7 +5,7 @@ int main()
 	HttpClientServer server;
 
     server.on<Http::ON_REQUEST>(Utils::to_function([&server](HttpRequest& req, HttpResponse& resp) {
-		resp.body = "additional content from hook\r\n";
+		resp.body = "content from c++\r\n";
 	}));
 
 	server.listen(8082);

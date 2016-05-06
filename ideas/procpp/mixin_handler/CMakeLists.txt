@@ -58,12 +58,12 @@ set( DEPENDED_LIBS
 
 if (${LAN} STREQUAL "native")
     set( TEST
+            http
             redis
             soa_server_dispatcher
             soa_client
             soa_server
             client
-            http
             dispatcher
             watch_stdin
             schedule
@@ -84,7 +84,7 @@ if (${LAN} STREQUAL "native")
         )
 
     list(LENGTH TEST count)
-    set(count 3)
+    set(count 2)
     set(index 0)
     while (index LESS count)
 

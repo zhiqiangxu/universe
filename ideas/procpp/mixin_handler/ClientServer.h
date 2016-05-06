@@ -51,6 +51,7 @@ public:
 	virtual bool add_session_task(int client, SessionTask task) override;
 
 	using Server::to_callbacks;
+	using Client::to_callbacks;
 	virtual EventManager::EventCB to_callbacks(Protocol& proto) override;
 
 	bool _is_child = false;
