@@ -20,7 +20,17 @@ const char* Utils::enum_strings<Encoding>::data[] = {"Utf8", "Utf16LE", "Utf16BE
 
 string GUID::to_string()
 {
-	return Utils::string2hex((char*)uuid, sizeof(uuid));
+    string result(37, 0);
+
+    uuid_unparse( uuid, &result[0] );
+    result.resize( 36 );
+
+	return result;
+}
+
+bool GUID::from_string(const string& uuid_string, GUID& guid)
+{
+    return uuid_parse( uuid_string.c_str(), guid.uuid ) == 0;
 }
 
 string Utils::get_name_info(const SocketAddress& addr)

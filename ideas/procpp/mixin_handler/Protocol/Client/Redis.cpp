@@ -127,7 +127,9 @@ namespace P { namespace Client {
 		queue<pair<GUID, RedisCB>>().swap(_callbacks);
 	}
 
-
+	void Redis::add_callback(GUID& request_id, RedisCB callback) {
+		_callbacks.push(pair<GUID, RedisCB>(request_id, callback));
+	}
 
 	// static methods of IRedis
 	string IRedis::resp_encode(string* p_bulk_string)

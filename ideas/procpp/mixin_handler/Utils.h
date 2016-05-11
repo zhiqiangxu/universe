@@ -49,6 +49,7 @@ public:
 	GUID(const GUID& other) { uuid_copy(this->uuid, other.uuid); }
 	void generate() { uuid_generate(uuid); }
 	string to_string();
+    static bool from_string(const string& uuid_string, GUID& guid);
 	bool operator<(const GUID& other) const/*const is a MUST: http://stackoverflow.com/questions/4421706/operator-overloading*/ { return uuid_compare(uuid, other.uuid) < 0; }
 };
 

@@ -46,8 +46,4 @@ string Redis::packet<Redis::packet_type::SET, string, string, int*, int*, NXXX*>
 
 
 
-void Redis::add_callback(GUID& request_id, RedisCB callback) {
-	_callbacks.push(pair<GUID, RedisCB>(request_id, callback));
-}
-
 

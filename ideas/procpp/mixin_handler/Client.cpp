@@ -292,6 +292,8 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 
 int Client::wait(int milliseconds, const vector<GUID>& requests)
 {
+    if (requests.size() == 0) return 0;
+
 	auto now = Utils::now();
 
 	const int kMaxEvents = 32;

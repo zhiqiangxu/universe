@@ -56,6 +56,11 @@ namespace P { namespace Client {
 		_callbacks.clear();
 	}
 
+	void Soa::add_callback(GUID& request_id, SoaCB callback) {
+		_callbacks[request_id] = callback;
+	}
+
+
 	
 	SoaResponse Soa::parse_response(StreamReader& s)
 	{
