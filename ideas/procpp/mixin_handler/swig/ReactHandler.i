@@ -36,6 +36,11 @@ namespace std
 *********************/
 %include "Soa.i"
 
+/*****************************
+*** DispatcherClientServer ***
+*****************************/
+%include "DispatcherClientServer.i"
+
 
 /*********************
 ******* Trie *********

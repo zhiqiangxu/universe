@@ -58,10 +58,10 @@ set( DEPENDED_LIBS
 
 if (${LAN} STREQUAL "native")
     set( TEST
+            soa_server_dispatcher
             soa_client
             redis
             http
-            soa_server_dispatcher
             soa_server
             client
             dispatcher

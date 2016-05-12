@@ -37,6 +37,7 @@
 #include "Memory/SharedMemory.h"
 #include "ThreadPool.h"
 #include "Dispatch/Dispatcher.hpp"
+#include "DispatcherClientServer.h"
 
 
 
