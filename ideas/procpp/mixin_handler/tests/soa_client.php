@@ -13,5 +13,5 @@ $c=new SoaClient("localhost", 8082);
 $request_id1 = $c->call(json_encode(['client_key' => 'client_value']), $callback);
 $request_id2 = $c->call(json_encode(['client_key2' => 'client_value2']), $callback);
 
-var_dump($c->wait(25000, [$request_id1, $request_id2]));
+var_dump($c->wait([$request_id1, $request_id2], 25000));
 

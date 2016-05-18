@@ -113,12 +113,6 @@ namespace C {
 
 }
 
-#ifdef SWIGPHP
-
-%clear vector<string>;
-
-#endif
-
 %feature("director") SoaClientCallback;
 %inline %{
     class SoaClientCallback
@@ -145,7 +139,7 @@ namespace C {
             return request_id.to_string();
         }
 
-        int wait(int milliseconds, const vector<string>& requests)
+        int wait(const vector<string>& requests, int milliseconds/*TODO this will cause swig typemap problem = 50*/)
         {
             vector<GUID> request_guids;
 
@@ -154,7 +148,15 @@ namespace C {
                 if (GUID::from_string(uuid, guid)) request_guids.push_back(guid);
             }
 
-            return Client::wait(milliseconds, request_guids);
+            return Client::wait(request_guids, milliseconds);
         }
     };
 %}
+
+#ifdef SWIGPHP
+
+%clear vector<string>;
+
+#endif
+
+

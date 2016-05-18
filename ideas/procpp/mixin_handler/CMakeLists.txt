@@ -84,7 +84,7 @@ if (${LAN} STREQUAL "native")
         )
 
     list(LENGTH TEST count)
-    set(count 2)
+    set(count 3)
     set(index 0)
     while (index LESS count)
 

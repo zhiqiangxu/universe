@@ -14,7 +14,7 @@ int main()
 	}), string("[1,2,3]"));
 
 	L.debug_log("before wait");
-	c.wait(1500, vector<GUID>({request_id}));
+	c.wait(vector<GUID>({request_id}), 1500);
 	L.debug_log("after wait");
 
 	return 0;

@@ -290,7 +290,7 @@ int Client::connect(const struct sockaddr* addr, socklen_t addrlen, EventManager
 	return s;
 }
 
-int Client::wait(int milliseconds, const vector<GUID>& requests)
+int Client::wait(const vector<GUID>& requests, int milliseconds)
 {
     if (requests.size() == 0) return 0;
 
