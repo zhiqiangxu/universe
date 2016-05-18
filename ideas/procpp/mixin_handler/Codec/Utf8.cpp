@@ -69,7 +69,7 @@ size_t Utf8::decode_char_length(const string& s, size_t offset, uint32_t* p_code
 
 }
 
-bool Utf8::decode_char(const string& s, string& ch, size_t offset)
+bool Utf8::decode_char(const string& s, string& ch, size_t& offset)
 {
 	auto length = decode_char_length(s, offset);
 
