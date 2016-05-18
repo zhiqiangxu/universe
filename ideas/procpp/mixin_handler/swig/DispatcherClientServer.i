@@ -1,11 +1,3 @@
-enum class DispatchMode
-{
-    Base,
-    Process,
-    Remote,
-    Proxy
-};
-
 template <DispatchMode m, typename Proto>
 class DispatcherClientServer
 {
