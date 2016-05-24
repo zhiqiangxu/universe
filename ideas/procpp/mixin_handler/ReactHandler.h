@@ -24,6 +24,7 @@
 #include "StateMachine/StateBuffer.h"
 #include "Dispatch/IBaseWorker.h"
 #include "Dispatch/ProcessSessionWorker.h"
+#include "Dispatch/ProcessWorker.h"
 #include "Dispatch/ProxyWorker.h"
 #include "Dispatch/RemoteWorker.h"
 #include "UProtocol/Echo.h"

@@ -34,6 +34,7 @@ set(SRC EventManager.cpp
         Dispatch/IBaseWorker.cpp
         Dispatch/RemoteWorker.cpp
         Dispatch/ProxyWorker.cpp
+        Dispatch/ProcessWorker.cpp
         Utils.cpp Log/ErrorHandler.cpp
         UProtocol/Echo.cpp
         StreamReader.cpp
@@ -61,6 +62,7 @@ set( DEPENDED_LIBS
 if (${LAN} STREQUAL "native")
     set( TEST
             http
+            http_process_worker
             opencv
             soa_server_dispatcher
             soa_client
