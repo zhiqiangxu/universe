@@ -50,18 +50,21 @@ set(PHP_SRC ${SRC} build/php/ReactHandler_wrap.cpp)
 
 include_directories(.)
 find_package(OpenSSL REQUIRED)
+#find_package(OpenCV REQUIRED)
 set( DEPENDED_LIBS
         ${OPENSSL_LIBRARIES}
+        ${OpenCV_LIBS}
         pthread
         uuid
      )
 
 if (${LAN} STREQUAL "native")
     set( TEST
+            http
+            opencv
             soa_server_dispatcher
             soa_client
             redis
-            http
             soa_server
             client
             dispatcher
@@ -84,7 +87,7 @@ if (${LAN} STREQUAL "native")
         )
 
     list(LENGTH TEST count)
-    set(count 3)
+    set(count 1)
     set(index 0)
     while (index LESS count)
 

@@ -8,7 +8,7 @@ int main()
 	}));
 
 
-	Dispatcher<DispatchMode::Process, Http> dispacher(server, 2);
+	Dispatcher<DispatchMode::ProcessSession, Http> dispacher(server, 2);
 
 	auto callbacks = dispacher.to_callbacks();
 

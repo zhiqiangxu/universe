@@ -23,7 +23,7 @@
 #include "StateMachine/Bufferable.h"
 #include "StateMachine/StateBuffer.h"
 #include "Dispatch/IBaseWorker.h"
-#include "Dispatch/ProcessWorker.h"
+#include "Dispatch/ProcessSessionWorker.h"
 #include "Dispatch/ProxyWorker.h"
 #include "Dispatch/RemoteWorker.h"
 #include "UProtocol/Echo.h"
@@ -38,6 +38,7 @@
 #include "ThreadPool.h"
 #include "Dispatch/Dispatcher.hpp"
 #include "DispatcherClientServer.h"
+//#include <opencv2/opencv.hpp>
 
 
 

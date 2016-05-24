@@ -8,7 +8,7 @@
 
 
 template <typename Proto>
-ProcessWorker<Proto>::ProcessWorker(ClientServer& server, int n, string child_sun_path, string parent_sun_path)
+ProcessSessionWorker<Proto>::ProcessSessionWorker(ClientServer& server, int n, string child_sun_path, string parent_sun_path)
 : IBaseWorker(server)
 {
 	_set_path(child_sun_path, parent_sun_path);
@@ -18,7 +18,7 @@ ProcessWorker<Proto>::ProcessWorker(ClientServer& server, int n, string child_su
 
 
 template <typename Proto>
-void ProcessWorker<Proto>::on_connect(int client)
+void ProcessSessionWorker<Proto>::on_connect(int client)
 {
 	//L.debug_log("on_connect client = " + to_string(client));
 
@@ -68,7 +68,7 @@ void ProcessWorker<Proto>::on_connect(int client)
 
 
 template <typename Proto>
-void ProcessWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int client)
+void ProcessSessionWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int client)
 {
 	//L.debug_log( "on_remote_connect client = " + to_string(client) + " remote_fd = " + to_string(remote_fd) + " result = " + Utils::enum_string(r) );
 
@@ -99,7 +99,7 @@ void ProcessWorker<Proto>::on_remote_connect(int remote_fd, ConnectResult r, int
 
 
 template <typename Proto>
-void ProcessWorker<Proto>::_set_path(string child_sun_path, string parent_sun_path)
+void ProcessSessionWorker<Proto>::_set_path(string child_sun_path, string parent_sun_path)
 {
 	if (Utils::file_exists(child_sun_path)) L.error_exit(child_sun_path + " already exists!");
 	if (Utils::file_exists(parent_sun_path)) L.error_exit(parent_sun_path + " already exists!");
@@ -109,7 +109,7 @@ void ProcessWorker<Proto>::_set_path(string child_sun_path, string parent_sun_pa
 }
 
 template <typename Proto>
-void ProcessWorker<Proto>::_listen_then_fork(int n)
+void ProcessSessionWorker<Proto>::_listen_then_fork(int n)
 {
 	auto pm_pid = fork();
 	if (pm_pid == -1) L.error_exit("fork");
@@ -124,7 +124,7 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 	//process manager
 
 
-	if (n == ProcessWorker::NUMBER_CORES) n = Utils::get_cpu_cores();
+	if (n == ProcessSessionWorker::NUMBER_CORES) n = Utils::get_cpu_cores();
 
 	Proto proto(_server);
 	auto ok = _server.listen( reinterpret_cast<const struct sockaddr*>(&_child_sockaddr), sizeof(_child_sockaddr), proto );
@@ -173,7 +173,7 @@ void ProcessWorker<Proto>::_listen_then_fork(int n)
 }
 
 template <typename Proto>
-ProcessWorker<Proto>::~ProcessWorker()
+ProcessSessionWorker<Proto>::~ProcessSessionWorker()
 {
 	::unlink(_child_sockaddr.sun_path);
 	::unlink(_parent_sockaddr.sun_path);

@@ -159,14 +159,22 @@ bool EventManager::_destroy()
 
 ssize_t EventManager::write(int fd, const void *buf, size_t count, int* p_errno)
 {
-	auto ret = ::write(fd, buf, count);
-	if (ret == -1) {
-		if (errno == EPIPE) close(fd);
+    size_t size = 0;
 
-		if (p_errno) *p_errno = errno;
-	}
+    do {
+        auto ret = ::write(fd, (char*)buf + size, count - size);
+        if (ret == -1) {
+            if (errno == EPIPE) close(fd);
 
-	return ret;
+            if (p_errno) *p_errno = errno;
+
+            return -1;
+        }
+
+        size += ret;
+    } while ( size < count );
+
+    return count;
 }
 
 ssize_t EventManager::write_line(int fd, const string message)

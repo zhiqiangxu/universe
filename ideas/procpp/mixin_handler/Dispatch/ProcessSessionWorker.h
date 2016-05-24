@@ -9,7 +9,7 @@
 //why template ?
 //because the Proto needs to be based on Server created in listen_then_fork
 template <typename Proto>
-class ProcessWorker : public IBaseWorker
+class ProcessSessionWorker : public IBaseWorker
 {
 	static const int NUMBER_CORES = -1;
 
@@ -18,8 +18,8 @@ public:
 	#define DEFAULT_PARENT_SUN_PATH "/tmp/react_handler_parent.sock"
 
 
-	ProcessWorker(ClientServer& server, int n = NUMBER_CORES, string child_sun_path = DEFAULT_CHILD_SUN_PATH, string parent_sun_path = DEFAULT_PARENT_SUN_PATH);
-	~ProcessWorker();
+	ProcessSessionWorker(ClientServer& server, int n = NUMBER_CORES, string child_sun_path = DEFAULT_CHILD_SUN_PATH, string parent_sun_path = DEFAULT_PARENT_SUN_PATH);
+	~ProcessSessionWorker();
 
 	virtual void on_connect(int client) override;
 
@@ -37,4 +37,4 @@ private:
 
 };
 
-#include "Dispatch/ProcessWorker.hpp"
+#include "Dispatch/ProcessSessionWorker.hpp"

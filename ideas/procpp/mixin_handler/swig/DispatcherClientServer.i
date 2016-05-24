@@ -11,11 +11,11 @@ public:
 
 
 
-%template(SoaProcessDispatcherClientServer) DispatcherClientServer<DispatchMode::Process, Soa>;
+%template(SoaProcessDispatcherClientServer) DispatcherClientServer<DispatchMode::ProcessSession, Soa>;
 
 %inline %{
 
-    typedef DispatcherClientServer<DispatchMode::Process, Soa> SoaProcessDispatcherClientServer;
+    typedef DispatcherClientServer<DispatchMode::ProcessSession, Soa> SoaProcessDispatcherClientServer;
 
     class SoaProcessDispatcherServer : public SoaProcessDispatcherClientServer
     {
@@ -33,7 +33,7 @@ public:
 
         void dispatch(int n_process)
         {
-            DispatcherClientServer<DispatchMode::Process, Soa>::dispatch(n_process);
+            DispatcherClientServer<DispatchMode::ProcessSession, Soa>::dispatch(n_process);
         }
 
         void on(char* event, SoaCallback* cb)
