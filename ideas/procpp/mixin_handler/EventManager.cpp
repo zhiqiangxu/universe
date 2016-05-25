@@ -310,18 +310,20 @@ CONNECT_OK:
 		}
 
 		if (flags & (EPOLLRDHUP | EPOLLHUP)) {
+
+            // unwatch may fail if it's already closed in READ handler
+
 			if (_current_cb.find(EventType::CLOSE) != _current_cb.end()) {
 
 				auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::CLOSE];
-				if (unwatch(_current_fd)) _add_close_fd(_current_fd);
-				f(_current_fd);//TODO make it possible to transfer state and buffer when close
+				if (unwatch(_current_fd)) {
+                    _add_close_fd(_current_fd);
+				    f(_current_fd);//TODO make it possible to transfer state and buffer when close
+                }
 
 			} else {
 				//no close handler registered, try to unwatch + close
 				if (unwatch(_current_fd)) _add_close_fd(_current_fd);
-				else {
-					L.error_log("failed when try to unwatch closed fd " + to_string(_current_fd));
-				}
 			}
 		}
 
