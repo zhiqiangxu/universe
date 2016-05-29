@@ -1,0 +1,39 @@
+apply plugin: 'java'
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+    }
+}
+
+task runJar(type: JavaExec) {
+    classpath = files('build/libs/kafka-0.8.1.jar')
+    main = 'TopicAggregator'
+}
+
+dependencies {
+    compile files(
+                '/home/vagrant/opensource/kafka_2.10-0.8.1/libs/kafka_2.10-0.8.1.jar',
+                '/home/vagrant/opensource/kafka_2.10-0.8.1/libs/scala-library-2.10.1.jar',
+                '/home/vagrant/opensource/kafka_2.10-0.8.1/libs/zookeeper-3.3.4.jar',
+                'depends/json-20151123.jar',
+                )
+    runtime files(
+                    '/home/vagrant/opensource/kafka_2.10-0.8.1/libs/log4j-1.2.15.jar',
+                    '/home/vagrant/opensource/kafka_2.10-0.8.1/libs/zkclient-0.3.jar',
+                    '/home/vagrant/opensource/kafka_2.10-0.8.1/libs/metrics-core-2.2.0.jar',
+                    '/home/vagrant/opensource/kafka_2.10-0.8.1/libs/slf4j-api-1.7.2.jar',
+                    '/usr/share/java/slf4j-simple-1.7.5.jar'
+                )
+}
+
+jar {
+    from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
+/*
+    manifest {
+        attributes 'Main-Class': 'net.petrikainulainen.gradle.HelloWorld'
+    }
+*/
+}
