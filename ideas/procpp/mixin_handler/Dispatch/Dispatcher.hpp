@@ -6,7 +6,7 @@ class ClientServer;
 enum class DispatchMode
 {
 	Base,
-	Process,
+	ProcessSession,
 	Remote,
 	Proxy
 };
@@ -29,7 +29,7 @@ protected:
 };
 
 template <typename Proto>
-class Dispatcher<DispatchMode::Process, Proto>
+class Dispatcher<DispatchMode::ProcessSession, Proto>
 {
 public:
 	template<typename... Args>
@@ -37,7 +37,7 @@ public:
 	EventManager::EventCB to_callbacks() { return _worker.get_server().to_callbacks(_worker); }
 
 protected:
-	ProcessWorker<Proto> _worker;
+	ProcessSessionWorker<Proto> _worker;
 };
 
 template <typename Proto>

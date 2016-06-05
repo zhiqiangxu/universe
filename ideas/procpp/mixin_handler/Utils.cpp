@@ -13,6 +13,7 @@
 #include <openssl/sha.h>//SHA1
 #include <stdlib.h>//rand
 #include <stdio.h>//snprintf
+#include <fstream>//ifstream
 
 template<>
 const char* Utils::enum_strings<Encoding>::data[] = {"Utf8", "Utf16LE", "Utf16BE", "Utf32LE", "Utf32BE"};
@@ -132,4 +133,15 @@ string Utils::string2hex(const char* s, size_t length, bool space)
 
 
 	return result;
+}
+
+string Utils::file_get_contents(const string& path)
+{
+    ifstream ifs(path);
+    // it won't compile without parenthesis
+    // it's the "classic" c++ parsing problem called Most Vexing Parse
+    // http://stackoverflow.com/a/2912614
+    string content( (istreambuf_iterator<char>(ifs)), (istreambuf_iterator<char>()) );
+
+    return content;
 }

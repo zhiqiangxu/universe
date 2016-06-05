@@ -10,7 +10,7 @@ int main()
 		resp.json = req.json;
 	}));
 
-	Dispatcher<DispatchMode::Process, Soa> dispacher(server, 4);
+	Dispatcher<DispatchMode::ProcessSession, Soa> dispacher(server, 4);
 
 	auto callbacks = dispacher.to_callbacks();
 
@@ -22,7 +22,7 @@ int main()
 
 // new style
 
-    DispatcherClientServer<DispatchMode::Process, Soa> server;
+    DispatcherClientServer<DispatchMode::ProcessSession, Soa> server;
     server.on<Soa::ON_REQUEST>(Utils::to_function([](SoaRequest& req, SoaResponse& resp) {
 		resp.json = req.json;
 	}));

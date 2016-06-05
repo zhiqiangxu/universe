@@ -4,6 +4,8 @@
 #include <string>
 using namespace std;
 
+// TODO should rename IBaseWorker since it's not the base of all workers now
+
 class ClientServer;
 
 enum class ConnectState

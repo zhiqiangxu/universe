@@ -34,6 +34,7 @@ set(SRC EventManager.cpp
         Dispatch/IBaseWorker.cpp
         Dispatch/RemoteWorker.cpp
         Dispatch/ProxyWorker.cpp
+        Dispatch/ProcessWorker.cpp
         Utils.cpp Log/ErrorHandler.cpp
         UProtocol/Echo.cpp
         StreamReader.cpp
@@ -50,18 +51,22 @@ set(PHP_SRC ${SRC} build/php/ReactHandler_wrap.cpp)
 
 include_directories(.)
 find_package(OpenSSL REQUIRED)
+#find_package(OpenCV REQUIRED)
 set( DEPENDED_LIBS
         ${OPENSSL_LIBRARIES}
+        ${OpenCV_LIBS}
         pthread
         uuid
      )
 
 if (${LAN} STREQUAL "native")
     set( TEST
+            http
+            http_process_worker
+            opencv
             soa_server_dispatcher
             soa_client
             redis
-            http
             soa_server
             client
             dispatcher
@@ -84,7 +89,7 @@ if (${LAN} STREQUAL "native")
         )
 
     list(LENGTH TEST count)
-    set(count 3)
+    set(count 1)
     set(index 0)
     while (index LESS count)
 

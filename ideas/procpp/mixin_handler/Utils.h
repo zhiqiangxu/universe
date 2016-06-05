@@ -379,6 +379,8 @@ public:
 
 	static string string2hex(const string& s, bool space = false);
 	static string string2hex(const char* s, size_t length, bool space = false);
+
+    static string file_get_contents(const string& path);
 };
 
 

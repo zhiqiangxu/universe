@@ -159,14 +159,22 @@ bool EventManager::_destroy()
 
 ssize_t EventManager::write(int fd, const void *buf, size_t count, int* p_errno)
 {
-	auto ret = ::write(fd, buf, count);
-	if (ret == -1) {
-		if (errno == EPIPE) close(fd);
+    size_t size = 0;
 
-		if (p_errno) *p_errno = errno;
-	}
+    do {
+        auto ret = ::write(fd, (char*)buf + size, count - size);
+        if (ret == -1) {
+            if (errno == EPIPE) close(fd);
 
-	return ret;
+            if (p_errno) *p_errno = errno;
+
+            return -1;
+        }
+
+        size += ret;
+    } while ( size < count );
+
+    return count;
 }
 
 ssize_t EventManager::write_line(int fd, const string message)
@@ -302,18 +310,20 @@ CONNECT_OK:
 		}
 
 		if (flags & (EPOLLRDHUP | EPOLLHUP)) {
+
+            // unwatch may fail if it's already closed in READ handler
+
 			if (_current_cb.find(EventType::CLOSE) != _current_cb.end()) {
 
 				auto f/*copy to avoid erase when calling*/ = _current_cb[EventType::CLOSE];
-				if (unwatch(_current_fd)) _add_close_fd(_current_fd);
-				f(_current_fd);//TODO make it possible to transfer state and buffer when close
+				if (unwatch(_current_fd)) {
+                    _add_close_fd(_current_fd);
+				    f(_current_fd);//TODO make it possible to transfer state and buffer when close
+                }
 
 			} else {
 				//no close handler registered, try to unwatch + close
 				if (unwatch(_current_fd)) _add_close_fd(_current_fd);
-				else {
-					L.error_log("failed when try to unwatch closed fd " + to_string(_current_fd));
-				}
 			}
 		}
 

@@ -4,7 +4,7 @@
 int main()
 {
 	ClientServer server;
-	ProcessWorker<Socks> worker(server);
+	ProcessSessionWorker<Socks> worker(server);
 	server.listen(8082, EventManager::EventCB{
 		{
 			EventType::READ, EventManager::CB([&worker] (int fd) {

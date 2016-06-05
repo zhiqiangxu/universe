@@ -3,19 +3,15 @@
 int main()
 {
 	ClientServer server;
+    Http proto(server);
+
     server.on<Http::ON_REQUEST>(Utils::to_function([&server](HttpRequest& req, HttpResponse& resp) {
 		resp.body = "content from c++\r\n";
 	}));
 
-
-	Dispatcher<DispatchMode::ProcessSession, Http> dispacher(server, 2);
-
-	auto callbacks = dispacher.to_callbacks();
-
-	server.listen(8082, callbacks);
-
-
-	server.start();
+	server.listen(8082, proto);
+	
+	ProcessWorker worker(server);
 
 	return 0;
 }

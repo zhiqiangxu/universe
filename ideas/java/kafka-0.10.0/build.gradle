@@ -1,0 +1,17 @@
+apply plugin: 'java'
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+    }
+}
+
+dependencies {
+    compile files(
+                '/home/vagrant/opensource/kafka_2.11-0.10.0.0/libs/kafka_2.11-0.10.0.0.jar',
+                '/home/vagrant/opensource/kafka_2.11-0.10.0.0/libs/scala-library-2.11.8.jar',
+                '/home/vagrant/opensource/kafka_2.11-0.10.0.0/libs/kafka-clients-0.10.0.0.jar',
+                )
+}
