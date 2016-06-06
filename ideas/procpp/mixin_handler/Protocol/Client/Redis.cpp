@@ -70,16 +70,17 @@ namespace P { namespace Client {
 		r.type = next_byte;
 
 		switch(next_byte) {
-			case '+':
-			case '-':
-			case ':':
+            //http://redis.io/topics/protocol
+			case '+'://For Simple Strings the first byte of the reply is "+"
+			case '-'://For Errors the first byte of the reply is "-"
+			case ':'://For Integers the first byte of the reply is ":"
 			{
 				s.read_until("\r", r.reply, true);
 				s.read_plain(next_byte);
 				s.fail_if(next_byte != '\n');
 				break;
 			}
-			case '$':
+			case '$'://For Bulk Strings the first byte of the reply is "$"
 			{
 				string length_string;
 				s.read_until("\r", length_string, true);
@@ -101,7 +102,7 @@ namespace P { namespace Client {
 				}
 				break;
 			}
-			case '*':
+			case '*'://For Arrays the first byte of the reply is "*"
 			{
 				string length_string;
 				s.read_until("\r", length_string, true);

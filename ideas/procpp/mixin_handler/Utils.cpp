@@ -11,9 +11,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <openssl/sha.h>//SHA1
-#include <stdlib.h>//rand
-#include <stdio.h>//snprintf
+#include <stdlib.h>//rand,mkstemp
+#include <stdio.h>//snprintf,rename,fopen
 #include <fstream>//ifstream
+#include <zlib.h>
 
 template<>
 const char* Utils::enum_strings<Encoding>::data[] = {"Utf8", "Utf16LE", "Utf16BE", "Utf32LE", "Utf32BE"};
@@ -144,4 +145,31 @@ string Utils::file_get_contents(const string& path)
     string content( (istreambuf_iterator<char>(ifs)), (istreambuf_iterator<char>()) );
 
     return content;
+}
+
+bool Utils::gzip_file(const string& input_file, const string& output_file)
+{
+    char tmp_path[] = "/tmp/template-XXXXXX";
+    auto tmp_fd = mkstemp(tmp_path);
+    close(tmp_fd);
+
+    auto input = fopen(input_file.c_str(), "rb");
+    if (input == nullptr) {
+        L.error_log("failed to open " + input_file);
+        return false;
+    }
+
+    auto output = gzopen(tmp_path, "wb");
+    char buffer[8 * 1024];
+    int n;
+    while ((n = fread(buffer, 1, sizeof(buffer), input)) > 0) {
+        gzwrite(output, buffer, n);
+    }
+
+    fclose(input);
+    gzclose(output);
+
+    rename(tmp_path, output_file.c_str());
+
+    return true;
 }

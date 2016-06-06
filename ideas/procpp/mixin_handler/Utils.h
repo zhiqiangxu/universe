@@ -381,6 +381,8 @@ public:
 	static string string2hex(const char* s, size_t length, bool space = false);
 
     static string file_get_contents(const string& path);
+
+    static bool gzip_file(const string& input_file, const string& output_file);
 };
 
 

@@ -52,15 +52,18 @@ set(PHP_SRC ${SRC} build/php/ReactHandler_wrap.cpp)
 include_directories(.)
 find_package(OpenSSL REQUIRED)
 #find_package(OpenCV REQUIRED)
+find_package(ZLIB REQUIRED)
 set( DEPENDED_LIBS
         ${OPENSSL_LIBRARIES}
         ${OpenCV_LIBS}
+        ${ZLIB_LIBRARIES}
         pthread
         uuid
      )
 
 if (${LAN} STREQUAL "native")
     set( TEST
+            util
             http
             http_process_worker
             opencv
