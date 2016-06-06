@@ -63,6 +63,7 @@ set( DEPENDED_LIBS
 
 if (${LAN} STREQUAL "native")
     set( TEST
+            map
             util
             http
             http_process_worker
