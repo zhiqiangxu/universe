@@ -37,6 +37,8 @@ public:
 	/*未实现on_message，是抽象类*/
 
 	Protocol(Scheduler& scheduler) : _scheduler(scheduler) {}
+    virtual ~Protocol() {};
+
 protected:
 	Scheduler& _scheduler;
 

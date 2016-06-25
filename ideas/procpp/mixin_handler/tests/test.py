@@ -3,7 +3,7 @@ sys.path.append('build/python/')
 
 import ReactHandler
 
-class PythonCallback(ReactHandler.HttpRequestCallback):
+class PythonCallback(ReactHandler.HttpCallback):
     def run(self, req, resp):
             resp.body = 'content from python'
 

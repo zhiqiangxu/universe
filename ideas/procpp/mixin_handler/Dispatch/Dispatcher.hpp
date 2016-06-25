@@ -7,11 +7,12 @@ enum class DispatchMode
 {
 	Base,
 	ProcessSession,
+    Process,
 	Remote,
 	Proxy
 };
 
-/* Proto is not used for Remote/Proxy mode */
+/* Proto is not used for Remote/Proxy/Process mode */
 template <DispatchMode m, typename Proto>
 class Dispatcher
 {
@@ -38,6 +39,18 @@ public:
 
 protected:
 	ProcessSessionWorker<Proto> _worker;
+};
+
+// Proto instance is created by caller
+template <typename Proto>
+class Dispatcher<DispatchMode::Process, Proto>
+{
+public:
+	template<typename... Args>
+	Dispatcher( Args&&... args ) : _worker(std::forward<Args>(args)...) {};
+
+protected:
+	ProcessWorker _worker;
 };
 
 template <typename Proto>

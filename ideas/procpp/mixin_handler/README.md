@@ -19,7 +19,7 @@ All you need to do to support another kind of server is to offer a class that ex
 
 ``` <?php
 require("ReactHandler.php");
-class PhpCallback extends HttpRequestCallback {
+class PhpCallback extends HttpCallback {
     function run($request, $response)
     {
         $response->body = "content from php";
@@ -39,7 +39,7 @@ or in python:
 ```
 import ReactHandler
 
-class PythonCallback(ReactHandler.HttpRequestCallback):
+class PythonCallback(ReactHandler.HttpCallback):
     def run(self, request, response):
             response.body = 'content from python'
 

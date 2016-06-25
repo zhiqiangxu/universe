@@ -8,9 +8,16 @@ class PhpCallback extends HttpCallback {
 }
 
 $callback = new PhpCallback();
-$callback->thisown = 0;
 
-$s=new HttpServer();
+/*
+$s=new SoaServer();
 $s->on('request', $callback);
 $s->listen(8082);
 $s->start();
+*/
+
+$s=new HttpProcessDispatcherServer();
+$s->on('request', $callback);
+$s->listen(8082);
+$s->dispatch(4);
+

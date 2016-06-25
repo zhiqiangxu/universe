@@ -25,12 +25,12 @@ public:
 	string body;
 };
 
-%feature("director") HttpRequestCallback;
+%feature("director") HttpCallback;
 %inline %{
-    class HttpRequestCallback
+    class HttpCallback
     {
     public:
-        virtual ~HttpRequestCallback() {}
+        virtual ~HttpCallback() {}
         virtual void run(HttpRequest& req, HttpResponse& resp) {}
     };
 
@@ -38,7 +38,7 @@ public:
     class HttpServer : public HttpClientServer
     {
     protected:
-        HttpRequestCallback* _callback;
+        HttpCallback* _callback;
 
     public:
         HttpServer() : _callback(nullptr)
@@ -49,7 +49,7 @@ public:
 
         }
 
-        void on(char* event, HttpRequestCallback* cb)
+        void on(char* event, HttpCallback* cb)
         {
             if (strcasecmp(event, "request") == 0) {
                 if (_callback) delete _callback;
