@@ -8,13 +8,15 @@
 //TCP_KEEPIDLE
 #include <netinet/tcp.h>
 //fcntl
-#include <unistd.h>
+#include <unistd.h>//fork
 #include <fcntl.h>
 #include <openssl/sha.h>//SHA1
 #include <stdlib.h>//rand,mkstemp
 #include <stdio.h>//snprintf,rename,fopen
 #include <fstream>//ifstream
 #include <zlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>//waitpid
 
 template<>
 const char* Utils::enum_strings<Encoding>::data[] = {"Utf8", "Utf16LE", "Utf16BE", "Utf32LE", "Utf32BE"};
@@ -172,4 +174,22 @@ bool Utils::gzip_file(const string& input_file, const string& output_file)
     rename(tmp_path, output_file.c_str());
 
     return true;
+}
+
+void Utils::supervise_subprocess(const function<void(void)>& child_callback)
+{
+	int status;
+	pid_t child;
+	while ((child = waitpid(-1, &status, 0)) > 0)
+	{
+		auto pid = fork();
+		if (pid == -1) L.error_exit("fork");
+
+		if (pid) {
+		} else {
+
+            child_callback();
+
+		}
+	}
 }

@@ -8,6 +8,7 @@ using namespace std;
 int main()
 {
 
+/*
 	// really old style
 	ClientServer c;
 	c.connect("localhost", 6379, [&c](int fd, ConnectResult r) {
@@ -19,13 +20,14 @@ int main()
 			GUID request_id;
 			auto packet = Redis::request_packet<Redis, Redis::packet_type::GET>(request_id, string("key"));
 			c.write(fd, packet.data(), packet.length());
-			proto.add_callback(request_id, Utils::to_function([](RedisReply& r) {
+			proto.add_callback(request_id, fd, Utils::to_function([](RedisReply& r) {
 				cout << "value = " << r.reply << (r.is_nil() ? " (nil)" : "") << endl;
 			}));
 		}
 	}, true);
 
 	c.start();
+*/
 
 /*
 	// old style
@@ -40,20 +42,22 @@ int main()
 	c.start();
 */
 
-/*
 	// new style
 	C::Redis c("localhost", 6379);
 
 
 	GUID request_id;
+	GUID request_id2;
 	c.cmd<Redis, Redis::packet_type::GET>(request_id, Utils::to_function([](RedisReply& r) {
 		cout << "value = " << r.reply << (r.is_nil() ? " (nil)" : "") << endl;
-	}), string("key"));
+	}), string("abc"));
+	c.cmd<Redis, Redis::packet_type::GET>(request_id2, Utils::to_function([](RedisReply& r) {
+		cout << "value = " << r.reply << (r.is_nil() ? " (nil)" : "") << endl;
+	}), string("abc"));
 
 	L.debug_log("before wait");
-	c.wait(vector<GUID>({request_id}), 1500);
+	c.wait(vector<GUID>({request_id, request_id2}), 1500);
 	L.debug_log("after wait");
-*/
 
 
 

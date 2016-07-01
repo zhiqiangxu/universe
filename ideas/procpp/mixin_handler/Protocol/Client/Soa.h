@@ -39,7 +39,7 @@ namespace P { namespace Client {
 		template <packet_type type, typename... Args>
 		static string packet(const GUID& request_id, const Args&... args);
 
-		void add_callback(GUID& request_id, SoaCB callback);
+		void add_callback(GUID& request_id, int fd, SoaCB callback);
 
 		// required by delete keyword
 		virtual ~Soa() {}
@@ -47,7 +47,7 @@ namespace P { namespace Client {
 	protected:
 		virtual SoaResponse parse_response(StreamReader& s) override;
 
-		map<GUID, SoaCB> _callbacks;
+		map<int, map<GUID, SoaCB>> _callbacks;
 	};
 
 }}

@@ -294,6 +294,8 @@ int Client::wait(const vector<GUID>& requests, int milliseconds)
 {
     if (requests.size() == 0) return 0;
 
+    if (count_fds() == 0) return 0;
+
 	auto now = Utils::now();
 
 	const int kMaxEvents = 32;

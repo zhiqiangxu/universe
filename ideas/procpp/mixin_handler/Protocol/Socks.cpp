@@ -9,7 +9,7 @@ void Socks::on_connect(int client)
 {
 	cout << "[client] " << Utils::GREEN(to_string(client)) << endl;
 
-	cout << endl << Utils::GREEN("connections:" + to_string(count_state()) + " sockets:" + to_string(_scheduler.count())) << endl << endl;
+	cout << endl << Utils::GREEN("connections:" + to_string(count_state()) + " sockets:" + to_string(_scheduler.count_fds())) << endl << endl;
 
 	set_state(client, SocksState::GREETING);
 }
@@ -113,7 +113,7 @@ void Socks::on_message(int client, string message)
 								}
 
 								cout << Utils::GREEN("connect ok  " + address) << endl;
-								cout << endl << Utils::GREEN("connections:" + to_string(count_state()) + " sockets:" + to_string(_scheduler.count())) << endl << endl;
+								cout << endl << Utils::GREEN("connections:" + to_string(count_state()) + " sockets:" + to_string(_scheduler.count_fds())) << endl << endl;
 
 								set_state(client, SocksState::CONNECTED);
 
@@ -204,7 +204,7 @@ void Socks::on_close(int client)
 	cout << "[on_close] " << Utils::GREEN(to_string(client) + " client " + address) << endl;
 	if (!has_state(client)) {
 		cout << "already closed" << endl;
-		cout << endl << Utils::GREEN("connections:" + to_string(count_state()) + " sockets:" + to_string(_scheduler.count())) << endl << endl;
+		cout << endl << Utils::GREEN("connections:" + to_string(count_state()) + " sockets:" + to_string(_scheduler.count_fds())) << endl << endl;
 		return;//已关闭
 	}
 
@@ -223,7 +223,7 @@ void Socks::on_close(int client)
 
 	cout << (_scheduler.close(remote_fd) ? Utils::GREEN("OK1") : Utils::RED("NG1")) << endl;;
 
-	cout << endl << Utils::GREEN("connections:" + to_string(count_state()) + " sockets:" + to_string(_scheduler.count())) << endl << endl;
+	cout << endl << Utils::GREEN("connections:" + to_string(count_state()) + " sockets:" + to_string(_scheduler.count_fds())) << endl << endl;
 }
 
 void Socks::close(int client)

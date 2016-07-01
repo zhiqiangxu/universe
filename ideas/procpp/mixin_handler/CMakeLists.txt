@@ -67,7 +67,7 @@ if (${LAN} STREQUAL "native")
             util
             http
             http_process_worker
-            opencv
+            #opencv
             soa_server_dispatcher
             soa_client
             redis

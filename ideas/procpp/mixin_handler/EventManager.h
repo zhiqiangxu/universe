@@ -72,7 +72,7 @@ public:
 	//for reuse in Client::wait
 	virtual void handle_events(int num, const struct epoll_event* p_event) = 0;
 	virtual void start() = 0;
-	virtual size_t count() = 0;
+	virtual size_t count_fds() = 0;
 
     template <typename T1, typename ... Args>
     uint64_t on(function<void(Args...)> t2)
@@ -129,7 +129,7 @@ public:
 	virtual ssize_t sendto(int u_sock, const void *buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen) override;
 	virtual void start() override;
 	virtual void handle_events(int num, const struct epoll_event* p_event) override;
-	virtual size_t count() override;
+	virtual size_t count_fds() override;
 
 
 protected:

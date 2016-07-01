@@ -22,19 +22,21 @@ namespace P { namespace Client {
 
 		size_t offset = 0;
 
+        auto itcb = _callbacks.find(client);
+
 		try {
 			do {
 
 				auto r = parse_response(s);
 				offset = s.offset();
 
-				if (_callbacks.empty()) {
+                if (itcb == _callbacks.end() || itcb->second.empty()) {
 					L.error_log("callbacks empty for redis response");
 					break;
 				}
 
-				auto cb = _callbacks.front();
-				_callbacks.pop();
+				auto cb = itcb->second.front();
+				itcb->second.pop();
 				cb.second(r);
 
 				//notify wait
@@ -125,11 +127,16 @@ namespace P { namespace Client {
 	void Redis::on_close(int client)
 	{
 		erase_buf(client);
-		queue<pair<GUID, RedisCB>>().swap(_callbacks);
+        _callbacks.erase(client);
 	}
 
-	void Redis::add_callback(GUID& request_id, RedisCB callback) {
-		_callbacks.push(pair<GUID, RedisCB>(request_id, callback));
+	void Redis::add_callback(GUID& request_id, int fd, RedisCB callback) {
+        auto itcb = _callbacks.find(fd);
+        if (itcb == _callbacks.end()) {
+            _callbacks[fd] = queue<pair<GUID, RedisCB>>( {pair<GUID, RedisCB>({request_id, callback})} );
+        } else {
+		    itcb->second.push(pair<GUID, RedisCB>(request_id, callback));
+        }
 	}
 
 	// static methods of IRedis

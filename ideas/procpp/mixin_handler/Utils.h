@@ -2,7 +2,7 @@
 #include <thread>//hardware_concurrency
 #include <iostream>//cout
 #include <strings.h>//bzero
-#include <string.h>//memcpy
+#include <string.h>//memcpy,memcmp
 #include <netinet/in.h>//sockaddr_in
 #include <linux/un.h>//struct sockaddr_un
 //stat
@@ -153,6 +153,16 @@ public:
 		struct sockaddr_in6 in6;
 		struct sockaddr_in in4;
 		struct sockaddr_un un;
+
+		bool operator <( const SocketAddress &rhs ) const
+		{
+			auto self_size = addr_size(*this);
+			auto rhs_size = addr_size(rhs);
+
+			if (self_size == rhs_size) return memcmp(this, &rhs, rhs_size) < 0;
+
+			return self_size < rhs_size ? true : false;
+		}
 	};
 
 	static ssize_t addr_size(int domain)
@@ -383,6 +393,8 @@ public:
     static string file_get_contents(const string& path);
 
     static bool gzip_file(const string& input_file, const string& output_file);
+
+    static void supervise_subprocess(const function<void(void)>& child_callback);
 };
 
 

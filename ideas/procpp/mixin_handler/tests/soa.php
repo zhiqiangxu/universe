@@ -5,7 +5,6 @@ class PhpCallback extends SoaCallback {
     {
         var_dump(json_decode($req->json, true));
         $resp->json = json_encode(['key' => 'value']);
-        sleep(10);
     }
 }
 

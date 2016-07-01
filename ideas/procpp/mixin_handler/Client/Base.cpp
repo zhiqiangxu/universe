@@ -4,18 +4,23 @@ namespace C {
 
 	Base::Base(const string& address, uint16_t port, bool auto_reconnect)
 	{
-		_connect_addr = Utils::to_addr(address, port);
 		_auto_reconnect = auto_reconnect;
-		_socket = -1;
+
+		_connect_addr_list.insert(Utils::to_addr(address, port));
 	}
 
-	bool Base::connect()
+	bool Base::connect(const Utils::SocketAddress& connect_addr, bool re_connect)
 	{
-		 _socket = connect(reinterpret_cast<const struct sockaddr*>(&_connect_addr), Utils::addr_size(_connect_addr));
+		if (re_connect) close(connect_addr);
+		else if (_addr2socket.find(connect_addr) != _addr2socket.end()) return true;
 
-		if (_socket > 0) {
+		 auto socket = connect(reinterpret_cast<const struct sockaddr*>(&connect_addr), Utils::addr_size(connect_addr));
 
-			watch(_socket, to_callbacks(get_protocol()));
+		if (socket > 0) {
+
+			watch(socket, to_callbacks(get_protocol()));
+			_addr2socket[connect_addr] = socket;
+            _connect_addr_list.insert(connect_addr);
 
 			return true;
 		}
@@ -23,11 +28,25 @@ namespace C {
 		return false;
 	}
 
-	bool Base::close()
+	bool Base::close(const Utils::SocketAddress& connect_addr)
 	{
-		if (_socket > 0) return Client::close(_socket);
+		if (_addr2socket.find(connect_addr) != _addr2socket.end()) {
+			if (Client::close(_addr2socket[connect_addr], true)) {
+				_addr2socket.erase(connect_addr);
+				return true;
+			} else {
+				return false;
+			}
+		}
 
 		return true;
 	}
 
+
+	Utils::SocketAddress Base::_get_next_address()
+	{
+		if (_connect_addr_list.size() == 0) L.error_exit("__connect_addr_list.size empty");
+
+		return *std::next(_connect_addr_list.begin(),  _rr_index++ % _connect_addr_list.size());
+	}
 }

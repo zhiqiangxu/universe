@@ -338,7 +338,7 @@ CONNECT_OK:
 
 }
 
-size_t EventManager::count()
+size_t EventManager::count_fds()
 {
 	return _fds.size();
 }

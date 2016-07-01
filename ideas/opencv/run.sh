@@ -1,1 +1,1 @@
-cd build && make && ./Number
+cd build && cmake .. && ./Number

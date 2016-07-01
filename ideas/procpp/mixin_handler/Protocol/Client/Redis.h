@@ -4,6 +4,7 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include <map>
 
 namespace P { namespace Client {
 	using RedisReply = struct RedisReply {
@@ -83,7 +84,7 @@ namespace P { namespace Client {
 		template <packet_type type, typename... Args>
 		static string packet(const GUID& request_id, const Args&... args);
 
-		void add_callback(GUID& request_id, RedisCB callback);
+		void add_callback(GUID& request_id, int fd, RedisCB callback);
 
 		// required by delete keyword
 		virtual ~Redis() {}
@@ -93,7 +94,7 @@ namespace P { namespace Client {
 		virtual RedisReply parse_response(StreamReader& s) override;
 
 
-		queue<pair<GUID, RedisCB>> _callbacks;
+		map<int, queue<pair<GUID, RedisCB>>> _callbacks;
 	};
 
 }}
