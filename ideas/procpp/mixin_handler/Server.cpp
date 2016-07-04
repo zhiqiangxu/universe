@@ -116,7 +116,7 @@ EventManager::EventCB Server::to_callbacks(Protocol& proto)
 				while (true) {
 					auto client = accept(fd, nullptr, nullptr);
 					if (client == -1) {
-						cout << "[accept] end" << endl;
+						cout << "[accept] end pid=" + to_string(Utils::getpid()) << endl;
 						return;
 					}
 

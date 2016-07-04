@@ -20,7 +20,7 @@ class HttpResponse
 {
 public:
 	int status_code = 200;
-	string reason_phrase;
+	string reason_phrase = "OK";
 	map<string, string> headers;
 	string body;
 };

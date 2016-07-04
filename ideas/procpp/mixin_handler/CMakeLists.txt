@@ -51,7 +51,12 @@ set(PHP_SRC ${SRC} build/php/ReactHandler_wrap.cpp)
 
 include_directories(.)
 find_package(OpenSSL REQUIRED)
-#find_package(OpenCV REQUIRED)
+
+# don't build into ext for the time being
+if (${LAN} STREQUAL "native")
+    find_package(OpenCV REQUIRED)
+endif()
+
 find_package(ZLIB REQUIRED)
 set( DEPENDED_LIBS
         ${OPENSSL_LIBRARIES}
@@ -63,11 +68,11 @@ set( DEPENDED_LIBS
 
 if (${LAN} STREQUAL "native")
     set( TEST
+            opencv
             map
             util
             http
             http_process_worker
-            #opencv
             soa_server_dispatcher
             soa_client
             redis
