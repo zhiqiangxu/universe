@@ -4,7 +4,6 @@ require __DIR__ . "/bootstrap/init.php";
 class PhpCallback extends HttpCallback {
     function run($req, $resp)
     {
-        echo "HttpCallback\n";
         Handler::getInstance()->dispatchHttp($req, $resp);
     }
 }

@@ -1,7 +1,7 @@
 # Reactor server framework for mixin programing
 
 
-**mixin handler** offers two fundamental features:
+**react handler** offers two fundamental features:
  
 - a **generic** server framework that follows react pattern(similar to the famous swoole framework), written in c++；
 - you can use it in various scripting languages such as php/python and more；

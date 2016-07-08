@@ -19,10 +19,9 @@ class Handler
     public function dispatchHttp($request, $response)
     {
         try {
-            echo "dispatchHttp\n";
             Http::handle($request, $response);
         } catch (Exception $e) {
-            var_dump($e);
+            exit("exit on exception\n");
         }
     }
 
