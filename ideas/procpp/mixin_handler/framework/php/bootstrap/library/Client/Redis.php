@@ -48,6 +48,12 @@ class Redis
         return unserialize($result);
     }
 
+    function __call($method, $params)
+    {
+        $key = $params[0];
+        return call_user_func_array([$this->_getRedis($key), $method], $params);
+    }
+
     private function _getRedis($key)
     {
         $target = $this->hasher->lookupTarget($key);

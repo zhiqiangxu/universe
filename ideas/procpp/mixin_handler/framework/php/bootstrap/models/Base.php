@@ -7,6 +7,9 @@ use Client\Redis;
 
 class Base
 {
+    const DB_STRING = 'DB';
+    const REDIS_STRING = 'REDIS';
+
     static function getInstance()
     {
         static $instance = [];
@@ -17,13 +20,18 @@ class Base
         return $instance[$class];
     }
 
-    function getMysql($group = 'default', $slave = false, $sharding_key = null)
+    // Client系
+    function getMysql($slave = false, $sharding_key = null)
     {
+        $group = $this->_getClientGroup(self::DB_STRING);
+
         return MySQL::getInstance($group, $slave, $sharding_key);
     }
 
-    function getRedis($group = 'default')
+    function getRedis($group = null)
     {
+        if (!$group) $group = $this->_getClientGroup(self::REDIS_STRING);
+
         return Redis::getInstance($group);
     }
 
@@ -37,6 +45,17 @@ class Base
     {
         $redis = $this->getRedis($group);
         return $redis->get($this->_keyPrefix($key));
+    }
+
+    private function _constant($name, $default = null)
+    {
+        $constant_name = get_class($this) . '::' . $name;
+        return defined($constant_name) ? constant($constant_name) : $default;
+    }
+
+    private function _getClientGroup($client_type, $default = 'default')
+    {
+        return $this->_constant($client_type . "_GROUP", $default);
     }
 
     private function _keyPrefix($key)

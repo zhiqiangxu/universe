@@ -45,7 +45,7 @@ class MySQL
     private static function _getMysql($hasher, $sharding_key, $slave)
     {
         $target = $hasher->lookupTarget($sharding_key);
-        if ($slave) {
+        if ($slave && isset($target['slave'])) {
             $target = $target['slave'];
 
             if (isset($target[0])) $target = Common::array_rand_elements($target, 1);
@@ -85,23 +85,11 @@ class MySQL
 
     function get($table, $where)
     {
-        list($where_columns, $where_values, $where_bindings) = $this->_generateForBinding($where);
-
-        $count = count($where_columns);
-
-        $where_array = [];
-        for ($i = 0; $i < $count; $i++) {
-            $where_array[] = $where_columns[$i] . '=' . $where_values[$i];
-        }
-
-        $where_list = implode(' AND ', $where_array);
-
-        $sql = "SELECT * FROM $table WHERE $where_list";
-        $result = $this->query($sql, $where_bindings);
+        $result = $this->find($table, $where);
         return $result ? $result[0] : null;
     }
 
-    function getList($table, $where)
+    function find($table, $where)
     {
         list($where_columns, $where_values, $where_bindings) = $this->_generateForBinding($where);
 
