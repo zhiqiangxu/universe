@@ -1,4 +1,5 @@
 <?php
+/*
 $conf['default'] = [
     'host'  => '10.209.44.12',
     'port'  => 10043,
@@ -7,5 +8,16 @@ $conf['default'] = [
     'psw'   => 'admin_framework',
     'encode'=> 'utf8'
 ];
+*/
+
+$conf['default'] = [
+    'host'  => 'localhost',
+    'port'  => 3306,
+    'dbname'=> 'project',
+    'user'  => 'root',
+    'psw'   => 'root',
+    'encode'=> 'utf8'
+];
+
 
 return $conf;

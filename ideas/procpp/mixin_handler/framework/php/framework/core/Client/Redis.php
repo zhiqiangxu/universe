@@ -1,10 +1,10 @@
 <?php
 
 
-namespace Client;
+namespace ReactHandler\Client;
 
-use \Common;
-use \ConsistentHash;
+use \ReactHandler\Common;
+use \ReactHandler\ConsistentHash;
 
 class Redis
 {
@@ -15,8 +15,7 @@ class Redis
 
     static function getInstance($group)
     {
-        static $conf = null;
-        if (!$conf) $conf = load_env_conf('redis');
+        $conf = \ReactHandler::$php->config['redis'];
 
         if (!isset(self::$instances[$group])) {
             $group_conf = $conf[$group];

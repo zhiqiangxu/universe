@@ -1,10 +1,10 @@
 <?php
 
 
-namespace Client;
+namespace ReactHandler\Client;
 
-use Common;
-use ConsistentHash;
+use \ReactHandler\Common;
+use \ReactHandler\ConsistentHash;
 
 class MySQL
 {
@@ -17,8 +17,7 @@ class MySQL
     static function getInstance($group, $slave, $sharding_key)
     {
 
-        static $conf = [];
-        if (!$conf) $conf = load_env_conf('mysql');
+        $conf = \ReactHandler::$php->config['mysql'];
 
         if (!isset(self::$instances[$group][$slave])) {
 
@@ -89,7 +88,7 @@ class MySQL
         return $result ? $result[0] : null;
     }
 
-    function find($table, $where)
+    function find($table, $where, $limit = null)
     {
         list($where_columns, $where_values, $where_bindings) = $this->_generateForBinding($where);
 
@@ -102,8 +101,28 @@ class MySQL
 
         $where_list = implode(' AND ', $where_array);
 
-        $sql = "SELECT * FROM $table WHERE $where_list";
+        $sql = "SELECT * FROM $table WHERE $where_list" . ($limit ? "LIMIT $limit" : '');
         return $this->query($sql, $where_bindings);
+    }
+
+    function count($table, $where)
+    {
+        list($where_columns, $where_values, $where_bindings) = $this->_generateForBinding($where);
+
+        $count = count($where_columns);
+
+        $where_array = [];
+        for ($i = 0; $i < $count; $i++) {
+            $where_array[] = $where_columns[$i] . '=' . $where_values[$i];
+        }
+
+        $where_list = implode(' AND ', $where_array);
+
+        $sql = "SELECT count(*) FROM $table WHERE $where_list";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($where_bindings);
+        return $stmt->fetchColumn();
     }
 
     function insert($table, $data)
@@ -177,8 +196,7 @@ class MySQL
     {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($bindings);
-        $stmt->setFetchMode(\PDO::FETCH_ASSOC);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 }

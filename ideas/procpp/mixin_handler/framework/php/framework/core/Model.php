@@ -1,24 +1,15 @@
 <?php
 
-namespace Model;
+namespace ReactHandler;
 
 use Client\MySQL;
 use Client\Redis;
 
-class Base
+class Model extends Object
 {
     const DB_STRING = 'DB';
     const REDIS_STRING = 'REDIS';
 
-    static function getInstance()
-    {
-        static $instance = [];
-        $class = get_called_class();
-
-        if (!isset($instance[$class])) $instance[$class] = new $class();
-
-        return $instance[$class];
-    }
 
     // Client系
     function getMysql($slave = false, $sharding_key = null)

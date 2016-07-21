@@ -1,9 +1,9 @@
 <?php
-namespace Handler;
+namespace ReactHandler\Handler;
 
 class Http
 {
-    static public function handle($request, $response)
+    static function handle($request, $response)
     {
 
         self::prepareRequest($request);

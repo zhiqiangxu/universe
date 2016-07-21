@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . "/bootstrap/init.php";
+require __DIR__ . "/init.php";
 
 class PhpCallback extends HttpCallback {
     function run($req, $resp)

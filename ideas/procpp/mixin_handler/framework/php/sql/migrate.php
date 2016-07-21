@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/../bootstrap/init.php';
+require __DIR__ . '/../init.php';
 
 if (count($argv) == 1) $mode = 'migrate';
 else {

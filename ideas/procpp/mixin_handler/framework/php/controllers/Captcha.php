@@ -12,7 +12,7 @@ class Captcha extends Base
         $app_id = $_GET['appid'];
         $app_secret = $_GET['appsecret'];
 
-        $app = App::getInstance();
+        $app = new App;
 
         if (!$app->verify($app_id, $app_secret)) return;
 
@@ -28,7 +28,7 @@ class Captcha extends Base
         $captcha_key = $_GET['captcha_key'];
         $value = $_GET['value'];
 
-        $captcha = CaptchaModel::getInstance();
+        $captcha = new CaptchaModel();
         echo $captcha->verify($captcha_key, $value) ? 'OK' : 'NG';
     }
 }
