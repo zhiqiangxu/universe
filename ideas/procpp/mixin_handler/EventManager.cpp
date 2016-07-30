@@ -50,7 +50,7 @@ EventManager::EventCB EventManager::to_ecb(EventManager::CB::C connect_callback)
 		};
 }
 
-bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
+bool EventManager::watch(int fd, EventType event, EventManager::CB callback, bool et)
 {
 	auto ecb_iter = _fds.find(fd);
 	auto added = ecb_iter != _fds.end();
@@ -67,10 +67,10 @@ bool EventManager::watch(int fd, EventType event, EventManager::CB callback)
 		_current_cb[event] = callback;
 	}
 
-	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
+	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD, et);
 }
 
-bool EventManager::watch(int fd, EventManager::EventCB&& callbacks, bool re_watch)
+bool EventManager::watch(int fd, EventManager::EventCB&& callbacks, bool re_watch, bool et)
 {
 	auto added = _fds.find(fd) != _fds.end();
 
@@ -91,7 +91,7 @@ bool EventManager::watch(int fd, EventManager::EventCB&& callbacks, bool re_watc
 
 	_fds[fd] = move(callbacks);//move is needed for local rvalue reference
 
-	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD);
+	return _epoll_update(fd, added ? EPOLL_CTL_MOD : EPOLL_CTL_ADD, et);
 }
 
 bool EventManager::unwatch(int fd, bool no_callback)
@@ -343,14 +343,14 @@ size_t EventManager::count_fds()
 	return _fds.size();
 }
 
-bool EventManager::_epoll_update(int fd, int epoll_op)
+bool EventManager::_epoll_update(int fd, int epoll_op, bool et)
 {
 	struct epoll_event ev;
 	bzero(&ev, sizeof(ev));
 	ev.data.fd = fd;
 
 	// 经测试，ET模式下，即使上一个IN没处理，下一个IN进来后，仍然会触发，但只会触发一次
-	uint32_t events = EPOLLET;//TODO ET可配置
+	uint32_t events = et ? EPOLLET : 0;
 
 	if (epoll_op != EPOLL_CTL_DEL) {
 		for (const auto& r : _fds[fd]) {

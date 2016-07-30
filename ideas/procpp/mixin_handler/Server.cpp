@@ -52,7 +52,7 @@ bool Server::listen(const struct sockaddr *addr, socklen_t addrlen, EventManager
 	if ( type == SOCK_STREAM && ::listen(s, 100) < 0 ) L.error_exit("listen");
 
 
-	if ( !watch(s, move(callbacks)) ) L.error_exit("watch " + to_string(s));
+	if ( !watch(s, move(callbacks), false, false) ) L.error_exit("watch " + to_string(s));
 
 	L.info_log("listen ok");
 
@@ -114,6 +114,9 @@ EventManager::EventCB Server::to_callbacks(Protocol& proto)
 			EventType::READ, EventManager::CB([&proto, this] (int fd) mutable {
 
 				while (true) {
+                    // looks like accept won't return the same connection in prefork mode
+                    // so it's safe
+                    // http://stackoverflow.com/a/11488522
 					auto client = accept(fd, nullptr, nullptr);
 					if (client == -1) {
 						cout << "[accept] end pid=" + to_string(Utils::getpid()) << endl;
