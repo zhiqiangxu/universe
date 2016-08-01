@@ -93,3 +93,6 @@ $cmd =  "git checkout $merge_branch && " .
         "git push origin HEAD:refs/for/$merge_branch";
 
 shell_exec_realtime_output($cmd);
+
+$review_cmd = "pushd `git rev-parse --show-toplevel` && phpcs --standard=PSR1 `git diff --name-only $start_tag $review_branch` && popd";
+shell_exec_realtime_output(bash_cmd($review_cmd));
