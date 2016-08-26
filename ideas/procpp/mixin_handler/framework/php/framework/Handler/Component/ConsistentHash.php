@@ -1,13 +1,8 @@
 <?php
+namespace Handler\Component;
 
+use Handler\Design\IConsistentHash;
 
-interface IConsistentHash
-{
-    function hash($resource);
-    function addTarget($target, $weight);
-    function addTargets($targets, $weight);
-    function lookupTarget($resource);
-}
 
 class ConsistentHash implements IConsistentHash
 {
@@ -40,4 +35,5 @@ class ConsistentHash implements IConsistentHash
             if ($position < $current_weight) return $target_info[0];
         }
     }
+
 }

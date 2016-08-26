@@ -1,23 +1,25 @@
 <?php
-namespace Model;
+namespace App\Model;
+
+use Handler\MVC\Model;
 
 
-class Project extends Base
+class Project extends Model
 {
-    const Table = 'project';
+    const TABLE = 'project';
+    const DB_GROUP = 'default';
 
     const F_id = 'id', F_kickoff_date = 'kickoff_date', F_deadline = 'deadline',
           F_online_date = 'online_date', F_dev_branch = 'dev_branch', F_description = 'description',
           F_rd = 'rd', F_qa = 'qa', F_pm = 'pm';
 
     //后台用
-    function getList($where, $limit)
+    function getList($params)
     {
-        $db = $this->getMysql();
 
-        $total = $db->count(self::Table, $where);
+        $total = $this->count($params);
 
-        $list = $db->find(self::Table, $where, $limit);
+        $list = $this->find($params);
 
         return [$total, $list];
     }

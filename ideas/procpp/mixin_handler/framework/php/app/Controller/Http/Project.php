@@ -1,10 +1,11 @@
 <?php
 
-namespace Controller;
+namespace App\Controller\Http;
 
-use Model\Project as ProjectModel;
+use App\Model\Project as ProjectModel;
+use Handler\MVC\Http\Controller;
 
-class Project extends Base
+class Project extends Controller
 {
     const DEFAULT_PAGE = 1;
     const DEFAULT_PAGE_SIZE = 10;
@@ -17,7 +18,7 @@ class Project extends Base
         $limit = (($page - 1) * $page_size) . ",$page_size";
 
         $project = new ProjectModel();
-        list($total, $project_list) = $project->getList([], $limit);
+        list($total, $project_list) = $project->getList(['true', 'limit' => $limit]);
 
         $this->assign([
             'page'      => $page,

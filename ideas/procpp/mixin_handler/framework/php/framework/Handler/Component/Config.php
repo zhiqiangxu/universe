@@ -1,14 +1,15 @@
 <?php
-namespace ReactHandler;
+namespace Handler\Component;
+use Handler\Design\IConfig;
 
-class Config implements \ArrayAccess
+class Config implements IConfig
 {
     private $config_path = [];
     private $config = [];
 
-    function setPath($dir)
+    function addPath($dir)
     {
-        array_unshift($this->config_path, $dir);
+        $this->config_path[] = $dir;
     }
 
     private function load($index)

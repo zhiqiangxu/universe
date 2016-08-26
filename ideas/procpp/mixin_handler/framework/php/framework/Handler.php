@@ -1,19 +1,22 @@
 <?php
-namespace ReactHandler;
 
-use Handler\Http;
-use Config;
+use Handler\Loader;
+use Handler\Protocol\Http;
+use Handler\Component\Logger;
+use Handler\Component\Config;
+use Handler\Design\IHandler;
 
-class Handler
+class Handler implements IHandler
 {
     static $php;
 
-    public $request;
-    public $response;
+    public $request = null;
+    public $response = null;
 
     public $config;
+    public $logger;
 
-    const DEFAULT_FACTORY_KEY = 'master';
+    const DEFAULT_FACTORY_GROUP = 'master';
 /*
     const MODULES = [
         'redis' => 1,
@@ -24,13 +27,23 @@ class Handler
         'curl'  => 1,
     ];
 */
-    private $factory_key;
-    private $factory_shard_key;
+    private $factory_group;
+    private $factory_shard_id;
 
     private function __construct()
     {
+
+        if ( ! (defined('WEBPATH') && defined('ENV')) ) exit('Please define WEBPATH and ENV!');
+
+        Loader::addNameSpace('Handler', __DIR__ . '/Handler');
+        Loader::addNameSpace('App', WEBPATH . '/app');
+
         $this->config = new Config;
-        $this->config->setPath(WEBPATH . '/conf');
+        $this->config->addPath(WEBPATH . '/conf/' . ENV);
+        $this->config->addPath(WEBPATH . '/conf');
+
+        $this->logger = Logger::getInstance();
+
     }
 
     static function getInstance()
@@ -45,6 +58,7 @@ class Handler
         try {
             Http::handle($request, $response);
         } catch (Exception $e) {
+            var_dump($e);
             exit("exit on exception\n");
         }
     }
@@ -52,19 +66,19 @@ class Handler
     function __get($lib_name)
     {
         if (empty($this->$lib_name)) {
-            $this->loadModule($lib_name);
+            $this->$lib_name = $this->loadModule($lib_name);
         }
 
         return $this->$lib_name;
     }
 
-    /* 框架层面粒度到key, shard_key, 更细的粒度由模块实现*/
-    private function loadModule($module, $key = self::DEFAULT_FACTORY_KEY, $shard_key = null)
+    /* 框架层面粒度到group, shard_id, 更细的粒度由模块实现*/
+    private function loadModule($module, $group = self::DEFAULT_FACTORY_GROUP, $shard_id = null)
     {
-        $object_id = $module . '_' . $key . '_' . $shard_key;
+        $object_id = $module . '_' . $group . '_' . $shard_id;
         if (empty($this->objects[$object_id])) {
-            $this->factory_key = $key;
-            $this->factory_shard_key = $shard_key;
+            $this->factory_group = $group;
+            $this->factory_shard_id = $shard_id;
 
             $user_factory_file = WEBPATH . '/factory/' . $module . '.php';
             if (is_file($user_factory_file)) $object = require $user_factory_file;

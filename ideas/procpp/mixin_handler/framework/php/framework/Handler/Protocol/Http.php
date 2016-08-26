@@ -1,8 +1,10 @@
 <?php
-namespace ReactHandler\Handler;
+namespace Handler\Protocol;
+use Handler\Design\IHttp;
 
-class Http
+class Http implements IHttp
 {
+
     static function handle($request, $response)
     {
 
@@ -20,6 +22,7 @@ class Http
 
     static private function serveStatic()
     {
+
         if (preg_match('/\.[a-z]+/', $_SERVER['REQUEST_URI'])) {
 
             $resource_path = WEBPATH . $_SERVER['REQUEST_URI'];
@@ -40,10 +43,12 @@ class Http
         }
 
         return false;
+
     }
 
     static private function prepareRequest($request)
     {
+
         $uri_info = parse_url($request->uri);
 
         $_SERVER['REQUEST_URI'] = $uri_info['path'];
@@ -51,10 +56,12 @@ class Http
         parse_str($request->body, $_POST);
 
         $_REQUEST = array_merge($_GET, $_POST);
+
     }
 
-    static private function runMVC()
+    static function runMVC()
     {
+
         // load $route
         $route = require (WEBPATH . '/conf/routes.php');
 
@@ -74,7 +81,7 @@ class Http
                 $controller = $rewrite['controller'];
                 $view = $rewrite['view'];
 
-                $controller_class = 'Controller\\' . $controller;
+                $controller_class = '\\App\\Controller\\Http\\' . $controller;
                 $controller_instance = new $controller_class;
                 call_user_func_array([$controller_instance, $view], $match);
 
@@ -86,9 +93,10 @@ class Http
         $parts = explode('/', $uri);
         $view = count($parts) > 1 ? array_pop($parts) : 'index';
 
-        $controller_class = 'Controller\\' . implode('\\', array_map(function($part) { return ucfirst($part); }, $parts));
+        $controller_class = '\\App\\Controller\\Http\\' . implode('\\', array_map(function($part) { return ucfirst($part); }, $parts));
         $controller_instance = new $controller_class;
         call_user_func([$controller_instance, $view]);
+
     }
 
 }

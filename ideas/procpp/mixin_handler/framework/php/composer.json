@@ -1,6 +1,6 @@
 {
     "autoload": {
-        "classmap": [
+        "files": [
             "framework/init.php"
         ]
     }

@@ -29,7 +29,7 @@ register_shutdown_function(function () use ($current_branch, $stash_output) {
     if (!preg_match('/No local changes/', $stash_output)) shell_exec_realtime_output('git stash pop');
 });
 
-$options = get_options([], ['t', 'r']);
+$options = get_options([], ['t', 'r', 'rc']);
 
 $remaining_args = get_remaining_args();
 
@@ -54,6 +54,18 @@ if ( !( $remaining_args && empty($options['t']) ) ) {
     shell_exec_realtime_output($cmd);
 
     exit;
+}
+
+if ( !empty($options['rc'])  ) {
+
+    $review_branch = $remaining_args[0];
+    $start_tag = "T_start_$review_branch";
+
+    $cmd = "git diff $start_tag $review_branch";
+    shell_exec_realtime_output($cmd);
+
+    exit;
+
 }
 
 
