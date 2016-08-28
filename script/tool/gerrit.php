@@ -29,7 +29,7 @@ register_shutdown_function(function () use ($current_branch, $stash_output) {
     if (!preg_match('/No local changes/', $stash_output)) shell_exec_realtime_output('git stash pop');
 });
 
-$options = get_options([], ['t']);
+$options = get_options([], ['t', 'r', 'rc']);
 
 $remaining_args = get_remaining_args();
 
@@ -56,6 +56,19 @@ if ( !( $remaining_args && empty($options['t']) ) ) {
     exit;
 }
 
+if ( !empty($options['rc'])  ) {
+
+    $review_branch = $remaining_args[0];
+    $start_tag = "T_start_$review_branch";
+
+    $cmd = "git diff $start_tag $review_branch";
+    shell_exec_realtime_output($cmd);
+
+    exit;
+
+}
+
+
 /*
  * php gerrit.php review_branch merge_branch
  **/
@@ -63,16 +76,30 @@ if ( !( $remaining_args && empty($options['t']) ) ) {
 shell_exec_realtime_output("git fetch");
 
 list ($review_branch, $merge_branch) = $remaining_args;
-//更新目标分支
-reset_to_remote([$review_branch, $merge_branch]);
 
+$last_tag = "T_last_$review_branch" . ($merge_branch == 'sit' ? '' : "_$merge_branch");
 $squash_tag = "T_squash_$review_branch";//工作分支
 $start_tag = "T_start_$review_branch";
 
+$start_commit = tag_exists($last_tag) ? $last_tag : $start_tag;
+
+//更新目标分支
+reset_to_remote([$review_branch, $merge_branch]);
+
+
 if (!tag_exists($start_tag)) exit("Please tag start for $review_branch first\n");
 
+if ( !empty($options['r'])  ) {
+
+    $cmd = "git diff $start_commit $review_branch";
+    shell_exec_realtime_output($cmd);
+
+    exit;
+
+}
+
+
 //增量压扁
-$last_tag = "T_last_$review_branch" . ($merge_branch == 'sit' ? '' : "_$merge_branch");
 $cmd =  "git tag -f $squash_tag " . (tag_exists($last_tag) ? $last_tag : $start_tag) . " && " .
         "git checkout -q $squash_tag && " .
         "git merge --squash $review_branch && " .
@@ -93,3 +120,6 @@ $cmd =  "git checkout $merge_branch && " .
         "git push origin HEAD:refs/for/$merge_branch";
 
 shell_exec_realtime_output($cmd);
+
+$review_cmd = "pushd `git rev-parse --show-toplevel` && phpcs --standard=PSR1 `git diff --name-only $start_tag $review_branch` && popd";
+#shell_exec_realtime_output(bash_cmd($review_cmd));

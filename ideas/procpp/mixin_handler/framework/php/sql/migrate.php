@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/../bootstrap/init.php';
+require __DIR__ . '/../init.php';
 
 if (count($argv) == 1) $mode = 'migrate';
 else {
@@ -11,7 +11,7 @@ else {
     $mode = $argv[1];
 }
 
-$total_db_conf = load_env_conf('mysql');
+$total_db_conf = Handler::$php->config['mysql'];
 
 if ($mode == "migrate"){
     foreach ($total_db_conf as $conf => $value){

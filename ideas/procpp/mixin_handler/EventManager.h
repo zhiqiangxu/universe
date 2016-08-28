@@ -57,9 +57,9 @@ public:
 	using EventCB = map<EventType, CB>;
 
 	//如果同一个fd调两次，后者覆盖前者
-	virtual bool watch(int fd, EventType event, CB callback) = 0;
+	virtual bool watch(int fd, EventType event, CB callback, bool et) = 0;
 	//仅在未通过EventManager关闭fd时，re_watch为true
-	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch) = 0;
+	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch, bool et) = 0;
 	virtual bool unwatch(int fd, bool no_callback) = 0;
 	/***异步close，并确保：如果有回调，只调用一次
 		如fd已加入watch，则应该调用该方法关闭，否则callback无效
@@ -110,7 +110,7 @@ public:
 	//convenient method
 	EventCB to_ecb(CB::C connect_callback);
 
-	virtual bool watch(int fd, EventType event, CB callback) override;//TODO re_watch
+	virtual bool watch(int fd, EventType event, CB callback, bool et = true) override;//TODO re_watch
     //TODO finish reading:
     //     http://www.codesynthesis.com/~boris/blog/2012/06/19/efficient-argument-passing-cxx11-part1/
 
@@ -120,7 +120,7 @@ public:
 	/*************which makes the code ugly, so only do it when need*****************************/
 
 	//use rvalue reference whenever possible is the BEST practice
-	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch = false) override;
+	virtual bool watch(int fd, EventCB&& callbacks, bool re_watch = false, bool et = true) override;
 	virtual bool unwatch(int fd, bool no_callback = false) override;
 	virtual bool close(int fd, bool force_close = false) override;
 	virtual bool close_all() override;
@@ -133,7 +133,7 @@ public:
 
 
 protected:
-	bool _epoll_update(int fd, int epoll_op);
+	bool _epoll_update(int fd, int epoll_op, bool et = true);
 	void _add_close_fd(int fd);
 	//called by dtor, works with fork
 	virtual bool _destroy();//TODO almost perfect
