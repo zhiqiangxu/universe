@@ -34,6 +34,7 @@ public:
 	//自动KEEPALIVE,session_id
 	virtual int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) = 0;
 
+    virtual void daemonize(const char* std_out, const char* std_err, const char* std_in) = 0;
 
 };
 
@@ -70,6 +71,7 @@ public:
 	virtual EventManager::EventCB to_callbacks(UProtocol& proto);
 	virtual EventManager::EventCB to_callbacks_u(EventManager::CB cb);
 
+    virtual void daemonize(const char* std_out = "/tmp/stdout.log", const char* std_err = "/tmp/stderr.log", const char* std_in = "/dev/null");
 
 };
 

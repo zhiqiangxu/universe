@@ -177,6 +177,11 @@ ssize_t EventManager::write(int fd, const void *buf, size_t count, int* p_errno)
     return count;
 }
 
+ssize_t EventManager::write(int fd, const string& data, int* p_errno)
+{
+    return write(fd, data.data(), data.length(), p_errno);
+}
+
 ssize_t EventManager::write_line(int fd, const string message)
 {
 	auto l = message + "\n";

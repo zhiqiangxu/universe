@@ -2,17 +2,18 @@
 #include "ReactHandler.h"
 //setsockopt
 #include <sys/types.h>
+#include <sys/stat.h>//umask
 #include <sys/socket.h>
 //IPPROTO_TCP
 #include <netinet/in.h>
 //TCP_KEEPIDLE
 #include <netinet/tcp.h>
 //fcntl
-#include <unistd.h>//fork
+#include <unistd.h>//fork,setsid,chdir
 #include <fcntl.h>
 #include <openssl/sha.h>//SHA1
-#include <stdlib.h>//rand,mkstemp
-#include <stdio.h>//snprintf,rename,fopen
+#include <stdlib.h>//rand,mkstemp,exit
+#include <stdio.h>//snprintf,rename,fopen,freopen
 #include <fstream>//ifstream
 #include <zlib.h>
 #include <sys/types.h>
@@ -192,4 +193,79 @@ void Utils::supervise_subprocess(const function<void(void)>& child_callback)
 
 		}
 	}
+}
+
+//http://stackoverflow.com/questions/3095566/linux-daemonize
+void Utils::daemonize(const char* std_out, const char* std_err, const char* std_in)
+{
+    auto pid = fork();
+    L.assert(pid != -1, "fork 1");
+
+    if (pid) exit(0);
+
+    auto sid = setsid();
+    L.assert(sid != -1, "setsid");
+
+    pid = fork();
+    if (pid == -1) L.error_exit("fork 2");
+    L.assert(pid != -1, "fork 2");
+
+    if (pid) exit(0);
+
+    auto ret = chdir("/");
+
+    L.assert(ret != -1, "chdir /");
+
+    umask(0);
+
+    if (std_out) L.assert(freopen(std_out, "w", stdout) != nullptr, "freopen stdout");
+    if (std_err) L.assert(freopen(std_err, "w", stderr), "freopen stderr");
+    if (std_in) L.assert(freopen(std_in, "r", stdin), "freopen stdin");
+}
+
+//TODO support user,pass
+map<string, string> Utils::parse_url(const string& url)
+{
+    map<string, string> result;
+
+    auto idx = url.find("://");
+    if (idx != string::npos) result["schema"] = url.substr(0, idx);
+
+    auto next_idx = idx != string::npos ? idx + 3 : 0;
+
+    idx = url.find('/', next_idx);
+    if (idx != string::npos && idx > next_idx) {
+        auto host_port = url.substr(next_idx, idx - next_idx);
+        auto colon_idx = host_port.find(':');
+        if (colon_idx != string::npos) {
+            result["host"] = host_port.substr(0, colon_idx);
+            result["port"] = host_port.substr(colon_idx + 1);
+        } else {
+            result["host"] = host_port;
+        }
+        next_idx = idx;
+    }
+
+    idx = url.find_first_of("?#", next_idx);
+    if (idx != string::npos) {
+        result["path"] = url.substr(next_idx, idx - next_idx);
+
+        next_idx = idx + 1;
+        if (url[idx] == '?') {
+            auto fragment_idx = url.find('#', next_idx);
+            if (fragment_idx != string::npos) {
+                result["query"] = url.substr(next_idx, fragment_idx - next_idx);
+                next_idx = fragment_idx + 1;
+            }
+            else {
+                result["query"] = url.substr(next_idx);
+                next_idx = url.length();
+            }
+        }
+
+        if (next_idx < url.length()) result["fragment"] = url.substr(next_idx);
+
+    } else result["path"] = url.substr(next_idx);
+
+    return result;
 }

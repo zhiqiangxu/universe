@@ -18,7 +18,7 @@ class Project extends Controller
         $limit = (($page - 1) * $page_size) . ",$page_size";
 
         $project = new ProjectModel();
-        list($total, $project_list) = $project->getList(['true', 'limit' => $limit]);
+        list($total, $project_list) = $project->getList(['true', 'limit' => $limit, 'query_cache' => true]);
 
         $this->assign([
             'page'      => $page,
@@ -26,6 +26,7 @@ class Project extends Controller
             'total'     => $total,
             'project_list' => json_encode($project_list),
         ]);
+        $this->header("header", "value");
         $this->outputHtml('project/index.html');
     }
 }

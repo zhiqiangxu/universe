@@ -40,14 +40,18 @@ namespace P { namespace Client {
 		static string packet(const GUID& request_id, const Args&... args);
 
 		void add_callback(GUID& request_id, int fd, SoaCB callback);
+        //TODO support push callback per socket
+        void register_push_callback(SoaCB callback);
 
 		// required by delete keyword
-		virtual ~Soa() {}
+        // also required to delete _p_push_callback
+		virtual ~Soa();
 
 	protected:
 		virtual SoaResponse parse_response(StreamReader& s) override;
 
 		map<int, map<GUID, SoaCB>> _callbacks;
+		SoaCB* _p_push_callback = nullptr;
 	};
 
 }}

@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <uuid/uuid.h>//uuid_t
 #include <sys/select.h>//timeval
+#include <map>
 
 using namespace std;
 
@@ -395,6 +396,10 @@ public:
     static bool gzip_file(const string& input_file, const string& output_file);
 
     static void supervise_subprocess(const function<void(void)>& child_callback);
+
+    static void daemonize(const char* std_out = "/tmp/stdout.log", const char* std_err = "/tmp/stderr.log", const char* std_in = "/dev/null");
+
+    static map<string, string> parse_url(const string& url);
 };
 
 

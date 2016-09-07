@@ -1,5 +1,4 @@
 #include "ReactHandler.h"
-#include <assert.h>
 #include <string.h>//strlen
 #include <stdlib.h>//atol
 

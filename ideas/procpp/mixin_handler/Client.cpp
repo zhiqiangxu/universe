@@ -328,6 +328,43 @@ int Client::wait(const vector<GUID>& requests, int milliseconds)
 	return requests.size() - request_map.size();
 }
 
+int Client::wait(int n, int milliseconds)
+{
+
+    if (n <= 0) return 0;
+
+    if (count_fds() == 0) return 0;
+
+    auto total = n;
+
+	auto now = Utils::now();
+
+	const int kMaxEvents = 32;
+	struct epoll_event events[kMaxEvents];
+
+	auto id = on<Client::ON_PACKET_OK>(Utils::to_function([&n](GUID& uuid){
+        n -= 1;
+	}));
+
+	while (true) {
+		int timeout = milliseconds - chrono::duration_cast<chrono::milliseconds>(Utils::now() - now).count();
+		if (timeout < 0) break;
+
+		//cout << "epoll_wait" << endl;
+		auto ret = epoll_wait(_epoll_fd, events, kMaxEvents, timeout);
+		//cout << "ret " << ret << endl;
+
+		handle_events(ret, events);
+
+		if (n <= 0) break;
+	}
+
+	detach<Client::ON_PACKET_OK, GUID&>(id);
+
+	return total - n;
+
+}
+
 EventManager::EventCB Client::to_callbacks(P::Client::Base& proto)
 {
 	return EventManager::EventCB{

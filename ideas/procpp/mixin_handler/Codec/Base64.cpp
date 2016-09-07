@@ -1,5 +1,6 @@
 #include "Codec/Base64.h"
-#include <assert.h>//assert
+#include "ReactHandler.h"
+using namespace std;
 
 
 static const char b64_table[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -39,13 +40,13 @@ string Base64::encode(const string& bindata)
 	}
 
 	if (bits_collected > 0) { // Any trailing bits that are missing.
-		assert(bits_collected < 6);
+		L.assert( bits_collected < 6, string("bits_collected =") + to_string(bits_collected) );
 		accumulator <<= 6 - bits_collected;
 		retval[outpos++] = b64_table[accumulator & 0x3fu];
 	}
 
-	assert(outpos >= (retval.size() - 2));
-	assert(outpos <= retval.size());
+	L.assert(outpos >= (retval.size() - 2), "outpos 1");
+	L.assert(outpos <= retval.size(), "outpos 2");
 	return retval;
 }
 

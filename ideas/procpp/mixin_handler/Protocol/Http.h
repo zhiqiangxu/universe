@@ -1,6 +1,8 @@
 #pragma once
 #include "Protocol.h"
 #include <map>
+#include <vector>
+#include <utility>//pair
 #include "StateMachine/Bufferable.h"
 using namespace std;
 
@@ -14,6 +16,7 @@ public:
 	static constexpr const char* SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
 };
 
+class HttpProviderAddress;
 class HttpRequest
 {
 public:
@@ -23,6 +26,10 @@ public:
 	string http_version;
 	map<string, string> headers;
 	string body;
+
+    //转发包
+    string forward_packet(const HttpProviderAddress& target_address);
+    bool get_path(string& path);
 };
 
 class IHttp
@@ -30,6 +37,8 @@ class IHttp
 public:
 	//reused by websocket
 	virtual HttpRequest parse_request(int client, StreamReader& s) = 0;
+
+    virtual bool close_if_necessary(HttpRequest& request) = 0;
 };
 
 
@@ -37,13 +46,16 @@ class HttpResponse
 {
 public:
 
-	int status_code = 200;
-	string reason_phrase = "OK";
-	map<string, string> headers;
+	int status_code;
+	string reason_phrase;
+	vector<pair<string, string>> headers;
 	string body;
 
-	static constexpr const char* http_version = "HTTP/1.1";
+	string http_version = "HTTP/1.1";
 
+    HttpResponse() {};
+
+    HttpResponse(const HttpRequest& r);
 	virtual string to_string();
 
 	virtual ~HttpResponse() {}
@@ -62,4 +74,6 @@ public:
 	virtual void on_close(int client) override;
 
 	virtual HttpRequest parse_request(int client, StreamReader& s) override;
+
+    virtual bool close_if_necessary(HttpRequest& request) override;
 };

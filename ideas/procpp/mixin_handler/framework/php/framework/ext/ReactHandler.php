@@ -86,6 +86,122 @@ class StringMap {
 	}
 }
 
+class StringPair {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'first') return StringPair_first_set($this->_cPtr,$value);
+		if ($var === 'second') return StringPair_second_set($this->_cPtr,$value);
+		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __get($var) {
+		if ($var === 'first') return StringPair_first_get($this->_cPtr);
+		if ($var === 'second') return StringPair_second_get($this->_cPtr);
+		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __isset($var) {
+		if (function_exists('StringPair_'.$var.'_get')) return true;
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __construct($first_or_p=null,$second=null) {
+		if (is_resource($first_or_p) && get_resource_type($first_or_p) === '_p_std__pairT_std__string_std__string_t') {
+			$this->_cPtr=$first_or_p;
+			return;
+		}
+		switch (func_num_args()) {
+		case 0: $this->_cPtr=new_StringPair(); break;
+		case 1: $this->_cPtr=new_StringPair($first_or_p); break;
+		default: $this->_cPtr=new_StringPair($first_or_p,$second);
+		}
+	}
+}
+
+class StringPairVector {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __construct($n=null) {
+		if (is_resource($n) && get_resource_type($n) === '_p_std__vectorT_std__pairT_std__string_std__string_t_t') {
+			$this->_cPtr=$n;
+			return;
+		}
+		switch (func_num_args()) {
+		case 0: $this->_cPtr=new_StringPairVector(); break;
+		default: $this->_cPtr=new_StringPairVector($n);
+		}
+	}
+
+	function size() {
+		return StringPairVector_size($this->_cPtr);
+	}
+
+	function capacity() {
+		return StringPairVector_capacity($this->_cPtr);
+	}
+
+	function reserve($n) {
+		StringPairVector_reserve($this->_cPtr,$n);
+	}
+
+	function clear() {
+		StringPairVector_clear($this->_cPtr);
+	}
+
+	function push($x) {
+		StringPairVector_push($this->_cPtr,$x);
+	}
+
+	function is_empty() {
+		return StringPairVector_is_empty($this->_cPtr);
+	}
+
+	function pop() {
+		$r=StringPairVector_pop($this->_cPtr);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new StringPair($r);
+		}
+		return $r;
+	}
+
+	function get($i) {
+		$r=StringPairVector_get($this->_cPtr,$i);
+		if (is_resource($r)) {
+			$c=substr(get_resource_type($r), (strpos(get_resource_type($r), '__') ? strpos(get_resource_type($r), '__') + 2 : 3));
+			if (class_exists($c)) return new $c($r);
+			return new StringPair($r);
+		}
+		return $r;
+	}
+
+	function set($i,$val) {
+		StringPairVector_set($this->_cPtr,$i,$val);
+	}
+}
+
 class WebSocketMessage {
 	public $_cPtr=null;
 	protected $_pData=array();
@@ -346,7 +462,7 @@ class HttpResponse {
 	}
 
 	function __get($var) {
-		if ($var === 'headers') return new StringMap(HttpResponse_headers_get($this->_cPtr));
+		if ($var === 'headers') return new StringPairVector(HttpResponse_headers_get($this->_cPtr));
 		$func = 'HttpResponse_'.$var.'_get';
 		if (function_exists($func)) return call_user_func($func,$this->_cPtr);
 		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
@@ -365,6 +481,70 @@ class HttpResponse {
 			return;
 		}
 		$this->_cPtr=new_HttpResponse();
+	}
+}
+
+class HttpProviderAddress {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		$func = 'HttpProviderAddress_'.$var.'_set';
+		if (function_exists($func)) return call_user_func($func,$this->_cPtr,$value);
+		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __get($var) {
+		$func = 'HttpProviderAddress_'.$var.'_get';
+		if (function_exists($func)) return call_user_func($func,$this->_cPtr);
+		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __isset($var) {
+		if (function_exists('HttpProviderAddress_'.$var.'_get')) return true;
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __construct($res=null) {
+		if (is_resource($res) && get_resource_type($res) === '_p_HttpProviderAddress') {
+			$this->_cPtr=$res;
+			return;
+		}
+		$this->_cPtr=new_HttpProviderAddress();
+	}
+}
+
+class BoolWrapper {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'ok') return BoolWrapper_ok_set($this->_cPtr,$value);
+		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __get($var) {
+		if ($var === 'ok') return BoolWrapper_ok_get($this->_cPtr);
+		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __isset($var) {
+		if (function_exists('BoolWrapper_'.$var.'_get')) return true;
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __construct($v) {
+		if (is_resource($v) && get_resource_type($v) === '_p_BoolWrapper') {
+			$this->_cPtr=$v;
+			return;
+		}
+		$this->_cPtr=new_BoolWrapper($v);
 	}
 }
 
@@ -402,6 +582,43 @@ class HttpCallback {
 			$_this = $this;
 		}
 		$this->_cPtr=new_HttpCallback($_this);
+	}
+}
+
+class HttpGatewayCallback {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function on_request_uri($req,$target_address,$ok) {
+		HttpGatewayCallback_on_request_uri($this->_cPtr,$req,$target_address,$ok);
+	}
+
+	function __construct($res=null) {
+		if (is_resource($res) && get_resource_type($res) === '_p_HttpGatewayCallback') {
+			$this->_cPtr=$res;
+			return;
+		}
+		if (get_class($this) === 'HttpGatewayCallback') {
+			$_this = null;
+		} else {
+			$_this = $this;
+		}
+		$this->_cPtr=new_HttpGatewayCallback($_this);
 	}
 }
 
@@ -560,12 +777,16 @@ class SoaResponse {
 		return array_key_exists($var, $this->_pData);
 	}
 
-	function __construct($uuid) {
-		if (is_resource($uuid) && get_resource_type($uuid) === '_p_SoaResponse') {
-			$this->_cPtr=$uuid;
+	function __construct($generate=true) {
+		if (is_resource($generate) && get_resource_type($generate) === '_p_SoaResponse') {
+			$this->_cPtr=$generate;
 			return;
 		}
-		$this->_cPtr=new_SoaResponse($uuid);
+		$this->_cPtr=new_SoaResponse($generate);
+	}
+
+	function to_string() {
+		return SoaResponse_to_string($this->_cPtr);
 	}
 }
 
@@ -768,12 +989,20 @@ class SoaClient extends Soa {
 		$this->_cPtr=new_SoaClient($address,$port,$auto_reconnect);
 	}
 
-	function call($json_request,$cb) {
+	function call($json_request,$cb=null) {
 		return SoaClient_call($this->_cPtr,$json_request,$cb);
 	}
 
 	function wait($requests,$milliseconds) {
 		return SoaClient_wait($this->_cPtr,$requests,$milliseconds);
+	}
+
+	function wait_n($n,$milliseconds) {
+		return SoaClient_wait_n($this->_cPtr,$n,$milliseconds);
+	}
+
+	function register_push_callback($cb) {
+		SoaClient_register_push_callback($this->_cPtr,$cb);
 	}
 }
 
@@ -815,6 +1044,14 @@ class SoaProcessDispatcherClientServer {
 	function start() {
 		SoaProcessDispatcherClientServer_start($this->_cPtr);
 	}
+
+	function daemonize($std_out="/tmp/stdout.log",$std_err="/tmp/stderr.log",$std_in="/dev/null") {
+		SoaProcessDispatcherClientServer_daemonize($this->_cPtr,$std_out,$std_err,$std_in);
+	}
+
+	function write_global($session_id,$data) {
+		return SoaProcessDispatcherClientServer_write_global($this->_cPtr,$session_id,$data);
+	}
 }
 
 class HttpProcessDispatcherClientServer {
@@ -855,6 +1092,62 @@ class HttpProcessDispatcherClientServer {
 	function start() {
 		HttpProcessDispatcherClientServer_start($this->_cPtr);
 	}
+
+	function daemonize($std_out="/tmp/stdout.log",$std_err="/tmp/stderr.log",$std_in="/dev/null") {
+		HttpProcessDispatcherClientServer_daemonize($this->_cPtr,$std_out,$std_err,$std_in);
+	}
+
+	function write_global($session_id,$data) {
+		return HttpProcessDispatcherClientServer_write_global($this->_cPtr,$session_id,$data);
+	}
+}
+
+class HttpGatewayProcessDispatcherClientServer {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function __construct($res=null) {
+		if (is_resource($res) && get_resource_type($res) === '_p_DispatcherClientServerT_DispatchMode__Process_HttpGateway_t') {
+			$this->_cPtr=$res;
+			return;
+		}
+		$this->_cPtr=new_HttpGatewayProcessDispatcherClientServer();
+	}
+
+	function listen($port,$domain=null) {
+		switch (func_num_args()) {
+		case 1: $r=HttpGatewayProcessDispatcherClientServer_listen($this->_cPtr,$port); break;
+		default: $r=HttpGatewayProcessDispatcherClientServer_listen($this->_cPtr,$port,$domain);
+		}
+		return $r;
+	}
+
+	function start() {
+		HttpGatewayProcessDispatcherClientServer_start($this->_cPtr);
+	}
+
+	function daemonize($std_out="/tmp/stdout.log",$std_err="/tmp/stderr.log",$std_in="/dev/null") {
+		HttpGatewayProcessDispatcherClientServer_daemonize($this->_cPtr,$std_out,$std_err,$std_in);
+	}
+
+	function write_global($session_id,$data) {
+		return HttpGatewayProcessDispatcherClientServer_write_global($this->_cPtr,$session_id,$data);
+	}
 }
 
 class SoaProcessDispatcherServer extends SoaProcessDispatcherClientServer {
@@ -890,6 +1183,10 @@ class SoaProcessDispatcherServer extends SoaProcessDispatcherClientServer {
 	function on($event,$cb) {
 		SoaProcessDispatcherServer_on($this->_cPtr,$event,$cb);
 	}
+
+	function get_session_id($client) {
+		return SoaProcessDispatcherServer_get_session_id($this->_cPtr,$client);
+	}
 }
 
 class HttpProcessDispatcherServer extends HttpProcessDispatcherClientServer {
@@ -924,6 +1221,41 @@ class HttpProcessDispatcherServer extends HttpProcessDispatcherClientServer {
 
 	function on($event,$cb) {
 		HttpProcessDispatcherServer_on($this->_cPtr,$event,$cb);
+	}
+}
+
+class HttpGatewayProcessDispatcherServer extends HttpGatewayProcessDispatcherClientServer {
+	public $_cPtr=null;
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
+		HttpGatewayProcessDispatcherClientServer::__set($var,$value);
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
+		return HttpGatewayProcessDispatcherClientServer::__get($var);
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return HttpGatewayProcessDispatcherClientServer::__isset($var);
+	}
+
+	function __construct($res=null) {
+		if (is_resource($res) && get_resource_type($res) === '_p_HttpGatewayProcessDispatcherServer') {
+			$this->_cPtr=$res;
+			return;
+		}
+		$this->_cPtr=new_HttpGatewayProcessDispatcherServer();
+	}
+
+	function dispatch($n_process) {
+		HttpGatewayProcessDispatcherServer_dispatch($this->_cPtr,$n_process);
+	}
+
+	function register_callback($cb) {
+		HttpGatewayProcessDispatcherServer_register_callback($this->_cPtr,$cb);
 	}
 }
 

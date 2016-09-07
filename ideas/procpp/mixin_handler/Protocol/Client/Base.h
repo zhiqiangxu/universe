@@ -24,6 +24,7 @@ namespace P { namespace Client {
 			return Protocol::template packet<type, Args...>(request_id, args...);
 		}
 
+
 	protected:
 	};
 

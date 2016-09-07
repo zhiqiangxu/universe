@@ -35,9 +35,13 @@ int main()
 	if (!c.connect()) L.error_log("connect failed");
 
 	GUID request_id;
-	c.cmd<Redis, Redis::packet_type::GET>(request_id, Utils::to_function([](RedisReply& r) {
-		cout << "value = " << r.reply << (r.is_nil() ? " (nil)" : "") << endl;
-	}), string("key"));
+	c.cmd<Redis, Redis::packet_type::GET>(
+        Utils::to_function([](RedisReply& r) {
+            cout << "value = " << r.reply << (r.is_nil() ? " (nil)" : "") << endl;
+        }),
+        request_id,
+        string("key")
+    );
 
 	c.start();
 */
@@ -48,12 +52,20 @@ int main()
 
 	GUID request_id;
 	GUID request_id2;
-	c.cmd<Redis, Redis::packet_type::GET>(request_id, Utils::to_function([](RedisReply& r) {
-		cout << "value = " << r.reply << (r.is_nil() ? " (nil)" : "") << endl;
-	}), string("abc"));
-	c.cmd<Redis, Redis::packet_type::GET>(request_id2, Utils::to_function([](RedisReply& r) {
-		cout << "value = " << r.reply << (r.is_nil() ? " (nil)" : "") << endl;
-	}), string("abc"));
+	c.cmd<Redis, Redis::packet_type::GET>(
+        Utils::to_function([](RedisReply& r) {
+            cout << "value = " << r.reply << (r.is_nil() ? " (nil)" : "") << endl;
+        }),
+        request_id,
+        string("abc")
+    );
+	c.cmd<Redis, Redis::packet_type::GET>(
+        Utils::to_function([](RedisReply& r) {
+            cout << "value = " << r.reply << (r.is_nil() ? " (nil)" : "") << endl;
+        }),
+        request_id2, 
+        string("abc")
+    );
 
 	L.debug_log("before wait");
 	c.wait(vector<GUID>({request_id, request_id2}), 1500);

@@ -21,17 +21,41 @@ class HttpResponse
 public:
 	int status_code = 200;
 	string reason_phrase = "OK";
-	map<string, string> headers;
+	vector<pair<string, string>> headers;
 	string body;
 };
 
+class HttpProviderAddress
+{
+public:
+    string host;
+    int port;
+    string path;
+};
+
 %feature("director") HttpCallback;
+%feature("director") HttpGatewayCallback;
 %inline %{
+
+    /*TODO remove wrapper..*/
+    class BoolWrapper
+    {
+    public:
+        BoolWrapper(bool v) : ok(v) {}
+        bool ok;
+    };
+
     class HttpCallback
     {
     public:
         virtual ~HttpCallback() {}
         virtual void run(HttpRequest& req, HttpResponse& resp) {}
+    };
+    class HttpGatewayCallback
+    {
+    public:
+        virtual ~HttpGatewayCallback() {}
+        virtual void on_request_uri(HttpRequest& req, HttpProviderAddress& target_address, BoolWrapper& ok) {}
     };
 
 

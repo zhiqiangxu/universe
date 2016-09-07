@@ -27,6 +27,7 @@ set(SRC EventManager.cpp
         Protocol/Socks.cpp
         Protocol/EasyP2P.cpp
         Protocol/Http.cpp
+        Protocol/HttpGateway.cpp
         Protocol/WebSocket.cpp
         Protocol/Soa.cpp
         Protocol/Client/Redis.cpp
@@ -68,9 +69,10 @@ set( DEPENDED_LIBS
 
 if (${LAN} STREQUAL "native")
     set( TEST
+            httpgateway
+            util
             opencv
             map
-            util
             http
             http_process_worker
             soa_server_dispatcher

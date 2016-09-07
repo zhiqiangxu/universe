@@ -19,13 +19,23 @@ namespace P { namespace Client {
 				offset = s.offset();
 
                 if (itcb == _callbacks.end() || itcb->second.find(r.uuid) == itcb->second.end()) {
-					L.error_log("callback empty for soa response");
-					continue;
-				}
 
-				auto cb = itcb->second[r.uuid];
-				cb(r.json);
-				itcb->second.erase(r.uuid);
+                    if (!_p_push_callback) {
+
+                        L.error_log("callback empty for soa response");
+                        continue;
+
+                    }
+
+                    (*_p_push_callback)(r.json);
+
+				} else {
+
+                    auto cb = itcb->second[r.uuid];
+                    cb(r.json);
+                    itcb->second.erase(r.uuid);
+
+                }
 
 				//notify wait
 				_scheduler.fire<::Client::ON_PACKET_OK, GUID&>(r.uuid);
@@ -54,16 +64,25 @@ namespace P { namespace Client {
 
 	void Soa::on_close(int client)
 	{
+
 		erase_buf(client);
 		_callbacks.erase(client);
+
 	}
 
-	void Soa::add_callback(GUID& request_id, int fd, SoaCB callback) {
+	void Soa::add_callback(GUID& request_id, int fd, SoaCB callback)
+    {
         if (_callbacks.find(fd) == _callbacks.end()) _callbacks[fd] = map<GUID, SoaCB>({{request_id, callback}});
 		else _callbacks[fd][request_id] = callback;
 	}
 
+    void Soa::register_push_callback(SoaCB callback)
+    {
 
+        if (_p_push_callback) delete _p_push_callback;
+        _p_push_callback = new SoaCB(callback);
+
+    }
 	
 	SoaResponse Soa::parse_response(StreamReader& s)
 	{
@@ -79,4 +98,11 @@ namespace P { namespace Client {
 
 		return r;
 	}
+
+    Soa::~Soa()
+    {
+
+        if (_p_push_callback) delete _p_push_callback;
+
+    }
 }}

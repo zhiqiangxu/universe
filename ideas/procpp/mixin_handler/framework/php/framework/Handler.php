@@ -2,14 +2,16 @@
 
 use Handler\Loader;
 use Handler\Protocol\Http;
+use Handler\Protocol\Soa;
 use Handler\Component\Logger;
 use Handler\Component\Config;
 use Handler\Design\IHandler;
 
 class Handler implements IHandler
 {
-    static $php;
+    public static $php;
 
+    private $_server = null;
     public $request = null;
     public $response = null;
 
@@ -48,20 +50,66 @@ class Handler implements IHandler
 
     static function getInstance()
     {
+
         if (!self::$php) self::$php = new Handler();
 
         return self::$php;
+
     }
 
-    function dispatchHttp($request, $response)
+    function handleHttp($request, $response)
     {
+
         try {
             Http::handle($request, $response);
         } catch (Exception $e) {
             var_dump($e);
             exit("exit on exception\n");
         }
+
     }
+
+    function handleSoa($request, $response)
+    {
+
+        try {
+            Soa::handle($request, $response);
+        } catch (Exception $e) {
+            var_dump($e);
+            exit("exit on exception\n");
+        }
+
+    }
+
+    function setServer($server)
+    {
+        $this->_server = $server;
+    }
+
+    function getSessionId($request)
+    {
+
+        if (!$this->_server) exit("no server specified");
+
+        return $this->_server->get_session_id($request->client);
+
+    }
+
+    function pushMessage($session_id, $string)
+    {
+
+        if (!$this->_server) exit("no server specified");
+
+        return $this->_server->write_global($session_id, $string);
+
+    }
+
+    function pushSoaResponse($session_id, $json)
+    {
+        return Soa::pushResponse($session_id, $json);
+    }
+
+    //以下暂时没用
 
     function __get($lib_name)
     {

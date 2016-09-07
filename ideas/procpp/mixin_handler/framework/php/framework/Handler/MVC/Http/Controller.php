@@ -38,7 +38,7 @@ class Controller implements IController
         global $php;
         if ($php->response) {
             $response = $php->response;
-            $response->headers->set($args[0], $args[1]);
+            $response->headers->push(new \StringPair($args[0], $args[1]));
         } else \header($args[0], $args[1]);
 
     }
@@ -92,6 +92,25 @@ class Controller implements IController
         global $php;
         if ($php->response) $php->response->body = $html;
         else echo $html;
+
+    }
+
+    function setCookie($name, $value = '', $expire = 0, $path = '', $domain = '', $secure = false, $httponly = false)
+    {
+
+        $cookie_values = [ "$name=" . urlencode($value) ];
+
+        if ($expire) {
+            $cookie_values[] = "expires=" . gmdate('D, d M Y H:i:s T', time() + $expire);
+            $cookie_values[] = "Max-Age=$expire";
+        }
+
+        if ($path) $cookie_values[] = "path=$path";
+        if ($domain) $cookie_values[] = "domain=$domain";
+        if ($secure) $cookie_values[] = "secure";
+        if ($httponly) $cookie_values[] = "HttpOnly";
+
+        $this->header('Set-Cookie', implode('; ', $cookie_values));
 
     }
 

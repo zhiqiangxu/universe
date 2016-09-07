@@ -30,6 +30,7 @@
 #include "UProtocol/Echo.h"
 #include "Protocol/Echo.h"
 #include "Protocol/Http.h"
+#include "Protocol/HttpGateway.h"
 #include "Protocol/WebSocket.h"
 #include "Protocol/Soa.h"
 #include "Protocol/Client/Redis.h"

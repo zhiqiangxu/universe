@@ -34,3 +34,8 @@ void ErrorHandler::info_log(const string& message)
 {
 	cout << Utils::GREEN(message) << endl;
 }
+
+void ErrorHandler::assert(bool expression, const string& error_log)
+{
+    if (!expression) L.error_exit(error_log);
+}

@@ -12,7 +12,9 @@ public:
     GUID uuid;
     string json;
 
-    SoaResponse(const GUID& uuid) : uuid(uuid) { }
+    SoaResponse(bool generate = true);//auto generate for script
+
+    string to_string();
 };
 
 
@@ -128,13 +130,21 @@ namespace C {
     public:
         SoaClient(const string& address, uint16_t port, bool auto_reconnect = true) : C::Soa(address, port, auto_reconnect) {}
 
-        string call(const string& json_request, SoaClientCallback* cb)
+        string call(const string& json_request, SoaClientCallback* cb = nullptr)
         {
             GUID request_id;
 
-            this->cmd<P::Client::Soa, P::Client::Soa::packet_type::JSON>(request_id, Utils::to_function([cb](string& json_response){
-                cb->run(json_response);
-            }), json_request);
+            if (cb) this->cmd<P::Client::Soa, P::Client::Soa::packet_type::JSON>(
+                        Utils::to_function([cb](string& json_response){
+                            cb->run(json_response);
+                        }),
+                        request_id,
+                        json_request
+                    );
+            else this->cmd<P::Client::Soa, P::Client::Soa::packet_type::JSON>(
+                        request_id,
+                        json_request
+                 );
 
             return request_id.to_string();
         }
@@ -149,6 +159,20 @@ namespace C {
             }
 
             return Client::wait(request_guids, milliseconds);
+        }
+
+        int wait_n(int n, int milliseconds)
+        {
+            return Client::wait(n, milliseconds);
+        }
+
+        void register_push_callback(SoaClientCallback* cb)
+        {
+            C::Soa::register_push_callback<P::Client::Soa, P::Client::SoaCB>(
+                Utils::to_function([cb](string& json_response){
+                    cb->run(json_response);
+                })
+            );
         }
     };
 %}

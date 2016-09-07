@@ -17,9 +17,10 @@ class Project extends Model
     function getList($params)
     {
 
+        $list = $this->find($params);
+
         $total = $this->count($params);
 
-        $list = $this->find($params);
 
         return [$total, $list];
     }

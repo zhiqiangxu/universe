@@ -46,7 +46,23 @@ namespace C {
 
 		//new stuff
 		template <typename Protocol, typename Protocol::packet_type type, typename cb_type, typename... Args>
-		bool cmd_addr(GUID& request_id, const SocketAddress& address, cb_type callback, const Args&... args)
+		bool cmd_addr(GUID& request_id, cb_type callback, const SocketAddress& address, const Args&... args)
+		{
+
+            if (cmd_addr<Protocol, type>(request_id, address, args...)) {
+
+                auto socket = _addr2socket[address];
+                static_cast<Protocol&>(get_protocol()).add_callback(request_id, socket, callback);
+                return true;
+
+            }
+
+            return false;
+
+		}
+
+		template <typename Protocol, typename Protocol::packet_type type, typename... Args>
+		bool cmd_addr(GUID& request_id, const SocketAddress& address, const Args&... args)
 		{
 
 			if ( !connect(address) ) return false;
@@ -75,17 +91,32 @@ namespace C {
 				return false;
 			}
 
-			static_cast<Protocol&>(get_protocol()).add_callback(request_id, socket, callback);
-
 			return true;
+
 		}
 
-		template <typename Protocol, typename Protocol::packet_type type, typename cb_type, typename... Args>
-		bool cmd(GUID& request_id, cb_type callback, const Args&... args)
-        {
-			auto address = _get_next_address();
 
-            return this->cmd_addr<Protocol, type>(request_id, address, callback, args...);
+		template <typename Protocol, typename Protocol::packet_type type, typename cb_type, typename... Args>
+		bool cmd(cb_type callback, GUID& request_id, const Args&... args)
+        {
+            auto address = _get_next_address();
+
+            return this->cmd_addr<Protocol, type>(request_id, callback, address, args...);
+        }
+
+        // cmd without callback
+        template <typename Protocol, typename Protocol::packet_type type, typename... Args>
+        bool cmd(GUID& request_id, const Args&... args)
+        {
+            auto address = _get_next_address();
+
+            return this->cmd_addr<Protocol, type>(request_id, address, args...);
+        }
+
+		template <typename Protocol, typename cb_type>
+        void register_push_callback(cb_type callback)
+        {
+			static_cast<Protocol&>(get_protocol()).register_push_callback(callback);
         }
 
 

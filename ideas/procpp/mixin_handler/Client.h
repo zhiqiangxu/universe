@@ -48,6 +48,8 @@ public:
 
 	//等待网络请求返回
 	virtual int wait(const vector<GUID>& requests, int milliseconds) = 0;
+    //等满n个响应
+	virtual int wait(int n, int milliseconds) = 0;
 
 };
 
@@ -74,6 +76,7 @@ public:
 	virtual int connect(const struct sockaddr* addr, socklen_t addrlen, EventManager::EventCB callbacks, bool async, int fd) override;
 
 	virtual int wait(const vector<GUID>& requests, int milliseconds = 50) override;
+	virtual int wait(int n, int milliseconds = 50) override;
 
 	virtual EventManager::EventCB to_callbacks(P::Client::Base& proto);
 

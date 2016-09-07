@@ -1,12 +1,12 @@
 <?php
-require __DIR__ . "/init.php";
+require __DIR__ . "/../init.php";
 
 
 class PhpCallback extends HttpCallback {
     function run($req, $resp)
     {
         $start = microtime(true);
-        Handler::getInstance()->dispatchHttp($req, $resp);
+        Handler::getInstance()->handleHttp($req, $resp);
         echo "took " . (microtime(true) - $start) . " seconds\n";
     }
 }
@@ -14,6 +14,7 @@ class PhpCallback extends HttpCallback {
 $callback = new PhpCallback();
 
 $s=new HttpProcessDispatcherServer();
+//$s->daemonize();
 $s->on('request', $callback);
 $s->listen(8082);
 $s->dispatch(4);

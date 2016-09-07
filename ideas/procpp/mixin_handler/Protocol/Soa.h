@@ -26,7 +26,7 @@ public:
 	GUID uuid;
 	string json;
 
-	SoaResponse() { }
+	SoaResponse(bool generate = false) { if (generate) uuid.generate(); }
 	SoaResponse(const GUID& uuid) : uuid(uuid) { }
 
 	virtual string to_string();

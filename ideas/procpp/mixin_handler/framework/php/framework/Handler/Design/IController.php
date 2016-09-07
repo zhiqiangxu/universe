@@ -10,5 +10,6 @@ interface IController
     function assign();
     function fetch($tpl_file);
     function outputHtml($tpl_file);
+    function setCookie($name, $value, $expire, $path, $domain, $secure, $httponly);
 
 }

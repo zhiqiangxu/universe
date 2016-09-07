@@ -67,6 +67,7 @@ public:
 	virtual bool close(int fd, bool force_close) = 0;
 	virtual bool close_all() = 0;
 	virtual ssize_t write(int fd, const void *buf, size_t count, int* p_errno) = 0;
+    virtual ssize_t write(int fd, const string& data, int* p_errno) = 0;
 	virtual ssize_t write_line(int fd, const string message) = 0;
 	virtual ssize_t sendto(int u_sock, const void *buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen) = 0;
 	//for reuse in Client::wait
@@ -125,6 +126,7 @@ public:
 	virtual bool close(int fd, bool force_close = false) override;
 	virtual bool close_all() override;
 	virtual ssize_t write(int fd, const void *buf, size_t count, int* p_errno = nullptr) override;//TODO 完善，目前仅处理EPIPE
+    virtual ssize_t write(int fd, const string& data, int* p_errno = nullptr) override;
 	virtual ssize_t write_line(int fd, const string message) override;
 	virtual ssize_t sendto(int u_sock, const void *buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen) override;
 	virtual void start() override;

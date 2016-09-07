@@ -38,7 +38,7 @@ vector<string> Trie::search(const string& text, bool no_overlap)
 		auto next_offset = offset;
 
 		string longest_value;
-		size_t longest_offset;
+		size_t longest_offset = -1;
 		do {
 			node = node->get_next(ch);
 			if (node) {

@@ -244,3 +244,8 @@ EventManager::EventCB Server::to_callbacks_u(EventManager::CB cb)
 		}
 	};
 }
+
+void Server::daemonize(const char* std_out, const char* std_err, const char* std_in)
+{
+    Utils::daemonize(std_out, std_err, std_in);
+}

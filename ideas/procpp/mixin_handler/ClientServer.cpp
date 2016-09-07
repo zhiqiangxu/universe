@@ -110,6 +110,10 @@ ssize_t ClientServer::write_global(uint32_t session_id, const void *buf, size_t 
 
 }
 
+ssize_t ClientServer::write_global(uint32_t session_id, const string& data)
+{
+    return write_global(session_id, data.data(), data.length());
+}
 
 bool ClientServer::listen_for_child(const string sun_path)
 {

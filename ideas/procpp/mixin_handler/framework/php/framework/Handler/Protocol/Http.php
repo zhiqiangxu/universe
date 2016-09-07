@@ -49,6 +49,7 @@ class Http implements IHttp
     static private function prepareRequest($request)
     {
 
+        // prepare $_GET, $_POST, $_REQUEST
         $uri_info = parse_url($request->uri);
 
         $_SERVER['REQUEST_URI'] = $uri_info['path'];
@@ -57,6 +58,14 @@ class Http implements IHttp
 
         $_REQUEST = array_merge($_GET, $_POST);
 
+        // prepare $_COOKIE
+        if ($request->headers->has_key('Cookie')) {
+            $cookies = explode('; ', $request->headers->get('Cookie'));
+            foreach($cookies as $cookie) {
+                list ($cookie_name, $cookie_value) = explode('=', $cookie);
+                $_COOKIE[$cookie_name] = urldecode($cookie_value);
+            }
+        }
     }
 
     static function runMVC()

@@ -2,6 +2,7 @@
 namespace Handler\MVC;
 use Handler\Design\IModel;
 use Handler\Component\Utility;
+use Handler\Component\Cache;
 use Handler\ShardManager\MySQL as MySQLShardManager;
 
 
@@ -9,8 +10,19 @@ use Handler\ShardManager\MySQL as MySQLShardManager;
 class Model implements IModel
 {
 
+    const QUERY_CACHE_EXPIRE = 5*60;
+
     function find($parameters)
     {
+
+        if (!empty($parameters['query_cache'])) {
+
+            $cache_key = $this->getQueryCacheKey('find', $parameters);
+            $cache = Cache::getInstance()->get($cache_key);
+
+            if ( !($cache === false || is_null($cache)) ) return $cache;
+
+        }
 
         $shards = $this->getShardsForParameters($parameters);
 
@@ -27,7 +39,39 @@ class Model implements IModel
 
         }
 
+        if (!empty($parameters['query_cache'])) {
+
+            Cache::getInstance()->set($cache_key, $result, $this->getQueryCacheExpire($parameters));
+
+        }
+
         return $result;
+
+    }
+
+    private function getQueryCacheKey($type, $parameters)
+    {
+
+        $query_cache = $parameters['query_cache'];
+
+        if (is_string($query_cache)) return $query_cache;
+
+        if (isset($query_cache['key'])) return $query_cache['key'];
+
+        return get_class($this) . '_' . md5("$type:" . json_encode($parameters));
+
+    }
+
+    private function getQueryCacheExpire($parameters)
+    {
+
+        $query_cache = $parameters['query_cache'];
+
+        if (is_int($query_cache)) return $query_cache;
+
+        if (isset($query_cache['expire'])) return $query_cache['expire'];
+
+        return static::QUERY_CACHE_EXPIRE;
 
     }
 
@@ -66,6 +110,15 @@ class Model implements IModel
     function count($parameters)
     {
 
+        if (!empty($parameters['query_cache'])) {
+
+            $cache_key = $this->getQueryCacheKey('count', $parameters);
+            $cache = Cache::getInstance()->get($cache_key);
+
+            if ( !($cache === false || is_null($cache)) ) return $cache;
+
+        }
+
         $shards = $this->getShardsForParameters($parameters);
 
         $tables = $this->getTablesForParameters($parameters);
@@ -79,6 +132,10 @@ class Model implements IModel
             $shard_count = $db->count($tables, $parameters);
             if ($shard_count) $count += $shard_count;
 
+        }
+
+        if (!empty($parameters['query_cache'])) {
+            Cache::getInstance()->set($cache_key, $count, $this->getQueryCacheExpire($parameters));
         }
 
         return $count;

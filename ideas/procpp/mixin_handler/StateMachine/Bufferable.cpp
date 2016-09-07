@@ -36,7 +36,7 @@ bool Bufferable::has_buf(int id)
 string Bufferable::get_buf(int id, bool clear)
 {
 	auto buf = _buf[id];
-	if (id) _buf.erase(id);
+	if (clear) _buf.erase(id);
 
 	return buf;
 }

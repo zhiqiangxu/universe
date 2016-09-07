@@ -1,9 +1,9 @@
 #include "ReactHandler.h"
-#include <strings.h>//strncasecmp
+#include <string>
 
 string HttpResponse::to_string()
 {
-	string s = string(http_version) + " " + std::to_string(status_code) + " " + reason_phrase + "\r\n";
+	string s = http_version + " " + std::to_string(status_code) + " " + reason_phrase + "\r\n";
 	for (const auto& h : headers) {
 		s += h.first + ": " + h.second + "\r\n";
 	}
@@ -13,6 +13,51 @@ string HttpResponse::to_string()
 
 	return s;
 }
+
+
+HttpResponse::HttpResponse(const HttpRequest& r)
+    : status_code(200), reason_phrase("OK"), http_version(r.http_version)
+{
+}
+
+string HttpRequest::forward_packet(const HttpProviderAddress& target_address)
+{
+    auto parts = Utils::parse_url(uri);
+    parts["path"] = target_address.path;
+
+    auto request_uri = parts["path"];
+    if (parts.find("query") != parts.end()) request_uri += string("?") + parts["query"];
+
+    auto host_port = target_address.host;
+    if (target_address.port != 80) host_port += ":" + to_string(target_address.port);
+
+    string s = method + " " + request_uri + " " + http_version + "\r\n";
+    bool has_host = false;
+    for (const auto& h : headers) {
+        if (h.first == "Host") {
+            s += "Host: " + host_port + "\r\n";
+            has_host = true;
+        } else s += h.first + ": " + h.second + "\r\n";
+    }
+
+    if (!has_host) s += "Host: " + host_port + "\r\n";
+    s += "\r\n";
+    s += body;
+
+    return s;
+
+}
+
+bool HttpRequest::get_path(string& path)
+{
+    auto parts = Utils::parse_url(uri);
+    if (parts.find("path") == parts.end()) return false;
+
+    path = parts["path"];
+    return true;
+}
+
+
 
 void Http::on_connect(int client)
 {
@@ -115,24 +160,14 @@ void Http::on_message(int client, string message)
 			auto r = parse_request(client, s);
 			offset = s.offset();
 
-			HttpResponse resp;
+			HttpResponse resp(r);
 			_scheduler.fire<ON_REQUEST, decltype(r)&, decltype(resp)&>(r, resp);
 
 			auto output = resp.to_string();
 
 			_scheduler.write(client, output.data(), output.length());
 
-			auto it = r.headers.find(HttpToken::CONNECTION);
-			//close if required
-			if (it != r.headers.end() && it->second == "close") {
-				_scheduler.close(client);
-				return;
-			}
-			//default close if 1.0
-			if (it == r.headers.end() && r.http_version.substr(sizeof("HTTP/") - 1) == "1.0") {
-				_scheduler.close(client);
-				return;
-			}
+            if (close_if_necessary(r)) return;
 
 		} while (!s.end());
 
@@ -157,4 +192,21 @@ void Http::on_close(int client)
 {
 	L.debug_log("client " + to_string(client) + " closed");
 	erase_buf(client);
+}
+
+bool Http::close_if_necessary(HttpRequest& r)
+{
+    auto it = r.headers.find(HttpToken::CONNECTION);
+    //close if required
+    if (it != r.headers.end() && it->second == "close") {
+        _scheduler.close(r.client);
+        return true;
+    }
+    //default close if 1.0
+    if (it == r.headers.end() && r.http_version.substr(sizeof("HTTP/") - 1) == "1.0") {
+        _scheduler.close(r.client);
+        return true;
+    }
+
+    return false;
 }

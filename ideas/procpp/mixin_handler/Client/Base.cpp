@@ -49,4 +49,5 @@ namespace C {
 
 		return *std::next(_connect_addr_list.begin(),  _rr_index++ % _connect_addr_list.size());
 	}
+
 }

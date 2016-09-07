@@ -21,15 +21,16 @@ class Redis implements IRedis
 
     }
 
-    //kv
-    function set($key, $data)
+    // Bool TRUE if the command is successful.
+    // else null is returned.
+    function set($key, $data, $options = null)
     {
 
         for ($i = 0; $i < self::RETRY_TIMES; $i++) {
 
             try {
 
-                $success = $this->_redis->set($key, $data);
+                $success = is_null($options) ? $this->_redis->set($key, $data) : $this->_redis->set($key, $data, $options);
 
                 if (!$success) {
 
@@ -38,7 +39,7 @@ class Redis implements IRedis
 
                 }
 
-                return $success;
+                return true;
 
             } catch(\RedisException $e){
 
@@ -48,10 +49,13 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
+
+    // If key didn't exist, FALSE is returned. Otherwise, the value related to this key is returned.
+    // on RedisException, null is returned.
     function get($key)
     {
 
@@ -59,16 +63,7 @@ class Redis implements IRedis
 
             try {
 
-                $result = $this->_redis->get($key);
-
-                if ($result === false) {
-
-                    $this->connect();
-                    continue;
-
-                }
-
-                return $result;
+                return $this->_redis->get($key);
 
             } catch(\RedisException $e) {
 
@@ -78,10 +73,12 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
+    // Long Number of keys deleted.
+    // on RedisException null is returned.
     function del($key)
     {
 
@@ -99,10 +96,12 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
+    // TRUE in case of success
+    // else null is returned.
     function setNx($key, $data)
     {
 
@@ -119,7 +118,7 @@ class Redis implements IRedis
 
                 }
 
-                return $success;
+                return true;
 
             } catch(\RedisException $e) {
 
@@ -129,10 +128,12 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
+    // TRUE if the command is successful.
+    // else null is returned.
     function setEx($key, $data, $expire)
     {
 
@@ -140,7 +141,7 @@ class Redis implements IRedis
 
             try {
 
-                $success = $this->_redis->setex($key, $data, $expire);
+                $success = $this->_redis->setex($key, $expire, $data);
 
                 if (!$success) {
 
@@ -149,7 +150,7 @@ class Redis implements IRedis
 
                 }
 
-                return $success;
+                return true;
 
             } catch(\RedisException $e) {
 
@@ -159,10 +160,12 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
+    // TRUE if the command is successful.
+    // else null is returned.
     function setNxEx($key, $data, $expire)
     {
 
@@ -179,7 +182,7 @@ class Redis implements IRedis
 
                 }
 
-                return $success;
+                return true;
 
             } catch(\RedisException $e) {
 
@@ -189,10 +192,12 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
+    // the new value
+    // on RedisException null returned
     function incr($key, $by = 1)
     {
 
@@ -210,10 +215,12 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
+    // the new value
+    // on RedisException null returned
     function decr($key, $by = 1)
     {
 
@@ -231,11 +238,12 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
-    //hash
+    // LONG 1 if value didn't exist and was added successfully, 0 if the value was already present and was replaced
+    // else null returned
     function hSet($key, $attr, $value)
     {
 
@@ -262,10 +270,12 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
+    // Gets a value from the hash stored at key. If the hash table doesn't exist, or the key doesn't exist, FALSE is returned
+    // on RedisException null returned
     function hGet($key, $attr)
     {
 
@@ -283,10 +293,12 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
+    // Returns the whole hash, as an array of strings indexed by strings.
+    // on RedisException null returned
     function hGetAll($key)
     {
 
@@ -304,7 +316,7 @@ class Redis implements IRedis
 
         }
 
-        return false;
+        return null;
 
     }
 
@@ -313,15 +325,19 @@ class Redis implements IRedis
 
         for ($i = 0; $i < self::RETRY_TIMES; $i++) {
 
-            return call_user_func_array([$this->_redis, $method], $params);
+            try{
 
-         } catch(\RedisException $e) {
+                return call_user_func_array([$this->_redis, $method], $params);
 
-            $this->connect();
+            } catch(\RedisException $e) {
+
+                $this->connect();
+
+            }
 
         }
 
-        return false;
+        return null;
 
     }
 

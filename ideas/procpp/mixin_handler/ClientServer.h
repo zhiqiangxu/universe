@@ -15,6 +15,7 @@ public:
 	virtual bool send_session_id(int worker_fd, int client) = 0;
 	virtual bool recv_session_id(int worker_client, string& message) = 0;
 	virtual ssize_t write_global(uint32_t session_id, const void *buf, size_t count) = 0;
+	virtual ssize_t write_global(uint32_t session_id, const string& data) = 0;
 
 	virtual bool listen_for_child(uint16_t port) = 0;
 	virtual bool listen_for_child(const string sun_path) = 0;
@@ -40,6 +41,7 @@ public:
 	virtual bool send_session_id(int worker_fd, int client) override;//from master
 	virtual bool recv_session_id(int worker_client, string& message) override;//from worker
 	virtual ssize_t write_global(uint32_t session_id, const void *buf, size_t count) override;
+	virtual ssize_t write_global(uint32_t session_id, const string& data) override;
 
 	virtual bool listen_for_child(uint16_t port) override { return false; };
 	virtual bool listen_for_child(const string sun_path) override;

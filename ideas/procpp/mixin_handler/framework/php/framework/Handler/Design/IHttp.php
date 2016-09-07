@@ -1,13 +1,11 @@
 <?php
 namespace Handler\Design;
+use Handler\Design\IProtocol;
 
-interface IHttp
+interface IHttp extends IProtocol
 {
 
-    //用于CLI模式
-    static function handle($request, $response);
-    //用于fastcgi模式
+    //fastcgi模式
     static function runMVC();
-
 
 }

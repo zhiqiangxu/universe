@@ -6,6 +6,11 @@ interface IHandler
 
     static function getInstance();
     //cli
-    function dispatchHttp($request, $response);
+    function handleHttp($request, $response);
+    function handleSoa($request, $response);
+    function setServer($server);
+    function getSessionId($request);
+    function pushMessage($session_id, $string);
+    function pushSoaResponse($session_id, $json);
 
 }
