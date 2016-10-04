@@ -13,7 +13,7 @@ using namespace std;
 #endif
 
 #define DEBUG(exp, message) {\
-	if (!(exp)) L.error_exit(message); \
+    if (!(exp)) L.error_exit(message); \
 }
 
 
@@ -23,10 +23,10 @@ using namespace std;
 class IErrorHandler
 {
 public:
-	virtual void error_log(const string& message) = 0;
-	virtual void error_exit(const string& message) = 0;
-	virtual void debug_log(const string& message) = 0;
-	virtual void info_log(const string& message) = 0;
+    virtual void error_log(const string& message) = 0;
+    virtual void error_exit(const string& message) = 0;
+    virtual void debug_log(const string& message) = 0;
+    virtual void info_log(const string& message) = 0;
     virtual void assert(bool expression, const string& error_log) = 0;
 };
 
@@ -34,18 +34,18 @@ public:
 class ErrorHandler : public IErrorHandler
 {
 public:
-	static ErrorHandler& get_instance();
-	virtual void error_log(const string& message) override;
-	virtual void error_exit(const string& message) override;
-	virtual void debug_log(const string& message) override;
-	virtual void info_log(const string& message) override;
+    static ErrorHandler& get_instance();
+    virtual void error_log(const string& message) override;
+    virtual void error_exit(const string& message) override;
+    virtual void debug_log(const string& message) override;
+    virtual void info_log(const string& message) override;
     virtual void assert(bool expression, const string& error_log) override;
 
-	ErrorHandler(const ErrorHandler&) = delete;
-	void operator=(const ErrorHandler&) = delete;
+    ErrorHandler(const ErrorHandler&) = delete;
+    void operator=(const ErrorHandler&) = delete;
 private:
-	ErrorHandler() {};
-	
+    ErrorHandler() {};
+    
 };
 
 #if NEED_POP

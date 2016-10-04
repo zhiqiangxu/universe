@@ -3,25 +3,25 @@
 #include "Protocol/Client/Soa.h"
 
 namespace C {
-	class ISoa
-	{
-	};
+    class ISoa
+    {
+    };
 
-	class Soa : public ISoa, public Base
-	{
-	public:
-		//reused from Base
-		using Base::Base;
+    class Soa : public ISoa, public Base
+    {
+    public:
+        //reused from Base
+        using Base::Base;
 
-		//override Base
-		P::Client::Base& get_protocol();
+        //override Base
+        P::Client::Base& get_protocol();
 
-		//new stuff
-		virtual ~Soa();
+        //new stuff
+        virtual ~Soa();
 
-	protected:
-		P::Client::Soa* _p_proto = nullptr;
-	};
+    protected:
+        P::Client::Soa* _p_proto = nullptr;
+    };
 
 }
 

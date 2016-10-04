@@ -6,14 +6,14 @@ class IStateBuffer
 {
 public:
 
-	virtual void erase_state_buffer(int fd) = 0;
+    virtual void erase_state_buffer(int fd) = 0;
 };
 
 template <typename State>
 class StateBuffer : public IStateBuffer, public virtual Bufferable, public Stateful<State>
 {
 public:
-	virtual void erase_state_buffer(int fd) override;
+    virtual void erase_state_buffer(int fd) override;
 };
 
 #include "StateMachine/StateBuffer.hpp"

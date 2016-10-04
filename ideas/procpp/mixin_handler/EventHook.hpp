@@ -12,63 +12,63 @@ using namespace std;
 template <typename event_name, typename ... Args>
 class EventHook
 {
-	using CB_TYPE = function<void(Args...)>;
-	using SELF_TYPE = EventHook<event_name, Args...>;
+    using CB_TYPE = function<void(Args...)>;
+    using SELF_TYPE = EventHook<event_name, Args...>;
 
-	uint64_t _id;
-	map<uint64_t, CB_TYPE> _callbacks;
-	vector<uint64_t> _cancel_id;
-	bool _firing = false;
+    uint64_t _id;
+    map<uint64_t, CB_TYPE> _callbacks;
+    vector<uint64_t> _cancel_id;
+    bool _firing = false;
 
-	//declare
-	using MAP_TYPE = map<uintptr_t, SELF_TYPE>;
-	static MAP_TYPE S_instances;
+    //declare
+    using MAP_TYPE = map<uintptr_t, SELF_TYPE>;
+    static MAP_TYPE S_instances;
 
 protected:
 
-	EventHook() {}
+    EventHook() {}
 
 public:
 
-	static SELF_TYPE& get_instance(uintptr_t group)
-	{
-		if (S_instances.find(group) == S_instances.end()) S_instances.insert(typename MAP_TYPE::value_type(group, EventHook()));
+    static SELF_TYPE& get_instance(uintptr_t group)
+    {
+        if (S_instances.find(group) == S_instances.end()) S_instances.insert(typename MAP_TYPE::value_type(group, EventHook()));
 
-		return S_instances.find(group)->second;
-	}
+        return S_instances.find(group)->second;
+    }
 
-	template<typename CB>
-	uint64_t  attach(CB&& cb)
-	{
+    template<typename CB>
+    uint64_t  attach(CB&& cb)
+    {
 
-		auto id = _id++;
-		_callbacks[id] = cb;
+        auto id = _id++;
+        _callbacks[id] = cb;
 
-		//Utils::print_types<event_name, Args...>();
-		//cout << "[attach] ncallbacks = " + to_string(_callbacks.size()) << endl;
+        //Utils::print_types<event_name, Args...>();
+        //cout << "[attach] ncallbacks = " + to_string(_callbacks.size()) << endl;
 
-		return id;
-	}
+        return id;
+    }
 
-	void fire(Args... args)
-	{
-		//Utils::print_types<event_name, Args...>();
-		//cout << "[fire] ncallbacks = " + to_string(_callbacks.size()) << endl;
+    void fire(Args... args)
+    {
+        //Utils::print_types<event_name, Args...>();
+        //cout << "[fire] ncallbacks = " + to_string(_callbacks.size()) << endl;
 
-		_firing = true;
-		for (auto& it : _callbacks)
-			it.second(args...);
+        _firing = true;
+        for (auto& it : _callbacks)
+            it.second(args...);
 
-		_firing = false;
+        _firing = false;
 
-		for (auto id : _cancel_id) _callbacks.erase(id);
-	}
+        for (auto id : _cancel_id) _callbacks.erase(id);
+    }
 
-	void detach(uint64_t id)
-	{
-		if (_firing) _cancel_id.push_back(id);
-		else _callbacks.erase(id);
-	}
+    void detach(uint64_t id)
+    {
+        if (_firing) _cancel_id.push_back(id);
+        else _callbacks.erase(id);
+    }
 
 };
 
@@ -87,45 +87,45 @@ map<uintptr_t, EventHook<ev, Args...>> EventHook<ev, Args...>::S_instances;
 template <typename event_name, typename ... Args>
 class EventHookGlobal
 {
-	using CB_TYPE = function<void(Args...)>;
-	using SELF_TYPE = EventHookGlobal<event_name, Args...>;
+    using CB_TYPE = function<void(Args...)>;
+    using SELF_TYPE = EventHookGlobal<event_name, Args...>;
 
-	uint64_t _id;
-	map<uint64_t, CB_TYPE> _callbacks;
+    uint64_t _id;
+    map<uint64_t, CB_TYPE> _callbacks;
 
-	//declare
-	static SELF_TYPE* S_instance;
+    //declare
+    static SELF_TYPE* S_instance;
 
-	EventHookGlobal() {}
+    EventHookGlobal() {}
 
 public:
 
-	static SELF_TYPE& get_instance()
-	{
-		if (S_instance == nullptr) S_instance = new EventHookGlobal;
+    static SELF_TYPE& get_instance()
+    {
+        if (S_instance == nullptr) S_instance = new EventHookGlobal;
 
-		return *S_instance;
-	}
+        return *S_instance;
+    }
 
-	template<typename CB>
-	uint64_t  attach(CB&& cb)
-	{
-		auto id = _id++;
-		_callbacks[id] = cb;
+    template<typename CB>
+    uint64_t  attach(CB&& cb)
+    {
+        auto id = _id++;
+        _callbacks[id] = cb;
 
-		return id;
-	}
+        return id;
+    }
 
-	void fire(Args... args)
-	{
-		for (auto& it : _callbacks)
-			it.second(args...);
-	}
+    void fire(Args... args)
+    {
+        for (auto& it : _callbacks)
+            it.second(args...);
+    }
 
-	void detach(uint64_t id)
-	{
-		_callbacks.erase(id);
-	}
+    void detach(uint64_t id)
+    {
+        _callbacks.erase(id);
+    }
 };
 
 //define

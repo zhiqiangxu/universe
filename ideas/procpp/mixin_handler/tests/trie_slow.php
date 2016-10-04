@@ -2,7 +2,7 @@
 
 function doGenerateHighlight(Array &$keywords, $content, $caseInsensitive = false)
 {
-	$time = microtime(true);
+    $time = microtime(true);
     $exp = '/'
     . implode('|', array_map('preg_quote', $keywords))
     . '/' . ($caseInsensitive ? 'i' : '');
@@ -99,22 +99,22 @@ for ($i = 0; $i < 1000; $i++) {
     $keywords[] = uniqid();
 }
 usort($keywords, function($a, $b) {
-	return mb_strlen($b) - mb_strlen($a);
+    return mb_strlen($b) - mb_strlen($a);
 });
 
 $s = str_repeat('中国人abc isn cd', 100);
 
 for ($i = 0; $i < 100; $i++) {
-	$time = microtime(true);
+    $time = microtime(true);
 
-	var_dump(doGenerateHighlight($keywords, $s));
+    var_dump(doGenerateHighlight($keywords, $s));
 
-	/*
-	$trie = new Trie($keywords);
-	var_dump($trie->search($s));
-	*/
+    /*
+    $trie = new Trie($keywords);
+    var_dump($trie->search($s));
+    */
 
-	echo "tooks " . (microtime(true) - $time) . "\r\n";
+    echo "tooks " . (microtime(true) - $time) . "\r\n";
 }
 
 

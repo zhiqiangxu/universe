@@ -103,7 +103,7 @@ if ( !empty($options['r'])  ) {
 $cmd =  "git tag -f $squash_tag " . (tag_exists($last_tag) ? $last_tag : $start_tag) . " && " .
         "git checkout -q $squash_tag && " .
         "git merge --squash $review_branch && " .
-        "git commit -m '$review_branch    " . get_short_commit($review_branch) . "'"
+        "git commit -m '$review_branch    " . get_short_commit($review_branch) . " @'"
         ;
 
 shell_exec_realtime_output($cmd);

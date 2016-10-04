@@ -42,4 +42,8 @@ class Controller implements IController
     {
         exit('NOT SUPPORTED');
     }
+
+    function sessionStart()
+    {
+    }
 }

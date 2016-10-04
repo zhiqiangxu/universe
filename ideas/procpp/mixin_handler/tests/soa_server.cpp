@@ -2,14 +2,13 @@
 
 int main()
 {
-	SoaClientServer server;
+    SoaClientServer server(8082);
 
     server.on<Soa::ON_REQUEST>(Utils::to_function([&server](SoaRequest& req, SoaResponse& resp) {
-		resp.json = req.json;
-	}));
+        resp.json = req.json;
+    }));
 
-	server.listen(8082);
-	server.start();
+    server.event_loop();
 
-	return 0;
+    return 0;
 }

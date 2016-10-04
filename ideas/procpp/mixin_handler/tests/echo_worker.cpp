@@ -3,17 +3,12 @@
 
 int main()
 {
-	ClientServer server;
-	ProcessSessionWorker<Echo> worker(server, 2);
-	server.listen(8082, EventManager::EventCB{
-		{
-			EventType::READ, EventManager::CB([&worker] (int fd) {
-				worker.handle(fd);
-			})
-		}
-	});
-	
-	server.start();
+    ClientServer server;
+    Echo proto(server);
+    server.listen(8082, proto);
+    server.set_worker_num(4);
 
-	return 0;
+    server.event_loop();
+
+    return 0;
 }

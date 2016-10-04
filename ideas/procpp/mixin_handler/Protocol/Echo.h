@@ -9,8 +9,8 @@ public:
 class Echo : public Protocol, public IEcho
 {
 public:
-	using Protocol::Protocol;
+    using Protocol::Protocol;
 
-	virtual void on_message(int fd, string message) override;
-	virtual void on_close(int fd) override;
+    virtual void on_message(int fd, string message) override;
+    virtual void on_close(int fd) override;
 };

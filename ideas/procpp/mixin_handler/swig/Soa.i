@@ -18,12 +18,12 @@ public:
 };
 
 
-class SoaClientServer
+class SoaClientServer : public ClientServer
 {
 public:
 
-    bool listen(uint16_t port, int domain = AF_INET);
-    void start();
+    SoaClientServer(uint16_t port, int domain = AF_INET);
+
 };
 
 %feature("director") SoaCallback;
@@ -41,7 +41,7 @@ public:
         SoaCallback* _callback;
 
     public:
-        SoaServer() : _callback(nullptr)
+        SoaServer(uint16_t port, int domain = AF_INET) : SoaClientServer(port, domain), _callback(nullptr)
         {
             EventManager::on<Soa::ON_REQUEST>(Utils::to_function([this](SoaRequest& request, SoaResponse& response) {
                 if (_callback) _callback->run(request, response);

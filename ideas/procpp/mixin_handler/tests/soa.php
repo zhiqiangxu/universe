@@ -14,12 +14,11 @@ $callback = new PhpCallback();
 $s=new SoaServer();
 $s->on('request', $callback);
 $s->listen(8082);
-$s->start();
+$s->event_loop();
 */
 
-$s=new SoaProcessDispatcherServer();
+$s=new SoaServer(8082);
 $s->on('request', $callback);
-$s->dispatch(4);
-$s->listen(8082);
-$s->start();
+$s->set_worker_num(4);
+$s->event_loop();
 

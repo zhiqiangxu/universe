@@ -2,12 +2,12 @@
 
 int main()
 {
-	ClientServer server;
-	U::Echo uproto(server);
+    ClientServer server;
+    U::Echo uproto(server);
 
-	server.listen_u(8080, uproto);
+    server.listen_u(8080, uproto);
 
-	server.start();
+    server.event_loop();
 
-	return 0;
+    return 0;
 }

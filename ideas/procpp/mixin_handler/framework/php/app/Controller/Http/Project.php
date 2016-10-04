@@ -12,6 +12,8 @@ class Project extends Controller
 
     function index()
     {
+        $this->sessionStart();
+
         $page = empty($_GET['page']) ? self::DEFAULT_PAGE : $_GET['page'];
         $page_size = empty($_GET['page_size']) ? self::DEFAULT_PAGE_SIZE : $_GET['page_size'];
 
@@ -26,7 +28,6 @@ class Project extends Controller
             'total'     => $total,
             'project_list' => json_encode($project_list),
         ]);
-        $this->header("header", "value");
         $this->outputHtml('project/index.html');
     }
 }

@@ -10,10 +10,10 @@ class Global : public Protocol
 {
 public:
 
-	using Protocol::Protocol;
-	virtual ~Global() {}
+    using Protocol::Protocol;
+    virtual ~Global() {}
 
-	virtual void on_connect(int child) override;
-	virtual void on_message(int child, string message) override;
-	virtual void on_close(int child) override;
+    virtual void on_connect(int child) override;
+    virtual void on_message(int child, string message) override;
+    virtual void on_close(int child) override;
 };

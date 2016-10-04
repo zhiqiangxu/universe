@@ -28,10 +28,9 @@ class PhpCallback extends HttpCallback {
 
 $callback = new PhpCallback();
 
-$s=new HttpServer();
+$s=new HttpServer(8082);
 $s->on('request', $callback);
-$s->listen(8082);
-$s->start();
+$s->event_loop();
 
 ```
 
@@ -45,10 +44,9 @@ class PythonCallback(ReactHandler.HttpCallback):
 
 callback = PythonCallback()
 
-s = ReactHandler.HttpServer()
+s = ReactHandler.HttpServer(8082)
 s.on('request', callback)
-s.listen(8082)
-s.start()
+s.event_loop()
 ```
 
 or in c++ directly:
@@ -57,16 +55,15 @@ or in c++ directly:
 
 int main()
 {
-	HttpServer server;
+    HttpServer server(8082);
 
     server.on<Http::ON_REQUEST>(Utils::to_function([&server](HttpRequest& request, HttpResponse& response) {
-		response.body = "content from c++\r\n";
-	}));
+        response.body = "content from c++\r\n";
+    }));
 
-	server.listen(8082);
-	server.start();
+    server.event_loop();
 
-	return 0;
+    return 0;
 }
 ```
 
@@ -84,10 +81,9 @@ class PhpCallback extends WebSocketCallback {
 
 $callback = new PhpCallback();
 
-$s=new WebSocketServer();
+$s=new WebSocketServer(8082);
 $s->on('message', $callback);
-$s->listen(8082);
-$s->start();
+$s->event_loop();
 ```
 
 or in python:
@@ -102,10 +98,9 @@ class PythonCallback(ReactHandler.WebSocketCallback):
 
 callback = PythonCallback()
 
-s = ReactHandler.WebSocketServer()
+s = ReactHandler.WebSocketServer(8082)
 s.on('message', callback)
-s.listen(8082)
-s.start()
+s.event_loop()
 
 ```
 
@@ -115,15 +110,14 @@ or in c++ directly:
 
 int main()
 {
-	WebSocketServer s;
+    WebSocketServer s(8082);
 
-	s.on<WebSocket::ON_MESSAGE>(Utils::to_function([](WebSocketMessage& m, WebSocket& ws) {
+    s.on<WebSocket::ON_MESSAGE>(Utils::to_function([](WebSocketMessage& m, WebSocket& ws) {
         if (m.opcode == ws.OPCODE_TEXT_FRAME) ws.send(m.client, m.payload);
-	}));
+    }));
 
-	s.listen(8082);
-	s.start();
-	return 0;
+    s.event_loop();
+    return 0;
 }
 ```
 
@@ -132,18 +126,16 @@ int main()
 <?php
 require("ReactHandler.php");
 
-$s=new SocksServer();
-$s->listen(8082);
-$s->start();
+$s=new SocksServer(8082);
+$s->event_loop();
 ```
 
 or in python:
 ```
 import ReactHandler
 
-s = ReactHandler.SocksServer()
-s.listen(8082)
-s.start()
+s = ReactHandler.SocksServer(8082)
+s.event_loop()
 
 ```
 
@@ -153,17 +145,16 @@ or in c++ directly:
 
 int main()
 {
-	SocksServer server;
-	server.listen(8082);
-	server.start();
+    SocksServer server(8082);
+    server.event_loop();
 
-	return 0;
+    return 0;
 }
 ```
 
 ### Try out
 ```
-#install swig-3.0.8 cmake openssl g++-5.2.1 manually
+#install swig-3.0.8 cmake-3.4.1 openssl g++-5.2.1 manually
 git clone https://github.com/zhiqiangxu/universe
 cd universe/ideas/procpp/mixin_handler
 ./build.sh
@@ -178,11 +169,10 @@ php tests/socks.php
 
 ##Advanced feature
 
-You can choose 3 worker modes:
+You can choose 2 worker modes:
 
-- Base mode:  master and worker in a **single** process.
-- Multiple process mode: master dispatches request to multiple worker processes in the **same** host.
-- Remote worker mode: master dispatches request to multiple worker processes in **multiple** host.
+- Base mode:  single process mode.
+- Multiple process mode.
 
 ## Feedback
 - email：<652732310@qq.com>

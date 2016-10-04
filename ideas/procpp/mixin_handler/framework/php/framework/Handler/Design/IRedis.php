@@ -18,4 +18,7 @@ interface IRedis
     function hGet($key, $attr);
     function hGetAll($key);
 
+    //list
+    function rPush($key, $data);
+    function lPop($key);
 }

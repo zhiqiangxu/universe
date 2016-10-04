@@ -9,10 +9,10 @@ for ($i = 0; $i < 1000; $i++) {
 $s = str_repeat('中国人abc isn cd', 100);
 
 for ($i = 0; $i < 100; $i++) {
-	$time = microtime(true);
+    $time = microtime(true);
 
-	$trie = new Trie($keywords);
-	var_dump($trie->search($s));
+    $trie = new Trie($keywords);
+    var_dump($trie->search($s));
 
-	echo "tooks " . (microtime(true) - $time) . "\r\n";
+    echo "tooks " . (microtime(true) - $time) . "\r\n";
 }

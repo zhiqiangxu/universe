@@ -74,7 +74,7 @@ void HttpGateway::on_message(int client, string message)
             })
         },
 
-    }, true);
+    }, true, target_address.ssl);
 
 
     if (remote_fd == -1) {
@@ -126,18 +126,22 @@ void HttpGateway::on_remote_message(int remote_fd, string message, int client)
         switch (e) {
             case ReaderException::AG:
             {
+                L.debug_log("response ag");
                 need_buf(remote_fd, message, true);
                 return;
             }
             case ReaderException::NG:
             {
+                L.debug_log("response ng, close remote " + to_string(remote_fd) + "...");
                 _server.close(remote_fd);
                 return;
             }
         }
     }
 
-    _server.write(client, r.to_string());
+    _server.fire<ON_RESPONSE, HttpRequest&, HttpResponse&>(_forward_info[client].first, r);
+    L.debug_log("response length = " + to_string(r.to_string().length()));
+    L.debug_log("writen length = " + to_string(_server.write(client, r.to_string())));
     if (close_if_necessary(_forward_info[client].first)) return;
 
     close_remote(remote_fd);//TODO reuse remote_fd
@@ -152,7 +156,9 @@ void HttpGateway::on_remote_message(int remote_fd, string message, int client)
 void HttpGateway::on_remote_close(int remote_fd, int client)
 {
     //如果不是主动关闭remote_fd,则关闭client
-    if (_r2c.find(remote_fd) != _r2c.end()) _server.close(client);
+    if (_r2c.find(remote_fd) != _r2c.end()) {
+        _server.close(client);
+    }
     else _r2c.erase(remote_fd);
 
     erase_buf(remote_fd);
@@ -169,9 +175,9 @@ void HttpGateway::close_remote(int remote_fd)
 HttpResponse HttpGateway::parse_response(int remote_fd, StreamReader& s)
 {
 
-	HttpResponse r;
+    HttpResponse r;
 
-	/*
+    /*
 
    Response      = Status-Line               ; Section 6.1
                    *(( general-header        ; Section 4.5
@@ -180,70 +186,76 @@ HttpResponse HttpGateway::parse_response(int remote_fd, StreamReader& s)
                    CRLF
                    [ message-body ]          ; Section 7.2
 
-	*/
-	// Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
-	s.read_until(" ", r.http_version);
-	s.read_up(" ");
+    */
+    // Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+    s.read_until(" ", r.http_version);
+    s.read_up(" ");
 
     string status;
-	s.read_until(" ", status);
+    s.read_until(" ", status);
     r.status_code = atoi(status.c_str());
-	s.read_up(" ");
+    s.read_up(" ");
 
-	s.read_until("\r", r.reason_phrase);
+    s.read_until("\r", r.reason_phrase);
 
-	char crlf[2];
-	s.read_size(sizeof(crlf), crlf);
-	s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
+    char crlf[2];
+    s.read_size(sizeof(crlf), crlf);
+    s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
 
 /*
    message-header = field-name ":" [ field-value ]
    field-name     = token
    field-value    = *( field-content | LWS )
    field-content  = <the OCTETs making up the field-value
-					and consisting of either *TEXT or combinations
-					of token, separators, and quoted-string>
+                    and consisting of either *TEXT or combinations
+                    of token, separators, and quoted-string>
 */
-	int content_length = -1;
-	while (true) {
-		char next_char;
-		s.pread_plain(next_char);
-		if (next_char == '\r') break;
+    int content_length = -1;
+    bool is_chunked = false;
+    while (true) {
+        char next_char;
+        s.pread_plain(next_char);
+        if (next_char == '\r') break;
 
-		string header_name;
-		s.read_until(":", header_name, true);
-
-
-		// LWS            = [CRLF] 1*( SP | HT )
-		//TODO 简化版，未严格对应
-		s.read_plain(next_char);
-		s.fail_if(next_char != ' ');
+        string header_name;
+        s.read_until(":", header_name, true);
 
 
+        // LWS            = [CRLF] 1*( SP | HT )
+        //TODO 简化版，未严格对应
+        s.read_plain(next_char);
+        s.fail_if(next_char != ' ');
 
-		//TODO support Transfer-Encoding
-		s.fail_if(header_name == "Transfer-Encoding");
 
-		//field-content
-		//TODO 简化版，未严格对应
-		string header_value;
-		s.read_until("\r", header_value);
-		r.headers.push_back(make_pair(header_name, header_value));
+        //field-content
+        //TODO 简化版，未严格对应
+        string header_value;
+        s.read_until("\r", header_value);
+        s.read_size(sizeof(crlf), crlf);
+        s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
 
-		if (header_name == "Content-Length") content_length = atoi(header_value.c_str());
+        // Transfer-Encoding只有chunked方式
+        if (header_name == "Transfer-Encoding") {
+            s.fail_if(header_value != "chunked");
+            is_chunked = true;
+            continue;
+        }
 
-		s.read_size(sizeof(crlf), crlf);
-		s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
+        r.headers.push_back(make_pair(header_name, header_value));
 
-	}
-	s.read_size(sizeof(crlf), crlf);
-	s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
+        if (header_name == "Content-Length") content_length = atoi(header_value.c_str());
 
-	if (content_length > 0) {
-		r.body.resize(content_length);
-		s.read_size(content_length, &r.body[0]);
-	}
+    }
+    s.read_size(sizeof(crlf), crlf);
+    s.fail_if(strncmp(crlf, "\r\n", 2) != 0);
 
-	return r;
+    if (content_length > 0) {
+        r.body.resize(content_length);
+        s.read_size(content_length, &r.body[0]);
+    } else if (is_chunked) {
+        parse_chunked_body(s, r);
+    } else s.fail_if(true);//Content-Length或者chunked，二选一
+
+    return r;
 
 }

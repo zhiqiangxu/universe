@@ -50,9 +50,9 @@
 class Trie
 {
 public:
-	Trie(const vector<string>& keywords);
+    Trie(const vector<string>& keywords);
 
-	vector<string> search(const string& text, bool no_overlap = true);
+    vector<string> search(const string& text, bool no_overlap = true);
 
 };
 

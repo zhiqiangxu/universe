@@ -341,6 +341,47 @@ class Redis implements IRedis
 
     }
 
+    // Adds the string value to the tail (right) of the list. Creates the list if the key didn't exist.
+    // If the key exists and is not a list, FALSE is returned.
+    function rPush($key, $data)
+    {
+
+        for ($i = 0; $i < self::RETRY_TIMES; $i++) {
+
+            try{
+
+                return $this->_redis->rPush( $key, $data );
+
+            } catch(\RedisException $e) {
+
+                $this->connect();
+
+            }
+
+        }
+
+    }
+
+    // STRING if command executed successfully BOOL FALSE in case of failure (empty list)
+    function lPop($key)
+    {
+
+        for ($i = 0; $i < self::RETRY_TIMES; $i++) {
+
+            try{
+
+                return $this->_redis->lPop( $key );
+
+            } catch(\RedisException $e) {
+
+                $this->connect();
+
+            }
+
+        }
+
+    }
+
     private function connect()
     {
 

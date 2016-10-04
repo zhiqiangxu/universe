@@ -202,6 +202,66 @@ class StringPairVector {
 	}
 }
 
+class ClientServer {
+	public $_cPtr=null;
+	protected $_pData=array();
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
+		$this->_pData[$var] = $value;
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
+		return $this->_pData[$var];
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return array_key_exists($var, $this->_pData);
+	}
+
+	function listen($port,$proto,$domain=null) {
+		switch (func_num_args()) {
+		case 2: $r=ClientServer_listen($this->_cPtr,$port,$proto); break;
+		default: $r=ClientServer_listen($this->_cPtr,$port,$proto,$domain);
+		}
+		return $r;
+	}
+
+	function event_loop() {
+		ClientServer_event_loop($this->_cPtr);
+	}
+
+	function set_worker_num($worker_num) {
+		ClientServer_set_worker_num($this->_cPtr,$worker_num);
+	}
+
+	function set_parent($host,$port) {
+		return ClientServer_set_parent($this->_cPtr,$host,$port);
+	}
+
+	function daemonize($std_out="/tmp/stdout.log",$std_err="/tmp/stderr.log",$std_in="/dev/null") {
+		ClientServer_daemonize($this->_cPtr,$std_out,$std_err,$std_in);
+	}
+
+	function write_global($session_id,$data) {
+		return ClientServer_write_global($this->_cPtr,$session_id,$data);
+	}
+
+	function get_session_id($client) {
+		return ClientServer_get_session_id($this->_cPtr,$client);
+	}
+
+	function __construct($res=null) {
+		if (is_resource($res) && get_resource_type($res) === '_p_ClientServer') {
+			$this->_cPtr=$res;
+			return;
+		}
+		$this->_cPtr=new_ClientServer();
+	}
+}
+
 class WebSocketMessage {
 	public $_cPtr=null;
 	protected $_pData=array();
@@ -287,24 +347,15 @@ class WebSocketClientServer {
 		return array_key_exists($var, $this->_pData);
 	}
 
-	function listen($port,$domain=null) {
-		switch (func_num_args()) {
-		case 1: $r=WebSocketClientServer_listen($this->_cPtr,$port); break;
-		default: $r=WebSocketClientServer_listen($this->_cPtr,$port,$domain);
-		}
-		return $r;
-	}
-
-	function start() {
-		WebSocketClientServer_start($this->_cPtr);
-	}
-
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_WebSocketClientServer') {
-			$this->_cPtr=$res;
+	function __construct($port,$domain=null) {
+		if (is_resource($port) && get_resource_type($port) === '_p_WebSocketClientServer') {
+			$this->_cPtr=$port;
 			return;
 		}
-		$this->_cPtr=new_WebSocketClientServer();
+		switch (func_num_args()) {
+		case 1: $this->_cPtr=new_WebSocketClientServer($port); break;
+		default: $this->_cPtr=new_WebSocketClientServer($port,$domain);
+		}
 	}
 }
 
@@ -363,12 +414,15 @@ class WebSocketServer extends WebSocketClientServer {
 		return WebSocketClientServer::__isset($var);
 	}
 
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_WebSocketServer') {
-			$this->_cPtr=$res;
+	function __construct($port,$domain=null) {
+		if (is_resource($port) && get_resource_type($port) === '_p_WebSocketServer') {
+			$this->_cPtr=$port;
 			return;
 		}
-		$this->_cPtr=new_WebSocketServer();
+		switch (func_num_args()) {
+		case 1: $this->_cPtr=new_WebSocketServer($port); break;
+		default: $this->_cPtr=new_WebSocketServer($port,$domain);
+		}
 	}
 
 	function on($event,$cb) {
@@ -376,43 +430,63 @@ class WebSocketServer extends WebSocketClientServer {
 	}
 }
 
-class HttpClientServer {
+class HttpClientServer extends ClientServer {
 	public $_cPtr=null;
-	protected $_pData=array();
 
 	function __set($var,$value) {
 		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
-		$this->_pData[$var] = $value;
+		ClientServer::__set($var,$value);
 	}
 
 	function __get($var) {
 		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
-		return $this->_pData[$var];
+		return ClientServer::__get($var);
 	}
 
 	function __isset($var) {
 		if ($var === 'thisown') return true;
-		return array_key_exists($var, $this->_pData);
+		return ClientServer::__isset($var);
 	}
 
-	function listen($port,$domain=null) {
-		switch (func_num_args()) {
-		case 1: $r=HttpClientServer_listen($this->_cPtr,$port); break;
-		default: $r=HttpClientServer_listen($this->_cPtr,$port,$domain);
-		}
-		return $r;
-	}
-
-	function start() {
-		HttpClientServer_start($this->_cPtr);
-	}
-
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_HttpClientServer') {
-			$this->_cPtr=$res;
+	function __construct($port,$domain=null) {
+		if (is_resource($port) && get_resource_type($port) === '_p_HttpClientServer') {
+			$this->_cPtr=$port;
 			return;
 		}
-		$this->_cPtr=new_HttpClientServer();
+		switch (func_num_args()) {
+		case 1: $this->_cPtr=new_HttpClientServer($port); break;
+		default: $this->_cPtr=new_HttpClientServer($port,$domain);
+		}
+	}
+}
+
+class HttpGatewayClientServer extends ClientServer {
+	public $_cPtr=null;
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
+		ClientServer::__set($var,$value);
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
+		return ClientServer::__get($var);
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return ClientServer::__isset($var);
+	}
+
+	function __construct($port,$domain=null) {
+		if (is_resource($port) && get_resource_type($port) === '_p_HttpGatewayClientServer') {
+			$this->_cPtr=$port;
+			return;
+		}
+		switch (func_num_args()) {
+		case 1: $this->_cPtr=new_HttpGatewayClientServer($port); break;
+		default: $this->_cPtr=new_HttpGatewayClientServer($port,$domain);
+		}
 	}
 }
 
@@ -608,6 +682,10 @@ class HttpGatewayCallback {
 		HttpGatewayCallback_on_request_uri($this->_cPtr,$req,$target_address,$ok);
 	}
 
+	function on_response($request,$response) {
+		HttpGatewayCallback_on_response($this->_cPtr,$request,$response);
+	}
+
 	function __construct($res=null) {
 		if (is_resource($res) && get_resource_type($res) === '_p_HttpGatewayCallback') {
 			$this->_cPtr=$res;
@@ -640,16 +718,53 @@ class HttpServer extends HttpClientServer {
 		return HttpClientServer::__isset($var);
 	}
 
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_HttpServer') {
-			$this->_cPtr=$res;
+	function __construct($port,$domain=null) {
+		if (is_resource($port) && get_resource_type($port) === '_p_HttpServer') {
+			$this->_cPtr=$port;
 			return;
 		}
-		$this->_cPtr=new_HttpServer();
+		switch (func_num_args()) {
+		case 1: $this->_cPtr=new_HttpServer($port); break;
+		default: $this->_cPtr=new_HttpServer($port,$domain);
+		}
 	}
 
 	function on($event,$cb) {
 		HttpServer_on($this->_cPtr,$event,$cb);
+	}
+}
+
+class HttpGatewayServer extends HttpGatewayClientServer {
+	public $_cPtr=null;
+
+	function __set($var,$value) {
+		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
+		HttpGatewayClientServer::__set($var,$value);
+	}
+
+	function __get($var) {
+		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
+		return HttpGatewayClientServer::__get($var);
+	}
+
+	function __isset($var) {
+		if ($var === 'thisown') return true;
+		return HttpGatewayClientServer::__isset($var);
+	}
+
+	function __construct($port,$domain=null) {
+		if (is_resource($port) && get_resource_type($port) === '_p_HttpGatewayServer') {
+			$this->_cPtr=$port;
+			return;
+		}
+		switch (func_num_args()) {
+		case 1: $this->_cPtr=new_HttpGatewayServer($port); break;
+		default: $this->_cPtr=new_HttpGatewayServer($port,$domain);
+		}
+	}
+
+	function register_callback($cb) {
+		HttpGatewayServer_register_callback($this->_cPtr,$cb);
 	}
 }
 
@@ -672,24 +787,15 @@ class SocksClientServer {
 		return array_key_exists($var, $this->_pData);
 	}
 
-	function listen($port,$domain=null) {
-		switch (func_num_args()) {
-		case 1: $r=SocksClientServer_listen($this->_cPtr,$port); break;
-		default: $r=SocksClientServer_listen($this->_cPtr,$port,$domain);
-		}
-		return $r;
-	}
-
-	function start() {
-		SocksClientServer_start($this->_cPtr);
-	}
-
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_SocksClientServer') {
-			$this->_cPtr=$res;
+	function __construct($port,$domain=null) {
+		if (is_resource($port) && get_resource_type($port) === '_p_SocksClientServer') {
+			$this->_cPtr=$port;
 			return;
 		}
-		$this->_cPtr=new_SocksClientServer();
+		switch (func_num_args()) {
+		case 1: $this->_cPtr=new_SocksClientServer($port); break;
+		default: $this->_cPtr=new_SocksClientServer($port,$domain);
+		}
 	}
 }
 
@@ -710,13 +816,8 @@ class SocksServer extends SocksClientServer {
 		if ($var === 'thisown') return true;
 		return SocksClientServer::__isset($var);
 	}
-
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_SocksServer') {
-			$this->_cPtr=$res;
-			return;
-		}
-		$this->_cPtr=new_SocksServer();
+	function __construct($h) {
+		$this->_cPtr=$h;
 	}
 }
 
@@ -790,43 +891,33 @@ class SoaResponse {
 	}
 }
 
-class SoaClientServer {
+class SoaClientServer extends ClientServer {
 	public $_cPtr=null;
-	protected $_pData=array();
 
 	function __set($var,$value) {
 		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
-		$this->_pData[$var] = $value;
+		ClientServer::__set($var,$value);
 	}
 
 	function __get($var) {
 		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
-		return $this->_pData[$var];
+		return ClientServer::__get($var);
 	}
 
 	function __isset($var) {
 		if ($var === 'thisown') return true;
-		return array_key_exists($var, $this->_pData);
+		return ClientServer::__isset($var);
 	}
 
-	function listen($port,$domain=null) {
-		switch (func_num_args()) {
-		case 1: $r=SoaClientServer_listen($this->_cPtr,$port); break;
-		default: $r=SoaClientServer_listen($this->_cPtr,$port,$domain);
-		}
-		return $r;
-	}
-
-	function start() {
-		SoaClientServer_start($this->_cPtr);
-	}
-
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_SoaClientServer') {
-			$this->_cPtr=$res;
+	function __construct($port,$domain=null) {
+		if (is_resource($port) && get_resource_type($port) === '_p_SoaClientServer') {
+			$this->_cPtr=$port;
 			return;
 		}
-		$this->_cPtr=new_SoaClientServer();
+		switch (func_num_args()) {
+		case 1: $this->_cPtr=new_SoaClientServer($port); break;
+		default: $this->_cPtr=new_SoaClientServer($port,$domain);
+		}
 	}
 }
 
@@ -885,12 +976,15 @@ class SoaServer extends SoaClientServer {
 		return SoaClientServer::__isset($var);
 	}
 
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_SoaServer') {
-			$this->_cPtr=$res;
+	function __construct($port,$domain=null) {
+		if (is_resource($port) && get_resource_type($port) === '_p_SoaServer') {
+			$this->_cPtr=$port;
 			return;
 		}
-		$this->_cPtr=new_SoaServer();
+		switch (func_num_args()) {
+		case 1: $this->_cPtr=new_SoaServer($port); break;
+		default: $this->_cPtr=new_SoaServer($port,$domain);
+		}
 	}
 
 	function on($event,$cb) {
@@ -1006,7 +1100,7 @@ class SoaClient extends Soa {
 	}
 }
 
-class SoaProcessDispatcherClientServer {
+class Proxy {
 	public $_cPtr=null;
 	protected $_pData=array();
 
@@ -1025,36 +1119,16 @@ class SoaProcessDispatcherClientServer {
 		return array_key_exists($var, $this->_pData);
 	}
 
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_DispatcherClientServerT_DispatchMode__ProcessSession_Soa_t') {
-			$this->_cPtr=$res;
+	function __construct($server,$l) {
+		if (is_resource($server) && get_resource_type($server) === '_p_Proxy') {
+			$this->_cPtr=$server;
 			return;
 		}
-		$this->_cPtr=new_SoaProcessDispatcherClientServer();
-	}
-
-	function listen($port,$domain=null) {
-		switch (func_num_args()) {
-		case 1: $r=SoaProcessDispatcherClientServer_listen($this->_cPtr,$port); break;
-		default: $r=SoaProcessDispatcherClientServer_listen($this->_cPtr,$port,$domain);
-		}
-		return $r;
-	}
-
-	function start() {
-		SoaProcessDispatcherClientServer_start($this->_cPtr);
-	}
-
-	function daemonize($std_out="/tmp/stdout.log",$std_err="/tmp/stderr.log",$std_in="/dev/null") {
-		SoaProcessDispatcherClientServer_daemonize($this->_cPtr,$std_out,$std_err,$std_in);
-	}
-
-	function write_global($session_id,$data) {
-		return SoaProcessDispatcherClientServer_write_global($this->_cPtr,$session_id,$data);
+		$this->_cPtr=new_Proxy($server,$l);
 	}
 }
 
-class HttpProcessDispatcherClientServer {
+class Remote {
 	public $_cPtr=null;
 	protected $_pData=array();
 
@@ -1073,189 +1147,12 @@ class HttpProcessDispatcherClientServer {
 		return array_key_exists($var, $this->_pData);
 	}
 
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_DispatcherClientServerT_DispatchMode__Process_Http_t') {
-			$this->_cPtr=$res;
+	function __construct($server,$l,$port) {
+		if (is_resource($server) && get_resource_type($server) === '_p_Remote') {
+			$this->_cPtr=$server;
 			return;
 		}
-		$this->_cPtr=new_HttpProcessDispatcherClientServer();
-	}
-
-	function listen($port,$domain=null) {
-		switch (func_num_args()) {
-		case 1: $r=HttpProcessDispatcherClientServer_listen($this->_cPtr,$port); break;
-		default: $r=HttpProcessDispatcherClientServer_listen($this->_cPtr,$port,$domain);
-		}
-		return $r;
-	}
-
-	function start() {
-		HttpProcessDispatcherClientServer_start($this->_cPtr);
-	}
-
-	function daemonize($std_out="/tmp/stdout.log",$std_err="/tmp/stderr.log",$std_in="/dev/null") {
-		HttpProcessDispatcherClientServer_daemonize($this->_cPtr,$std_out,$std_err,$std_in);
-	}
-
-	function write_global($session_id,$data) {
-		return HttpProcessDispatcherClientServer_write_global($this->_cPtr,$session_id,$data);
-	}
-}
-
-class HttpGatewayProcessDispatcherClientServer {
-	public $_cPtr=null;
-	protected $_pData=array();
-
-	function __set($var,$value) {
-		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
-		$this->_pData[$var] = $value;
-	}
-
-	function __get($var) {
-		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
-		return $this->_pData[$var];
-	}
-
-	function __isset($var) {
-		if ($var === 'thisown') return true;
-		return array_key_exists($var, $this->_pData);
-	}
-
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_DispatcherClientServerT_DispatchMode__Process_HttpGateway_t') {
-			$this->_cPtr=$res;
-			return;
-		}
-		$this->_cPtr=new_HttpGatewayProcessDispatcherClientServer();
-	}
-
-	function listen($port,$domain=null) {
-		switch (func_num_args()) {
-		case 1: $r=HttpGatewayProcessDispatcherClientServer_listen($this->_cPtr,$port); break;
-		default: $r=HttpGatewayProcessDispatcherClientServer_listen($this->_cPtr,$port,$domain);
-		}
-		return $r;
-	}
-
-	function start() {
-		HttpGatewayProcessDispatcherClientServer_start($this->_cPtr);
-	}
-
-	function daemonize($std_out="/tmp/stdout.log",$std_err="/tmp/stderr.log",$std_in="/dev/null") {
-		HttpGatewayProcessDispatcherClientServer_daemonize($this->_cPtr,$std_out,$std_err,$std_in);
-	}
-
-	function write_global($session_id,$data) {
-		return HttpGatewayProcessDispatcherClientServer_write_global($this->_cPtr,$session_id,$data);
-	}
-}
-
-class SoaProcessDispatcherServer extends SoaProcessDispatcherClientServer {
-	public $_cPtr=null;
-
-	function __set($var,$value) {
-		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
-		SoaProcessDispatcherClientServer::__set($var,$value);
-	}
-
-	function __get($var) {
-		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
-		return SoaProcessDispatcherClientServer::__get($var);
-	}
-
-	function __isset($var) {
-		if ($var === 'thisown') return true;
-		return SoaProcessDispatcherClientServer::__isset($var);
-	}
-
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_SoaProcessDispatcherServer') {
-			$this->_cPtr=$res;
-			return;
-		}
-		$this->_cPtr=new_SoaProcessDispatcherServer();
-	}
-
-	function dispatch($n_process) {
-		SoaProcessDispatcherServer_dispatch($this->_cPtr,$n_process);
-	}
-
-	function on($event,$cb) {
-		SoaProcessDispatcherServer_on($this->_cPtr,$event,$cb);
-	}
-
-	function get_session_id($client) {
-		return SoaProcessDispatcherServer_get_session_id($this->_cPtr,$client);
-	}
-}
-
-class HttpProcessDispatcherServer extends HttpProcessDispatcherClientServer {
-	public $_cPtr=null;
-
-	function __set($var,$value) {
-		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
-		HttpProcessDispatcherClientServer::__set($var,$value);
-	}
-
-	function __get($var) {
-		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
-		return HttpProcessDispatcherClientServer::__get($var);
-	}
-
-	function __isset($var) {
-		if ($var === 'thisown') return true;
-		return HttpProcessDispatcherClientServer::__isset($var);
-	}
-
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_HttpProcessDispatcherServer') {
-			$this->_cPtr=$res;
-			return;
-		}
-		$this->_cPtr=new_HttpProcessDispatcherServer();
-	}
-
-	function dispatch($n_process) {
-		HttpProcessDispatcherServer_dispatch($this->_cPtr,$n_process);
-	}
-
-	function on($event,$cb) {
-		HttpProcessDispatcherServer_on($this->_cPtr,$event,$cb);
-	}
-}
-
-class HttpGatewayProcessDispatcherServer extends HttpGatewayProcessDispatcherClientServer {
-	public $_cPtr=null;
-
-	function __set($var,$value) {
-		if ($var === 'thisown') return swig_ReactHandler_alter_newobject($this->_cPtr,$value);
-		HttpGatewayProcessDispatcherClientServer::__set($var,$value);
-	}
-
-	function __get($var) {
-		if ($var === 'thisown') return swig_ReactHandler_get_newobject($this->_cPtr);
-		return HttpGatewayProcessDispatcherClientServer::__get($var);
-	}
-
-	function __isset($var) {
-		if ($var === 'thisown') return true;
-		return HttpGatewayProcessDispatcherClientServer::__isset($var);
-	}
-
-	function __construct($res=null) {
-		if (is_resource($res) && get_resource_type($res) === '_p_HttpGatewayProcessDispatcherServer') {
-			$this->_cPtr=$res;
-			return;
-		}
-		$this->_cPtr=new_HttpGatewayProcessDispatcherServer();
-	}
-
-	function dispatch($n_process) {
-		HttpGatewayProcessDispatcherServer_dispatch($this->_cPtr,$n_process);
-	}
-
-	function register_callback($cb) {
-		HttpGatewayProcessDispatcherServer_register_callback($this->_cPtr,$cb);
+		$this->_cPtr=new_Remote($server,$l,$port);
 	}
 }
 

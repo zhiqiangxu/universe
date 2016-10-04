@@ -1,6 +1,8 @@
 #include "ReactHandler.h"
 
-bool HttpClientServer::listen(uint16_t port, int domain)
+HttpClientServer::HttpClientServer(uint16_t port, int domain): _proto(*this)
 {
-    return ClientServer::listen(port, _proto, domain);
+    listen(port, _proto, domain);
 }
+
+

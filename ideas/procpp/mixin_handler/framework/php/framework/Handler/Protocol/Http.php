@@ -65,6 +65,8 @@ class Http implements IHttp
                 list ($cookie_name, $cookie_value) = explode('=', $cookie);
                 $_COOKIE[$cookie_name] = urldecode($cookie_value);
             }
+
+
         }
     }
 

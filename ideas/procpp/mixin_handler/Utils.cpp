@@ -15,6 +15,7 @@
 #include <stdlib.h>//rand,mkstemp,exit
 #include <stdio.h>//snprintf,rename,fopen,freopen
 #include <fstream>//ifstream
+#include <sstream>//istringstream
 #include <zlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>//waitpid
@@ -30,7 +31,7 @@ string GUID::to_string()
     uuid_unparse( uuid, &result[0] );
     result.resize( 36 );
 
-	return result;
+    return result;
 }
 
 bool GUID::from_string(const string& uuid_string, GUID& guid)
@@ -40,62 +41,62 @@ bool GUID::from_string(const string& uuid_string, GUID& guid)
 
 string Utils::get_name_info(const SocketAddress& addr)
 {
-	auto addrp = reinterpret_cast<const struct sockaddr*>(&addr);
-	return get_name_info(addrp);
+    auto addrp = reinterpret_cast<const struct sockaddr*>(&addr);
+    return get_name_info(addrp);
 }
 
 string Utils::get_name_info(const struct sockaddr* sa)
 {
-	static char host[UNIX_PATH_MAX];
-	static char service[UNIX_PATH_MAX];
+    static char host[UNIX_PATH_MAX];
+    static char service[UNIX_PATH_MAX];
 
-	if (getnameinfo(sa, addr_size(sa->sa_family), host, sizeof(host), service, sizeof(service), 0) != 0) {
-		L.error_exit("getnameinfo");
-	}
+    if (getnameinfo(sa, addr_size(sa->sa_family), host, sizeof(host), service, sizeof(service), 0) != 0) {
+        L.error_exit("getnameinfo");
+    }
 
-	return string(host) + ":" + string(service);
+    return string(host) + ":" + string(service);
 }
 
 void Utils::set_nonblock(int fd)
 {
-	auto old_flags = fcntl(fd, F_GETFL);
+    auto old_flags = fcntl(fd, F_GETFL);
 
-	if (old_flags & O_NONBLOCK) return;//已经nonblock
+    if (old_flags & O_NONBLOCK) return;//已经nonblock
 
-	auto new_flags = old_flags | O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, new_flags) == -1) L.error_exit("set_nonblock");
+    auto new_flags = old_flags | O_NONBLOCK;
+    if (fcntl(fd, F_SETFL, new_flags) == -1) L.error_exit("set_nonblock");
 }
 
 void Utils::set_keepalive(int socketfd, int keepidle, int keepinterval, int keepcount)
 {
-	int sockopt = 1;
-	if (setsockopt(socketfd, SOL_SOCKET, SO_KEEPALIVE, &sockopt, sizeof(int)) == -1) L.error_exit("setsockopt SO_KEEPALIVE");
+    int sockopt = 1;
+    if (setsockopt(socketfd, SOL_SOCKET, SO_KEEPALIVE, &sockopt, sizeof(int)) == -1) L.error_exit("setsockopt SO_KEEPALIVE");
 
-	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int)) == -1) L.error_exit("setsockopt TCP_KEEPIDLE");
+    if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int)) == -1) L.error_exit("setsockopt TCP_KEEPIDLE");
 
-	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPINTVL, &keepinterval, sizeof(int)) == -1) L.error_exit("setsockopt TCP_KEEPINTVL");
+    if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPINTVL, &keepinterval, sizeof(int)) == -1) L.error_exit("setsockopt TCP_KEEPINTVL");
 
-	if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPCNT, &keepcount, sizeof(int)) == -1) L.error_exit("setsockopt TCP_KEEPCNT");
+    if (setsockopt(socketfd, IPPROTO_TCP, TCP_KEEPCNT, &keepcount, sizeof(int)) == -1) L.error_exit("setsockopt TCP_KEEPCNT");
 }
 
 int Utils::nonblock_socket(int domain, int type, int protocol)
 {
-	auto s = socket(domain, type, protocol);
-	if (s == -1) {
-		L.error_log("socket");
-		return -1;
-	}
+    auto s = socket(domain, type, protocol);
+    if (s == -1) {
+        L.error_log("socket");
+        return -1;
+    }
 
-	set_nonblock(s);
-	return s;
+    set_nonblock(s);
+    return s;
 }
 
 string Utils::sha1(const string& data)
 {
-	unsigned char h[SHA_DIGEST_LENGTH];
-	SHA1((unsigned char*)data.data(), data.length(), h);
+    unsigned char h[SHA_DIGEST_LENGTH];
+    SHA1((unsigned char*)data.data(), data.length(), h);
 
-	return string((char*)h, SHA_DIGEST_LENGTH);
+    return string((char*)h, SHA_DIGEST_LENGTH);
 }
 
 string Utils::rand_string(size_t length)
@@ -112,31 +113,40 @@ string Utils::rand_string(size_t length)
 
 string Utils::string2hex(const string& s, bool space)
 {
-	string result;
-	char buf[2];
+    string result;
+    char buf[2];
 
-	for (size_t i = 0; i < s.length(); i++) {
-		sprintf(buf, "%02X", s[i]);
-		result.append(buf, 2);
-		if (space) result += ' ';
-	}
+    for (size_t i = 0; i < s.length(); i++) {
+        sprintf(buf, "%02X", s[i]);
+        result.append(buf, 2);
+        if (space) result += ' ';
+    }
 
-	return result;
+    return result;
 }
 
 string Utils::string2hex(const char* s, size_t length, bool space)
 {
-	string result;
-	char buf[3];
+    string result;
+    char buf[3];
 
-	for (size_t i = 0; i < length; i++) {
-		snprintf(buf, sizeof(buf), "%02X", s[i]);//snprintf will always append \0 to buf
-		result.append(buf, 2);
-		if (space) result += ' ';
-	}
+    for (size_t i = 0; i < length; i++) {
+        snprintf(buf, sizeof(buf), "%02X", s[i]);//snprintf will always append \0 to buf
+        result.append(buf, 2);
+        if (space) result += ' ';
+    }
 
 
-	return result;
+    return result;
+}
+
+unsigned long Utils::hex2long(const string& hex)
+{
+    unsigned long value;
+    istringstream iss(hex);
+    iss >> std::hex >> value;
+
+    return value;
 }
 
 string Utils::file_get_contents(const string& path)
@@ -179,20 +189,20 @@ bool Utils::gzip_file(const string& input_file, const string& output_file)
 
 void Utils::supervise_subprocess(const function<void(void)>& child_callback)
 {
-	int status;
-	pid_t child;
-	while ((child = waitpid(-1, &status, 0)) > 0)
-	{
-		auto pid = fork();
-		if (pid == -1) L.error_exit("fork");
+    int status;
+    pid_t child;
+    while ((child = waitpid(-1, &status, 0)) > 0)
+    {
+        auto pid = fork();
+        if (pid == -1) L.error_exit("fork");
 
-		if (pid) {
-		} else {
+        if (pid) {
+        } else {
 
             child_callback();
 
-		}
-	}
+        }
+    }
 }
 
 //http://stackoverflow.com/questions/3095566/linux-daemonize
@@ -269,3 +279,59 @@ map<string, string> Utils::parse_url(const string& url)
 
     return result;
 }
+
+vector<string> Utils::split(const string& str, const string& delim)
+{
+    vector<string> tokens;
+    size_t prev = 0, pos = 0;
+    do {
+        pos = str.find(delim, prev);
+        if (pos == string::npos) pos = str.length();
+        string token = str.substr(prev, pos-prev);
+        if (!token.empty()) tokens.push_back(token);
+        prev = pos + delim.length();
+    } while (pos < str.length() && prev < str.length());
+
+    return tokens;
+}
+
+string Utils::join(const string& glue, const vector<string>& pieces)
+{
+    if (pieces.size() == 0) return "";
+
+    if (pieces.size() == 1) return pieces[0];
+
+    auto result = pieces[0];
+
+    for (size_t i = 1; i < pieces.size(); i++) result += glue + pieces[i];
+
+    return result;
+}
+
+string Utils::merge_url_query(const string& query1, const string& query2)
+{
+    if (query2.length() == 0) return query1;
+
+    auto tokens1 = Utils::split(query1, "&");
+    map<string, string> query_map1;
+    for (size_t i = 0; i < tokens1.size(); i++) {
+        auto kv = Utils::split(tokens1[i], "=");
+        query_map1[kv[0]] = kv.size() > 1 ? kv[1] : "";
+    }
+    auto tokens2 = Utils::split(query2, "&");
+    map<string, string> query_map2;
+    for (size_t i = 0; i < tokens2.size(); i++) {
+        auto kv = Utils::split(tokens2[i], "=");
+        query_map2[kv[0]] = kv.size() > 1 ? kv[1] : "";
+    }
+
+    for (auto& item : query_map2) {
+        query_map1[item.first] = item.second;
+    }
+
+    vector<string> query;
+    for (auto& item : query_map1) query.push_back(item.first + "=" + item.second);
+
+    return Utils::join("&", query);
+}
+

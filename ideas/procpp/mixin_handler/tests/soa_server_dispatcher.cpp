@@ -2,33 +2,17 @@
 
 int main()
 {
-// old style
-/*
-	ClientServer server;
+    ClientServer server;
 
     server.on<Soa::ON_REQUEST>(Utils::to_function([&server](SoaRequest& req, SoaResponse& resp) {
-		resp.json = req.json;
-	}));
+        resp.json = req.json;
+    }));
 
-	Dispatcher<DispatchMode::ProcessSession, Soa> dispacher(server, 4);
+    Soa proto(server);
+    //server.set_worker_num(4);
 
-	auto callbacks = dispacher.to_callbacks();
-
-	server.listen(8082, callbacks);
+    server.listen(8082, proto);
 
 
-	server.start();
-*/
-
-// new style
-
-    DispatcherClientServer<DispatchMode::ProcessSession, Soa> server;
-    server.on<Soa::ON_REQUEST>(Utils::to_function([](SoaRequest& req, SoaResponse& resp) {
-		resp.json = req.json;
-	}));
-
-    server.dispatch(4);
-	server.listen(8082);
-    server.start();
-	return 0;
+    server.event_loop();
 }

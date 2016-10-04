@@ -6,20 +6,20 @@ using namespace std;
 
 int main()
 {
-	EventManager m;
-	if (m.watch(STDIN_FILENO, EventManager::EventCB{
-		{
-			EventType::READ, EventManager::CB([] (int fd, string message) {
-				cout << message;
-			})
-		}
-	})) {
-		cout << "watch ok" << endl;
-	} else {
-		cout << "watch ng" << endl;
-	}
+    EventManager m;
+    if (m.watch(STDIN_FILENO, EventManager::EventCB{
+        {
+            EventType::READ, EventManager::CB([] (int fd, string message) {
+                cout << message;
+            })
+        }
+    })) {
+        cout << "watch ok" << endl;
+    } else {
+        cout << "watch ng" << endl;
+    }
 
-	m.start();
+    m.event_loop();
 
-	return 0;
+    return 0;
 }

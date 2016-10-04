@@ -2,9 +2,8 @@
 
 int main()
 {
-	SocksClientServer server;
-	server.listen(8082);
-	server.start();
+    SocksClientServer server(8082);
+    server.event_loop();
 
-	return 0;
+    return 0;
 }

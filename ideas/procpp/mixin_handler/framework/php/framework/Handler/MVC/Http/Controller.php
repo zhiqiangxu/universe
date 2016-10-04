@@ -1,12 +1,21 @@
 <?php
 namespace Handler\MVC\Http;
+
 use Handler\Design\IController;
+use Handler\Component\Utility;
+use Handler\Component\Cache;
 
 class Controller implements IController
 {
 
-    private $_template_dir = WEBPATH . '/views/';
+    private $_template_dir = WEBPATH . '/views/http/';
     private $_smarty = null;
+    private $_init_session_value = null;
+
+    const SESSION_ID = 'HANDLER_SESSION';
+    const SESSION_ID_EXPIRE = 86400000;
+    const SESSION_CACHE_EXPIRE = 3600;
+
 
     function outputJson($json)
     {
@@ -95,7 +104,7 @@ class Controller implements IController
 
     }
 
-    function setCookie($name, $value = '', $expire = 0, $path = '', $domain = '', $secure = false, $httponly = false)
+    function setCookie($name, $value = '', $expire = 0, $path = '/', $domain = '', $secure = false, $httponly = false)
     {
 
         $cookie_values = [ "$name=" . urlencode($value) ];
@@ -114,4 +123,48 @@ class Controller implements IController
 
     }
 
+    private function sessionCacheGroup()
+    {
+
+        $session_config = \Handler::$php->config['session'];
+        return ($session_config && !empty($session_config['cache_group'])) ? $session_config['cache_group'] : 'default';
+
+    }
+
+    function sessionStart()
+    {
+
+        if (!is_null($this->_init_session_value)) return;
+
+        if (!empty($_COOKIE[self::SESSION_ID])) {
+
+            $session_data = Cache::getInstance($this->sessionCacheGroup())->get($_COOKIE[self::SESSION_ID]);
+            if ($session_data) $this->_init_session_value = $_SESSION = $session_data;
+
+        } else {
+
+            $session_id = Utility::generateRandomString(40);
+            $this->setCookie(self::SESSION_ID, $session_id, self::SESSION_ID_EXPIRE);
+            $_COOKIE[self::SESSION_ID] = $session_id;
+
+        }
+
+        $this->_init_session_value = $_SESSION = [];
+
+    }
+
+    function __destruct()
+    {
+
+        if (!is_null($this->_init_session_value) && ($_SESSION !== $this->_init_session_value)) {
+
+            Cache::getInstance($this->sessionCacheGroup())->set(
+                $_COOKIE[self::SESSION_ID],
+                $_SESSION,
+                self::SESSION_CACHE_EXPIRE
+            );
+
+        }
+
+    }
 }

@@ -1,9 +1,9 @@
 class WebSocketMessage
 {
 public:
-	int client;
-	uint8_t opcode;
-	string payload;
+    int client;
+    uint8_t opcode;
+    string payload;
 };
 
 %nodefaultctor WebSocket;
@@ -19,8 +19,7 @@ class WebSocketClientServer
 {
 public:
 
-    bool listen(uint16_t port, int domain = AF_INET);
-    void start();
+    WebSocketClientServer(uint16_t port, int domain = AF_INET);
 };
 
 %feature("director") WebSocketCallback;
@@ -38,7 +37,7 @@ public:
         WebSocketCallback* _callback;
 
     public:
-        WebSocketServer() : _callback(nullptr)
+        WebSocketServer(uint16_t port, int domain = AF_INET) : WebSocketClientServer(port, domain), _callback(nullptr)
         {
             EventManager::on<WebSocket::ON_MESSAGE>(Utils::to_function([this](WebSocketMessage& m, WebSocket& ws) {
                 if (_callback) _callback->run(m, ws);

@@ -5,5 +5,5 @@ import ReactHandler
 
 s = ReactHandler.HttpServer()
 s.listen(8082)
-s.start()
+s.event_loop()
 

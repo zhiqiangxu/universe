@@ -1,6 +1,6 @@
 #include "ReactHandler.h"
 
-bool SoaClientServer::listen(uint16_t port, int domain)
+SoaClientServer::SoaClientServer(uint16_t port, int domain): _proto(*this)
 {
-    return ClientServer::listen(port, _proto, domain);
+    listen(port, _proto, domain);
 }

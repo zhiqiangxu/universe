@@ -13,4 +13,4 @@ $callback->thisown = 0;
 $s=new HttpServer();
 $s->on('request', $callback);
 $s->listen(8082);
-$s->start();
+$s->event_loop();

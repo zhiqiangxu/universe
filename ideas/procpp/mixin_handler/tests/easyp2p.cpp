@@ -3,10 +3,10 @@
 
 int main()
 {
-	Server server;
-	EasyP2P proto(server);
-	server.listen(8081, proto);
-	server.start();
+    Server server;
+    EasyP2P proto(server);
+    server.listen(8081, proto);
+    server.event_loop();
 
-	return 0;
+    return 0;
 }

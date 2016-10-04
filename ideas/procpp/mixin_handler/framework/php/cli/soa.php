@@ -12,18 +12,10 @@ class PhpCallback extends SoaCallback {
 
 $callback = new PhpCallback();
 
-/*
-$s=new SoaServer();
-$s->on('request', $callback);
-$s->listen(8082);
-$s->start();
-*/
-
-$s=new SoaProcessDispatcherServer();
-Handler::$php->setServer($s);
+$s=new SoaServer(8082);
 //$s->daemonize();
 $s->on('request', $callback);
-$s->dispatch(4);
-$s->listen(8083);
-$s->start();
+$s->set_worker_num(4);
+$s->event_loop();
+
 

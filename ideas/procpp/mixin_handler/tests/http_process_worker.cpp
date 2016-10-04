@@ -2,16 +2,15 @@
 
 int main()
 {
-	ClientServer server;
+    ClientServer server;
     Http proto(server);
 
     server.on<Http::ON_REQUEST>(Utils::to_function([&server](HttpRequest& req, HttpResponse& resp) {
-		resp.body = "content from c++\r\n";
-	}));
+        resp.body = "content from c++\r\n";
+    }));
 
-	server.listen(8082, proto);
-	
-	ProcessWorker worker(server);
+    server.set_worker_num(4);
+    server.listen(8082, proto);
 
-	return 0;
+    return 0;
 }

@@ -13,4 +13,4 @@ $callback->thisown = 0;
 $s=new WebSocketServer();
 $s->on('message', $callback);
 $s->listen(8082);
-$s->start();
+$s->event_loop();

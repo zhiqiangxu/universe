@@ -20,8 +20,8 @@ public:
 public:
     template<typename U>
     struct rebind {
-		using other_policy = typename AllocationPolicy::template rebind<U>::other;
-		using other_traits = typename TTraits::template rebind<U>::other;
+        using other_policy = typename AllocationPolicy::template rebind<U>::other;
+        using other_traits = typename TTraits::template rebind<U>::other;
         typedef ShmAllocator<U, other_policy, other_traits> other;
     };
 

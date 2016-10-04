@@ -4,7 +4,7 @@
 
 int main()
 {
-	HttpClientServer server;
+    HttpClientServer server(8082);
 
     server.on<Http::ON_REQUEST>(Utils::to_function([&server](HttpRequest& req, HttpResponse& resp) {
         auto image = cv::imread( "/home/vagrant/opensource/ngx_openresty-1.7.10.2/test/ideas/opencv/data/0.png", CV_LOAD_IMAGE_COLOR );
@@ -14,8 +14,7 @@ int main()
         resp.body = "content from c++\r\n";
     }));
 
-    server.listen(8082);
-    server.start();
+    server.event_loop();
 
 
     return 0;

@@ -18,68 +18,68 @@ static const char reverse_table[128] = {
 
 string Base64::encode(const string& bindata)
 {
-	const auto binlen = bindata.size();
+    const auto binlen = bindata.size();
 
-	// Use = signs so the end is properly padded.
-	string retval((((binlen + 2) / 3) * 4), '=');
+    // Use = signs so the end is properly padded.
+    string retval((((binlen + 2) / 3) * 4), '=');
 
-	size_t outpos = 0;
-	int bits_collected = 0;
-	unsigned int accumulator = 0;
-	const auto binend = bindata.end();
+    size_t outpos = 0;
+    int bits_collected = 0;
+    unsigned int accumulator = 0;
+    const auto binend = bindata.end();
 
-	for (auto i = bindata.begin(); i != binend; ++i)
-	{
-		accumulator = (accumulator << 8) | (*i & 0xffu);
-		bits_collected += 8;
-		while (bits_collected >= 6)
-		{
-			bits_collected -= 6;
-			retval[outpos++] = b64_table[(accumulator >> bits_collected) & 0x3fu];
-		}
-	}
+    for (auto i = bindata.begin(); i != binend; ++i)
+    {
+        accumulator = (accumulator << 8) | (*i & 0xffu);
+        bits_collected += 8;
+        while (bits_collected >= 6)
+        {
+            bits_collected -= 6;
+            retval[outpos++] = b64_table[(accumulator >> bits_collected) & 0x3fu];
+        }
+    }
 
-	if (bits_collected > 0) { // Any trailing bits that are missing.
-		L.assert( bits_collected < 6, string("bits_collected =") + to_string(bits_collected) );
-		accumulator <<= 6 - bits_collected;
-		retval[outpos++] = b64_table[accumulator & 0x3fu];
-	}
+    if (bits_collected > 0) { // Any trailing bits that are missing.
+        L.assert( bits_collected < 6, string("bits_collected =") + to_string(bits_collected) );
+        accumulator <<= 6 - bits_collected;
+        retval[outpos++] = b64_table[accumulator & 0x3fu];
+    }
 
-	L.assert(outpos >= (retval.size() - 2), "outpos 1");
-	L.assert(outpos <= retval.size(), "outpos 2");
-	return retval;
+    L.assert(outpos >= (retval.size() - 2), "outpos 1");
+    L.assert(outpos <= retval.size(), "outpos 2");
+    return retval;
 }
 
 string Base64::decode(const string& ascdata)
 {
-	string retval;
-	const auto last = ascdata.end();
+    string retval;
+    const auto last = ascdata.end();
 
-	int bits_collected = 0;
-	unsigned int accumulator = 0;
+    int bits_collected = 0;
+    unsigned int accumulator = 0;
 
-	for (auto i = ascdata.begin(); i != last; ++i)
-	{
-		const int c = *i;
-		if (isspace(c) || c == '=') {
-			// Skip whitespace and padding. Be liberal in what you accept.
-			continue;
-		}
+    for (auto i = ascdata.begin(); i != last; ++i)
+    {
+        const int c = *i;
+        if (isspace(c) || c == '=') {
+            // Skip whitespace and padding. Be liberal in what you accept.
+            continue;
+        }
 
-		if ((c > 127) || (c < 0) || (reverse_table[c] > 63)) {
-			//This contains characters not legal in a base64 encoded string.
-			return "";
-		}
+        if ((c > 127) || (c < 0) || (reverse_table[c] > 63)) {
+            //This contains characters not legal in a base64 encoded string.
+            return "";
+        }
 
-		accumulator = (accumulator << 6) | reverse_table[c];
-		bits_collected += 6;
-		if (bits_collected >= 8) {
-			bits_collected -= 8;
-			retval += (char)((accumulator >> bits_collected) & 0xffu);
-		}
-	}
+        accumulator = (accumulator << 6) | reverse_table[c];
+        bits_collected += 6;
+        if (bits_collected >= 8) {
+            bits_collected -= 8;
+            retval += (char)((accumulator >> bits_collected) & 0xffu);
+        }
+    }
 
-	return retval;
+    return retval;
 }
 
 

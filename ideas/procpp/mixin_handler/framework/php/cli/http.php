@@ -13,9 +13,9 @@ class PhpCallback extends HttpCallback {
 
 $callback = new PhpCallback();
 
-$s=new HttpProcessDispatcherServer();
+$s=new HttpServer(8082);
 //$s->daemonize();
 $s->on('request', $callback);
-$s->listen(8082);
-$s->dispatch(4);
+$s->set_worker_num(4);
+$s->event_loop();
 

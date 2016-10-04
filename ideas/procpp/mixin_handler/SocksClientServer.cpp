@@ -1,6 +1,6 @@
 #include "ReactHandler.h"
 
-bool SocksClientServer::listen(uint16_t port, int domain)
+SocksClientServer::SocksClientServer(uint16_t port, int domain): _proto(*this)
 {
-    return ClientServer::listen(port, _proto, domain);
+    listen(port, _proto, domain);
 }

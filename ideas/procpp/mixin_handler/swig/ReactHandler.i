@@ -19,6 +19,11 @@ namespace std
     %template(StringPairVector) vector<pair<string, string>>;
 }
 
+/*****************************
+******* ClientServer *********
+*****************************/
+%include "ClientServer.i"
+
 
 /*********************
 ***** WebSocket ******
@@ -41,10 +46,15 @@ namespace std
 *********************/
 %include "Soa.i"
 
-/*****************************
-*** DispatcherClientServer ***
-*****************************/
-%include "DispatcherClientServer.i"
+/*********************
+******* Proxy ********
+*********************/
+%include "Proxy.i"
+
+/*********************
+******* Remote ********
+*********************/
+%include "Remote.i"
 
 
 /*********************

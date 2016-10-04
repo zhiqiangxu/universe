@@ -3,17 +3,17 @@
 
 namespace Protocol::Client {
 
-	class IEasyP2P
-	{
-	public:
+    class IEasyP2P
+    {
+    public:
 
-	};
+    };
 
-	class EasyP2P : public IEasyP2P, public ::Protocol,
-	{
-	public:
+    class EasyP2P : public IEasyP2P, public ::Protocol,
+    {
+    public:
 
-		virtual void on_message(int fd, string message) override;
-	};
+        virtual void on_message(int fd, string message) override;
+    };
 
 }

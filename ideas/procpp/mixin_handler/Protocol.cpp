@@ -5,66 +5,30 @@
 
 bool Protocol::read(string& message, size_t size, string& result)
 {
-	//TODO error handle size
+    //TODO error handle size
 
-	if (message.length() < size) {
-		return false;
-	}
+    if (message.length() < size) {
+        return false;
+    }
 
-	result = message.substr(0, size);
-	message = message.substr(size);
+    result = message.substr(0, size);
+    message = message.substr(size);
 
-	return true;
+    return true;
 }
 
 bool Protocol::read_until(string& message, string separator, string& result, int scanned)
 {
-	auto pos = message.find(separator, max(0, static_cast<int>(scanned - separator.length())));
-	if (pos != string::npos) {
-		auto total_length = pos + separator.length();
-		result = message.substr(0, total_length);
-		message = message.substr(total_length);
+    auto pos = message.find(separator, max(0, static_cast<int>(scanned - separator.length())));
+    if (pos != string::npos) {
+        auto total_length = pos + separator.length();
+        result = message.substr(0, total_length);
+        message = message.substr(total_length);
 
-		return true;
-	}
+        return true;
+    }
 
-	return false;
-}
-
-string Protocol::read(int fd)
-{
-	string message;
-	char buf[1024];
-
-	while (true) {
-		auto size = ::read(fd, buf, sizeof(buf));
-		if (size == -1) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				return message;
-			} else {
-				//error handle
-			}
-			continue;
-		} else if (size == 0) {
-			//eof
-			break;
-		}
-
-		// TODO 避免拷贝
-		message.append(buf, size);
-	}
-
-	return message;
-}
-
-ssize_t Protocol::read(int fd, void* buf, size_t size)
-{
-	return ::read(fd, buf, size);
-}
-
-string Protocol::read_until(int fd, string separator)
-{
-	return "no impl";
+    return false;
 }
 
 
