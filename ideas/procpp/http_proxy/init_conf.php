@@ -1,6 +1,6 @@
 <?php
 
-$ca_dir = '/home/vagrant/ca';
+$ca_dir = '/home/xuzhiqiang15/ca';
 $new_certs_dir = $ca_dir . "/cert";
 $database = $ca_dir . "/index.txt";
 $policy = 'policy_strict';

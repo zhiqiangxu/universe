@@ -1,5 +1,4 @@
 
-using gcc :  : /usr/bin/g++-5 ;
 
 exe hello2 : main.cpp stream_reader.cpp utils.cpp http.cpp async_http_client.cpp server.cpp session.cpp cert.cpp
            : <cxxflags>-std=c++1z
