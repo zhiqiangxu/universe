@@ -30,6 +30,7 @@ class Session
   private:
     void do_read_http_request();
     void handle_read_http_request(const boost::system::error_code& ec, std::size_t bytes_transferred);
+    void do_write_407_unauthorized();
 
     //处理非connect请求
     void do_direct_request();

@@ -50,7 +50,10 @@ void Session::handle_read_http_request(const boost::system::error_code& ec, std:
       size_t parsed_length;
       p_request_ = HttpRequest::parse_request(packet_in_, &parsed_length);
       //cout << packet_in_ << endl;
-      if (strncasecmp(p_request_->method.c_str(), "connect", strlen("connect")) == 0) {
+      //for (auto it:p_request_->headers) cout << it.first << " : " << it.second << endl;
+      if (p_request_->headers.find("Proxy-Authorization") == p_request_->headers.end()) {
+        do_write_407_unauthorized();
+      } else if (strncasecmp(p_request_->method.c_str(), "connect", strlen("connect")) == 0) {
         //connect request
         p_connect_request_ = p_request_;
         do_connect_request();
@@ -77,6 +80,23 @@ void Session::handle_read_http_request(const boost::system::error_code& ec, std:
       }
     }
   }
+}
+
+void Session::do_write_407_unauthorized() {
+  PROLOGUE;
+
+  filtered_response_ = p_request_->http_version + " 407 Proxy Authentication Required\r\n"
+                  "Proxy-Authenticate: Basic realm=\"xdebug\"\r\n"
+                  "Content-Type: text/html\r\n"
+                  "Content-Length: " + std::to_string(strlen("Proxy Authentication Required")) + "\r\n"
+                  "\r\n"
+                  "Proxy Authentication Required";
+  boost::asio::async_write(socket_, boost::asio::buffer(filtered_response_.data(), filtered_response_.length()),
+    [this, self](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+      if (!ec) do_read_http_request();
+    }
+  );
+
 }
 
 //处理非connect请求
@@ -402,6 +422,7 @@ void Session::post_request() {
   pt.put("type", "request");
   pt.put("uuid", guid_.to_string());
   pt.put("method", p_request_->method);
+  pt.put("credential", p_request_->headers["Proxy-Authorization"]);
   if (p_connect_request_) {
     auto& url_parts = p_connect_request_->uri_parts();
     pt.put("uri", string("https://") + url_parts["host"] + (url_parts["port"] == "443" ? "" : (":" + url_parts["port"])) + p_request_->uri);
