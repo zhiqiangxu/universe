@@ -3,6 +3,7 @@
 #include <functional>
 #include <string>
 #include <map>
+#include "http.h"
 
 using std::string;
 using std::map;
@@ -11,7 +12,7 @@ using boost::asio::ip::tcp;
 class AsyncHttpClient {
   public:
     AsyncHttpClient(string url, string data, boost::asio::io_service& io_service, tcp::resolver& resolver);
-    using CB = std::function<void(bool)>;
+    using CB = std::function<void(bool, response_ptr)>;
     void post(CB cb);
 
   protected:
@@ -20,7 +21,7 @@ class AsyncHttpClient {
     void handle_connect(const boost::system::error_code& ec, tcp::resolver::iterator resolve_iterator);
     void do_read();
     void handle_response(const boost::system::error_code& ec, size_t bytes_transferred);
-    void done(bool suc);
+    void done(bool suc, response_ptr p_response = nullptr);
 
     boost::asio::io_service& io_service_;
     tcp::socket socket_;

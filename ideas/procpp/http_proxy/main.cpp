@@ -2,7 +2,7 @@
 #include <string>//std::string
 #include "server.h"
 
-std::string POST_URL;
+std::string PACKET_POST_URL;
 
 int main(int argc, char* argv[])
 {
@@ -10,13 +10,13 @@ int main(int argc, char* argv[])
   {
     if (argc != 3)
     {
-      std::cerr << "Usage: async_tcp_echo_server <port> <post_url>\n";
+      std::cerr << "Usage: async_tcp_echo_server <port> <packet_post_url>\n";
       return 1;
     }
 
     boost::asio::io_service io_service;
 
-    POST_URL = argv[2];
+    PACKET_POST_URL = argv[2];
 
     Server s(io_service, std::atoi(argv[1]));
 

@@ -8,6 +8,7 @@
 #include <iostream>//std::cout
 #include <string>//std::string
 #include "http.h"
+#include "cache.h"
 
 using boost::asio::ip::tcp;
 using boost::property_tree::ptree;
@@ -31,6 +32,9 @@ class Session
     void do_read_http_request();
     void handle_read_http_request(const boost::system::error_code& ec, std::size_t bytes_transferred);
     void do_write_407_unauthorized();
+    void do_auth();
+    void handle_auth();
+    void do_after_auth();
 
     //处理非connect请求
     void do_direct_request();
@@ -96,5 +100,6 @@ class Session
 
     static const size_t MAX_REQUEST_PACKET_SIZE = 1024*1024;
     static const size_t MAX_RESPONSE_PACKET_SIZE = 1024*1024;
+    static Cache cached_credential_;
 };
 
