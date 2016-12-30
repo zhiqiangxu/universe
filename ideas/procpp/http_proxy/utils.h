@@ -5,6 +5,7 @@
 #include <unistd.h>//unlink
 #include <chrono>//chrono::system_clock::now
 #include <ctime>//time_t
+#include <vector>
 
 
 using std::map;
@@ -30,6 +31,9 @@ class Utils {
     static bool file_exists(const string& path);
     static bool rm_file(const char *pathname);
     static string time_format(const char* format, std::time_t* p_time = nullptr);
+    static string base64_decode(const string& base64_value);
+    //static std::vector<string> split(const string& input, const string& regex);
+    static string url_encode(const string& value);
 
     //network byte order is big endian
     // http://stackoverflow.com/a/28364285

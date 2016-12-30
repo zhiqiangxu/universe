@@ -78,7 +78,7 @@ void AsyncHttpClient::handle_response(const boost::system::error_code& ec, size_
     try {
       auto p_response = HttpResponse::parse_response(packet_out_);
       //cout << packet_out_ << endl;
-      done(true);
+      done(true, p_response);
     } catch (ReaderException e) {
       switch (e) {
         case ReaderException::AG:
@@ -96,7 +96,7 @@ void AsyncHttpClient::handle_response(const boost::system::error_code& ec, size_
   } else done(false);
 }
 
-void AsyncHttpClient::done(bool suc) {
-  cb_(suc);
+void AsyncHttpClient::done(bool suc, response_ptr p_response) {
+  cb_(suc, p_response);
   delete this;
 }

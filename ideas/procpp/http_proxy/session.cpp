@@ -7,12 +7,17 @@
 #include "conf.h"
 
 using boost::property_tree::write_json;
+using boost::property_tree::ptree_error;
+using std::stringstream;
 using std::cout;
 using std::endl;
 
 #define PROLOGUE cout << __func__ << endl;auto self(shared_from_this());
 
-extern string POST_URL;
+extern string PACKET_POST_URL;
+
+Cache Session::cached_credential_;
+
 
 Session::Session(tcp::socket&& socket/*lvalue of rvalue reference*/, tcp::resolver& resolver, boost::asio::ssl::context& context)
 : resolver_(resolver), context_(context), socket_(std::move(socket)) {
@@ -53,16 +58,7 @@ void Session::handle_read_http_request(const boost::system::error_code& ec, std:
       //for (auto it:p_request_->headers) cout << it.first << " : " << it.second << endl;
       if (p_request_->headers.find("Proxy-Authorization") == p_request_->headers.end()) {
         do_write_407_unauthorized();
-      } else if (strncasecmp(p_request_->method.c_str(), "connect", strlen("connect")) == 0) {
-        //connect request
-        p_connect_request_ = p_request_;
-        do_connect_request();
-      } else {
-        //non-connect request
-        guid_.generate();
-        post_request();
-        do_direct_request();
-      }
+      } else do_auth();
 
       //pipelined request
       packet_in_= packet_in_.substr(parsed_length);
@@ -97,6 +93,69 @@ void Session::do_write_407_unauthorized() {
     }
   );
 
+}
+
+void Session::do_auth() {
+  PROLOGUE;
+
+  auto auth = p_request_->headers["Proxy-Authorization"];
+  auto pos = auth.find("Basic ");
+  if (pos == string::npos) return;
+
+  auto base64_value = auth.substr(pos + strlen("Basic "));
+  auto value = Utils::base64_decode(base64_value);
+  pos = value.find(":");
+  if (pos == string::npos) return;
+
+  auto user = value.substr(0, pos);
+  auto pass = pos == (value.length() - 1) ? "" : value.substr(pos + 1);
+  string cached_pass;
+  if (cached_credential_.get(user, cached_pass)) {
+    if (cached_pass != pass) return;
+
+    do_after_auth();
+    return;
+  }
+
+  auto p_client = new AsyncHttpClient(
+    "http://api.ffan.com/rtx_verify",
+    "name=" + Utils::url_encode(user) + "&password=" + Utils::url_encode(pass),
+    socket_.get_io_service(),
+    resolver_
+  );
+  p_client->post([self, this, user, pass](bool ok, response_ptr p_response) {
+    stringstream ss(p_response->body);
+    ptree pt;
+    try {
+      read_json(ss, pt);
+      auto status = pt.get<int>("status");
+      if (status == 200) {
+        cached_credential_.set(user, pass);
+        do_after_auth();
+        return;
+      }
+    } catch (ptree_error& e) {
+    }
+
+    do_write_407_unauthorized();
+  });
+
+}
+
+void Session::handle_auth() {
+}
+
+void Session::do_after_auth() {
+  if (strncasecmp(p_request_->method.c_str(), "connect", strlen("connect")) == 0) {
+    //connect request
+    p_connect_request_ = p_request_;
+    do_connect_request();
+  } else {
+    //non-connect request
+    guid_.generate();
+    post_request();
+    do_direct_request();
+  }
 }
 
 //处理非connect请求
@@ -432,7 +491,7 @@ void Session::post_request() {
   std::ostringstream buf;
   write_json (buf, pt, false);
   auto json = buf.str();
-  post_http_request(POST_URL, json);
+  post_http_request(PACKET_POST_URL, json);
 }
 
 void Session::post_response() {
@@ -450,13 +509,13 @@ void Session::post_response() {
   std::ostringstream buf;
   write_json (buf, pt, false);
   auto json = buf.str();
-  post_http_request(POST_URL, json);
+  post_http_request(PACKET_POST_URL, json);
 }
 
 void Session::post_http_request(string url, string data) {
   cout << __func__ << endl;
   auto p_client = new AsyncHttpClient(url, data, socket_.get_io_service(), resolver_);
-  p_client->post([p_client](bool ok) {
+  p_client->post([](bool ok, response_ptr p_response) {
     //cout << (ok ? "suc" : "fail") << endl;
   });
 }
