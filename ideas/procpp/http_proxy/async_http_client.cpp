@@ -6,8 +6,8 @@
 using std::cout;
 using std::endl;
 
-AsyncHttpClient::AsyncHttpClient(string url, string data, boost::asio::io_service& io_service, tcp::resolver& resolver)
-: io_service_(io_service), socket_(io_service), resolver_(resolver), url_(url), data_(data) {
+AsyncHttpClient::AsyncHttpClient(const string& url, const string& data, const string& content_type, boost::asio::io_service& io_service, tcp::resolver& resolver)
+: io_service_(io_service), socket_(io_service), resolver_(resolver), url_(url), data_(data), content_type_(content_type) {
 }
 
 void AsyncHttpClient::post(CB cb) {
@@ -42,7 +42,7 @@ void AsyncHttpClient::handle_connect(const boost::system::error_code& ec, tcp::r
   //cout << __func__ << endl;
   if (!ec) {
     //连接成功，发送报文
-    packet_ = HttpRequest::make_packet("POST", url_parts_, data_);
+    packet_ = HttpRequest::make_packet("POST", url_parts_, data_, content_type_);
     //cout << packet_ << endl;
     boost::asio::async_write(socket_, boost::asio::buffer(packet_.data(), packet_.length()),
       [this](const boost::system::error_code& ec, std::size_t bytes_transferred) {

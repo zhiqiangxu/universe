@@ -120,6 +120,7 @@ void Session::do_auth() {
   auto p_client = new AsyncHttpClient(
     "http://api.ffan.com/rtx_verify",
     "name=" + Utils::url_encode(user) + "&password=" + Utils::url_encode(pass),
+    "application/x-www-form-urlencoded",
     socket_.get_io_service(),
     resolver_
   );
@@ -514,7 +515,7 @@ void Session::post_response() {
 
 void Session::post_http_request(string url, string data) {
   cout << __func__ << endl;
-  auto p_client = new AsyncHttpClient(url, data, socket_.get_io_service(), resolver_);
+  auto p_client = new AsyncHttpClient(url, data, "application/json", socket_.get_io_service(), resolver_);
   p_client->post([](bool ok, response_ptr p_response) {
     //cout << (ok ? "suc" : "fail") << endl;
   });
