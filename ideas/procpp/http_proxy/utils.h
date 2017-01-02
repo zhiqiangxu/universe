@@ -32,6 +32,7 @@ class Utils {
     static bool rm_file(const char *pathname);
     static string time_format(const char* format, std::time_t* p_time = nullptr);
     static string base64_decode(const string& base64_value);
+    static string base64_encode(const string& value);
     //static std::vector<string> split(const string& input, const string& regex);
     static string url_encode(const string& value);
 

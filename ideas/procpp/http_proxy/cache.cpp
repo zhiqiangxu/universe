@@ -17,6 +17,6 @@ bool Cache::get(const string& key, string& value) {
     return false;
   }
 
-  cache_[key] = value;
+  value = cache_[key];
   return true;
 }

@@ -98,8 +98,8 @@ class Session
     GUID guid_;
 
 
-    static const size_t MAX_REQUEST_PACKET_SIZE = 1024*1024;
-    static const size_t MAX_RESPONSE_PACKET_SIZE = 1024*1024;
+    static const size_t MAX_REQUEST_PACKET_SIZE = 10*1024*1024;
+    static const size_t MAX_RESPONSE_PACKET_SIZE = 10*1024*1024;
     static map<string, ssl_context_ptr> domain_context_;
     static Cache cached_credential_;
 };
