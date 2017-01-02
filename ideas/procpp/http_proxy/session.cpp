@@ -17,6 +17,7 @@ using std::endl;
 extern string PACKET_POST_URL;
 
 Cache Session::cached_credential_;
+map<string, ssl_context_ptr> Session::domain_context_;
 
 
 Session::Session(tcp::socket&& socket/*lvalue of rvalue reference*/, tcp::resolver& resolver, boost::asio::ssl::context& context)
@@ -124,6 +125,8 @@ void Session::do_auth() {
     socket_.get_io_service(),
     resolver_
   );
+  auth_user_ = user;
+
   p_client->post([self, this, user, pass](bool ok, response_ptr p_response) {
     stringstream ss(p_response->body);
     ptree pt;
@@ -481,8 +484,8 @@ void Session::post_request() {
   ptree pt;
   pt.put("type", "request");
   pt.put("uuid", guid_.to_string());
+  pt.put("user", auth_user_);
   pt.put("method", p_request_->method);
-  pt.put("credential", p_request_->headers["Proxy-Authorization"]);
   if (p_connect_request_) {
     auto& url_parts = p_connect_request_->uri_parts();
     pt.put("uri", string("https://") + url_parts["host"] + (url_parts["port"] == "443" ? "" : (":" + url_parts["port"])) + p_request_->uri);
