@@ -109,6 +109,7 @@ void Session::do_auth() {
   if (pos == string::npos) return;
 
   auto user = value.substr(0, pos);
+  auth_user_ = user;
   auto pass = pos == (value.length() - 1) ? "" : value.substr(pos + 1);
   string cached_pass;
   if (cached_credential_.get(user, cached_pass)) {
@@ -125,7 +126,6 @@ void Session::do_auth() {
     socket_.get_io_service(),
     resolver_
   );
-  auth_user_ = user;
 
   p_client->post([self, this, user, pass](bool ok, response_ptr p_response) {
     stringstream ss(p_response->body);
@@ -513,6 +513,7 @@ void Session::post_response() {
   std::ostringstream buf;
   write_json (buf, pt, false);
   auto json = buf.str();
+  //cout << json << endl;
   post_http_request(PACKET_POST_URL, json);
 }
 
@@ -520,6 +521,7 @@ void Session::post_http_request(string url, string data) {
   cout << __func__ << endl;
   auto p_client = new AsyncHttpClient(url, data, "application/json", socket_.get_io_service(), resolver_);
   p_client->post([](bool ok, response_ptr p_response) {
+    //if (ok) cout << p_response->body << endl;
     //cout << (ok ? "suc" : "fail") << endl;
   });
 }

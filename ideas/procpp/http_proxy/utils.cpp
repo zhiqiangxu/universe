@@ -147,6 +147,35 @@ string Utils::base64_decode(const string& base64_value) {
   return retval;
 }
 
+string Utils::base64_encode(const string& value) {
+    const auto binlen = value.size();
+
+    // Use = signs so the end is properly padded.
+    string retval((((binlen + 2) / 3) * 4), '=');
+
+    size_t outpos = 0;
+    int bits_collected = 0;
+    unsigned int accumulator = 0;
+    const auto binend = value.end();
+
+    for (auto i = value.begin(); i != binend; ++i)
+    {
+        accumulator = (accumulator << 8) | (*i & 0xffu);
+        bits_collected += 8;
+        while (bits_collected >= 6)
+        {
+            bits_collected -= 6;
+            retval[outpos++] = b64_table[(accumulator >> bits_collected) & 0x3fu];
+        }
+    }
+
+    if (bits_collected > 0) { // Any trailing bits that are missing.
+        accumulator <<= 6 - bits_collected;
+        retval[outpos++] = b64_table[accumulator & 0x3fu];
+    }
+
+    return retval;
+}
 /*****BASE64 END*****/
 
 
