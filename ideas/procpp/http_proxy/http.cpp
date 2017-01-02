@@ -88,10 +88,11 @@ request_ptr HttpRequest::parse_request(const string& packet, size_t* parsed_leng
   return request;
 }
 
-string HttpRequest::make_packet(const string& method, map<string, string>& url_parts, const string& data) {
+string HttpRequest::make_packet(const string& method, map<string, string>& url_parts, const string& data, const string& content_type) {
   return method + " " + (url_parts.find("path") != url_parts.end() ? url_parts["path"] : "/") + " HTTP/1.1\r\n" \
         "Host: " + url_parts["host"] + "\r\n" \
         "Content-Length: " + std::to_string(data.length()) + "\r\n" \
+        "Content-Type: " + content_type  + "\r\n" \
         "User-Agent: proactor\r\n\r\n" + data;
 }
 

@@ -11,7 +11,7 @@ using boost::asio::ip::tcp;
 //单发后自动delete。。
 class AsyncHttpClient {
   public:
-    AsyncHttpClient(string url, string data, boost::asio::io_service& io_service, tcp::resolver& resolver);
+    AsyncHttpClient(const string& url, const string& data, const string& content_type, boost::asio::io_service& io_service, tcp::resolver& resolver);
     using CB = std::function<void(bool, response_ptr)>;
     void post(CB cb);
 
@@ -28,6 +28,7 @@ class AsyncHttpClient {
     tcp::resolver& resolver_;
     string url_;
     string data_;
+    string content_type_;
     map<string, string> url_parts_;
     string packet_;
     string packet_out_;

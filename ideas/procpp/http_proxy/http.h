@@ -43,7 +43,7 @@ class HttpRequest
 {
   public:
     static request_ptr parse_request(const string& packet, size_t* parsed_length, size_t skip_length = 0);
-    static string make_packet(const string& method, map<string, string>& url_parts, const string& data);
+    static string make_packet(const string& method, map<string, string>& url_parts, const string& data, const string& content_type);
 
     string method;
     string uri;
