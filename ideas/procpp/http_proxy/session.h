@@ -91,8 +91,8 @@ class Session
     string packet2_out_;
 
     string filtered_response_;
+    string auth_user_;
 
-    map<string, ssl_context_ptr> domain_context_;
 
 
     GUID guid_;
@@ -100,6 +100,7 @@ class Session
 
     static const size_t MAX_REQUEST_PACKET_SIZE = 1024*1024;
     static const size_t MAX_RESPONSE_PACKET_SIZE = 1024*1024;
+    static map<string, ssl_context_ptr> domain_context_;
     static Cache cached_credential_;
 };
 
