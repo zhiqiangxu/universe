@@ -100,7 +100,7 @@ string HttpRequest::forward_proxy_packet() {
 
   string s = method + " " + uri + " " + http_version + "\r\n";
   for (const auto& h : headers) {
-    if (h.first == "Accept-Encoding") continue;//转发不支持编码
+    if (h.first == "Accept-Encoding" || h.first == "Proxy-Authorization" || h.first == "Proxy-Connection") continue;//转发不支持编码
     s += h.first + ": " + h.second + "\r\n";
   }
 
