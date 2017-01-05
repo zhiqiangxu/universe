@@ -330,6 +330,9 @@ void Session::handle_connect_for_connect_request(const boost::system::error_code
   } else if (resolve_iterator != tcp::resolver::iterator()) {
     boost::system::error_code error;
     handle_resolve_for_connect_request(error, resolve_iterator);
+  } else {
+    auto& uri_parts = p_connect_request_->uri_parts();
+    cout << "failed to connect " + uri_parts["host"] + ":" + uri_parts["port"] << endl;
   }
 }
 
