@@ -82,6 +82,8 @@ void Session::handle_read_http_request(const boost::system::error_code& ec, std:
 void Session::do_write_407_unauthorized() {
   PROLOGUE;
 
+  cout << "Unauthorized:" << endl << p_request_->forward_proxy_packet(true) << endl;
+
   filtered_response_ = p_request_->http_version + " 407 Proxy Authentication Required\r\n"
                   "Proxy-Authenticate: Basic realm=\"xdebug\"\r\n"
                   "Content-Type: text/html\r\n"

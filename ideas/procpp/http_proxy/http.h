@@ -51,7 +51,7 @@ class HttpRequest
     map<string, string> headers;
     string body;
 
-    string forward_proxy_packet();
+    string forward_proxy_packet(bool debug = false);
     map<string, string>& uri_parts();
     //bool should_keepalive();
 
