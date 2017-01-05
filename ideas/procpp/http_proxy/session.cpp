@@ -12,7 +12,7 @@ using std::stringstream;
 using std::cout;
 using std::endl;
 
-#define PROLOGUE cout << __func__ << endl;auto self(shared_from_this());
+#define PROLOGUE cout << "#################Session #" << (intptr_t)this << ": " << __func__ << endl;auto self(shared_from_this());
 
 extern string PACKET_POST_URL;
 
