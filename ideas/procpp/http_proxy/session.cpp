@@ -447,6 +447,9 @@ void Session::handle_ssl_read_for_connect_request(const boost::system::error_cod
       cout << "filtered_response_:" << endl;
       cout << filtered_response_ << endl;
       */
+      cout << endl << "***********************" << endl
+           << "session #" << (intptr_t)this << " response for " << p_request_->uri << ":" << endl
+           << filtered_response_ << endl << "***********************" << endl;
 
       post_response();
       packet2_in_ = "";
