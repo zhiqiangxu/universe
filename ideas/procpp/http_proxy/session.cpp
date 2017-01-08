@@ -206,7 +206,7 @@ void Session::handle_connect_for_direct_request(const boost::system::error_code&
     packet2_out_ = p_request_->forward_proxy_packet();
     cout << endl << "***********************" << endl
          << "session #" << (intptr_t)this << " request for " << p_request_->uri << ":" << endl
-         << packet2_out_ << endl << "***********************" << endl;
+         << p_request_->forward_proxy_packet(true) << endl << "***********************" << endl;
 
     boost::asio::async_write(*p_socket2_, boost::asio::buffer(packet2_out_.data(), packet2_out_.length()),
       [this, self](const boost::system::error_code& ec, std::size_t bytes_transferred) {
@@ -413,6 +413,10 @@ void Session::do_ssl_proxy_request_for_connect_request() {
   PROLOGUE;
 
   packet2_out_ = p_request_->forward_proxy_packet();
+  cout << endl << "***********************" << endl
+       << "session #" << (intptr_t)this << " request for https://" << p_connect_request_->uri + p_request_->uri << ":" << endl
+       << p_request_->forward_proxy_packet(true) << endl << "***********************" << endl;
+
   boost::asio::async_write(*p_ssl_socket2_, boost::asio::buffer(packet2_out_.data(), packet2_out_.length()),
       [this, self](const boost::system::error_code& ec, std::size_t bytes_transferred) {
         handle_ssl_proxy_request_for_connect_request(ec, bytes_transferred);
