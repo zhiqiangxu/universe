@@ -71,7 +71,7 @@ class Session
     void post_response();
     void post_http_request(string url, string data);
 
-    ssl_context_ptr context_for_domain(string domain);
+    ssl_context_ptr context_for_domain(const string& domain);
 
     tcp::resolver& resolver_;
     boost::asio::ssl::context& context_;

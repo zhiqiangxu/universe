@@ -362,7 +362,7 @@ void Session::handle_handshake_for_connect_request(const boost::system::error_co
       if (!ec) do_read_after_handshake_for_connect_request();
     });
   } else {
-    cout << "handshake fail: " << ec.message() << endl;
+    cout << "handshake fail: " << ec << "(" + ec.message() + ")" << endl;
   }
 }
 
@@ -538,7 +538,9 @@ void Session::post_http_request(string url, string data) {
   });
 }
 
-ssl_context_ptr Session::context_for_domain(string domain) {
+static const char* CIPHERS = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA";
+
+ssl_context_ptr Session::context_for_domain(const string& domain) {
   bool ok;
   auto cert_path = Cert::cert_for_domain(domain, Conf::CSR_KEY, Conf::ROOT_CERT, Conf::ROOT_KEY, ok);
   if (!ok) return ssl_context_ptr(nullptr);
@@ -553,6 +555,8 @@ ssl_context_ptr Session::context_for_domain(string domain) {
       | boost::asio::ssl::context::single_dh_use);
   p_context->use_certificate_chain_file(cert_path.c_str());
   p_context->use_private_key_file(Conf::CSR_KEY, boost::asio::ssl::context::pem);
+  p_context->use_tmp_dh_file(Conf::DH_FILE);
+  if (SSL_CTX_set_cipher_list(p_context->native_handle(), CIPHERS) != 1) cout << "error set cipher list for " + domain << endl;
 
   domain_context_[domain] = p_context;
   return p_context;
