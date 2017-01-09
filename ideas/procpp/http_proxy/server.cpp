@@ -16,6 +16,7 @@ Server::Server(boost::asio::io_service& io_service, short port)
   //删除hsts http://classically.me/blogs/how-clear-hsts-settings-major-browsers
   context_.use_certificate_chain_file(Conf::ROOT_CERT);
   context_.use_private_key_file(Conf::ROOT_KEY, boost::asio::ssl::context::pem);
+  context_.use_tmp_dh_file(Conf::DH_FILE);
 
   do_accept();
 
