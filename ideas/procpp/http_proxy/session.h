@@ -69,7 +69,7 @@ class Session
 
     void post_request();
     void post_response();
-    void post_http_request(string url, string data);
+    void post_http_request(const string& url, const string& data);
 
     ssl_context_ptr context_for_domain(const string& domain);
 
