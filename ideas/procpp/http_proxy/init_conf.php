@@ -30,6 +30,7 @@ class Conf {
   public:
     static constexpr const char* CERT_DIR = "$new_certs_dir/";
     static constexpr const char* ROOT_CERT = "$current_dir/server.crt";
+    static constexpr const char* DH_FILE = "$current_dir/dh2048.pem";
     static constexpr const char* ROOT_KEY = "$current_dir/server.key";
     static constexpr const char* CSR_KEY = "$current_dir/csr.key";
     static constexpr const char* OPENSSL_CONFIG = "$current_dir/openssl.conf";
