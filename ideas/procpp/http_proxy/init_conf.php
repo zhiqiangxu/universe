@@ -1,6 +1,6 @@
 <?php
 
-$ca_dir = '/home/xuzhiqiang15/ca';
+$ca_dir = '/var/wd/wrs/ca';
 $new_certs_dir = $ca_dir . "/cert";
 $database = $ca_dir . "/index.txt";
 $policy = 'policy_strict';
