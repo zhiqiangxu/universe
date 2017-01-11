@@ -37,7 +37,7 @@ class Conf {
 };
 EOF;
 
-system("rm -rf $ca_dir");
+system("rm -rf $ca_dir/*");
 system("mkdir -p $new_certs_dir");
 system("touch $database");
 system("echo 1000 > $serial");
