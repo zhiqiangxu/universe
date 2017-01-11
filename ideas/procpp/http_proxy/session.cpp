@@ -362,7 +362,7 @@ void Session::handle_handshake_for_connect_request(const boost::system::error_co
       if (!ec) do_read_after_handshake_for_connect_request();
     });
   } else {
-    cout << "handshake fail: " << ec << "(" + ec.message() + ")" << endl;
+    cout << "handshake fail: " << "(" + ec.message() + ")" << endl;
   }
 }
 
