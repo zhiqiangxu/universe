@@ -42,5 +42,5 @@ system("rm -rf $ca_dir/*");
 system("mkdir -p $new_certs_dir");
 system("touch $database");
 system("echo 1000 > $serial");
-file_put_contents($current_dir . "/openssl.conf", $openssl_conf);
-file_put_contents($current_dir . "/conf.h", $conf_h);
+file_put_contents(__DIR__ . "/openssl.conf", $openssl_conf);
+file_put_contents(__DIR__ . "/conf.h", $conf_h);
