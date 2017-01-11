@@ -1,11 +1,12 @@
 <?php
 
+$env = isset($argv[1]) ? $argv[1] : 'sit';
 $ca_dir = '/home/vagrant/ca';
 $new_certs_dir = $ca_dir . "/cert";
 $database = $ca_dir . "/index.txt";
 $policy = 'policy_strict';
 $serial = $ca_dir . "/serial";
-$current_dir = __DIR__;
+$current_dir = $env == 'prod' ? '/var/wd/wrs/webroot/h5' : __DIR__;
 
 $openssl_conf = <<<EOF
 [ ca ]
