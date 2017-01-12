@@ -27,6 +27,7 @@ $cmd_sh = file_get_contents($cmd_sh_file);
 
 $pids = [];
 foreach ($server_list as $server) {
+    echo "host $server\n";
     $pid = pcntl_fork();
     if ($pid) {
         $pids[] = $pid;
